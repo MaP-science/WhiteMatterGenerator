@@ -20,18 +20,18 @@ export default class {
     constructor(scene, mesh) {
         this.hideCount = 1;
         this.hideOffset = 0;
-        this.jointCount = 20;
-        this.growSpeed = 0.001;
-        this.growRepeat = 100;
+        this.jointCount = 64;
+        this.growSpeed = 0.01;
+        this.growRepeat = 10;
         this.contractSpeed = 0.01;
         this.maxOverlap = 0.1;
         this.volumeFractionTarget = 1;
-        this.voxelSize = new THREE.Vector3(3, 3, 3);
-        this.gridSize = new THREE.Vector3(5, 5, 5);
+        this.voxelSize = new THREE.Vector3(5, 5, 5);
+        this.gridSize = new THREE.Vector3(10, 10, 10);
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 1], [0, 0.2]);
         this.axons = [];
-        for (let i = 0; i < 10; ++i) this.addAxon(randPos().multiplyScalar(3), randPos(), 0.5, 0, scene, mesh);
+        for (let i = 0; i < 200; ++i) this.addAxon(randPos().multiplyScalar(3), randPos(), 0.5, 0, scene, mesh);
         this.normalize();
     }
     normalize() {
