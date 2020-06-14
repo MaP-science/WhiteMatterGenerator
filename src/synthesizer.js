@@ -10,41 +10,6 @@ const max = (a, b) => new THREE.Vector3().set(Math.max(a.x, b.x), Math.max(a.y, 
 
 let iter = 0;
 
-const add = (a, b) => new THREE.Matrix3().set(...a.elements.map((e, i) => e + b.elements[i]));
-
-const mat3ToMat4 = m =>
-    new THREE.Matrix4().set(
-        m.elements[0],
-        m.elements[1],
-        m.elements[2],
-        0,
-        m.elements[3],
-        m.elements[4],
-        m.elements[5],
-        0,
-        m.elements[6],
-        m.elements[7],
-        m.elements[8],
-        0,
-        0,
-        0,
-        0,
-        1
-    );
-
-const outerProduct = (a, b) =>
-    new THREE.Matrix3().set(
-        a.x * b.x,
-        a.x * b.y,
-        a.x * b.z,
-        a.y * b.x,
-        a.y * b.y,
-        a.y * b.z,
-        a.z * b.x,
-        a.z * b.y,
-        a.z * b.z
-    );
-
 const randomVector = () => {
     const result = new THREE.Vector3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
     if (result.length() < 0.00001) return randomVector();
@@ -55,18 +20,18 @@ export default class {
     constructor(scene, mesh) {
         this.hideCount = 1;
         this.hideOffset = 0;
-        this.jointCount = 100;
+        this.jointCount = 20;
         this.growSpeed = 0.001;
-        this.growRepeat = 10;
+        this.growRepeat = 100;
         this.contractSpeed = 0.01;
         this.maxOverlap = 0.1;
         this.volumeFractionTarget = 1;
-        this.voxelSize = new THREE.Vector3(5, 5, 5);
-        this.gridSize = new THREE.Vector3(10, 10, 10);
+        this.voxelSize = new THREE.Vector3(3, 3, 3);
+        this.gridSize = new THREE.Vector3(5, 5, 5);
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 1], [0, 0.2]);
         this.axons = [];
-        for (let i = 0; i < 50; ++i) this.addAxon(randPos().multiplyScalar(10), randPos(), 0.5, 0, scene, mesh);
+        for (let i = 0; i < 10; ++i) this.addAxon(randPos().multiplyScalar(3), randPos(), 0.5, 0, scene, mesh);
         this.normalize();
     }
     normalize() {
@@ -316,11 +281,10 @@ export default class {
         for (let i = 0; i < n; ++i) {
             for (let j = 0; j < n; ++j) {
                 for (let k = 0; k < n; ++k) {
-                    const p = new THREE.Vector3(i + 0.5, j + 0.5, k + 0.5).multiplyScalar(1 / n);
-                    p.x *= this.voxelSize.x;
-                    p.y *= this.voxelSize.y;
-                    p.z *= this.voxelSize.z;
-                    p.add(voxelMin);
+                    const p = new THREE.Vector3(i + 0.5, j + 0.5, k + 0.5)
+                        .multiplyScalar(1 / n)
+                        .multiply(this.voxelSize)
+                        .add(voxelMin);
                     let inside = false;
                     this.axons.forEach(axon => {
                         if (axon.inside(p)) inside = true;

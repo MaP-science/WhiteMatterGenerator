@@ -39,11 +39,12 @@ export default class {
     constructor(scene, mesh, pos) {
         this.mesh = mesh.clone();
         this.mesh.matrixAutoUpdate = false;
-        scene.add(this.mesh);
         this.pos = pos.clone();
         this.shape = new THREE.Matrix3().multiplyScalar(0.1);
         this.prev = -2;
         this.next = -1;
+        this.draw();
+        scene.add(this.mesh);
     }
     deform(axis, s) {
         this.shape.multiply(add(outerProduct(axis, axis).multiplyScalar(s / axis.dot(axis)), new THREE.Matrix3()));
