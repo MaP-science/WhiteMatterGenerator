@@ -19,25 +19,28 @@ const randomVector = () => {
 };
 
 export default class {
-    constructor(scene, mesh) {
+    constructor(axonCount, jointCount) {
+        const scene = new THREE.Scene();
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        const light = new THREE.DirectionalLight(0xffffff, 0.4);
+        light.position.set(0, 1, 0);
+        scene.add(light);
+        const mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(1, 16, 16),
+            new THREE.MeshPhongMaterial({ color: "#ffffff" })
+        );
         this.scene = scene;
-        this.hideCount = 1;
-        this.hideOffset = 0;
-        this.jointCount = 64;
+        this.jointCount = jointCount;
         this.growSpeed = 0.01;
         this.growRepeat = 10;
         this.contractSpeed = 0.01;
         this.maxOverlap = 0.1;
-        this.volumeFractionTarget = 1;
         this.voxelSize = new THREE.Vector3(5, 5, 5);
         this.gridSize = new THREE.Vector3(10, 10, 10);
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 1], [0, 0.2]);
         this.axons = [];
-        for (let i = 0; i < 50; ++i) this.addAxon(randPos().multiplyScalar(3), randPos(), 0.5, 0, scene, mesh);
-        this.normalize();
-    }
-    normalize() {
+        for (let i = 0; i < axonCount; ++i) this.addAxon(randPos().multiplyScalar(3), randPos(), 0.5, 0, scene, mesh);
         let maxRadius = 0;
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.scale = 2 * maxRadius;
@@ -312,7 +315,7 @@ export default class {
         console.log("Volume fraction: " + 100 * vf + "%");
         ++iter;
         console.log("Number of iterations: " + iter);
-        return vf < this.volumeFractionTarget;
+        return vf;
     }
     generatePipes() {
         const addEllipsoid = (mc, pos, shape, min, max) => {

@@ -13,35 +13,31 @@ export default props => {
     const [synthesizer, setSynthesizer] = useState(null);
     const [frame, setFrame] = useState(0);
     const [viewMode, setViewMode] = useState("ellipsoids");
+    const [volumeFraction, setVolumeFraction] = useState(0);
+    const [axonCount, setAxonCount] = useState(20);
+    const [jointCount, setJointCount] = useState(20);
 
     useEffect(() => {
         if (!mount.current) return;
-        const width = 800;
-        const height = 600;
-        const sce = new THREE.Scene();
+        const width = 640;
+        const height = 480;
+        // Camera
         const cam = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
         cam.position.set(2, 2, 2);
         cam.lookAt(0, 0, 0);
+        setCamera(cam);
+        // Renderer
         const ren = new THREE.WebGLRenderer({ antialias: true });
         ren.setClearColor("#000000");
         ren.setSize(width, height);
         mount.current.appendChild(ren.domElement);
-        sce.add(new THREE.AmbientLight(0xffffff, 0.4));
-        const light = new THREE.DirectionalLight(0xffffff, 0.4);
-        light.position.set(0, 1, 0);
-        sce.add(light);
-        const geometry = new THREE.SphereGeometry(1, 16, 16);
-        const material = new THREE.MeshPhongMaterial({ color: "#ffffff" });
-        const mesh = new THREE.Mesh(geometry, material);
-        const synthesizer = new Synthesizer(sce, mesh);
+        setRenderer(ren);
+        // Controls
         const ctrls = new OrbitControls(cam, ren.domElement);
         ctrls.enableDamping = true;
         ctrls.dampingFactor = 0.5;
         setControls(ctrls);
-        setScene(sce);
-        setCamera(cam);
-        setRenderer(ren);
-        setSynthesizer(synthesizer);
+        // Animate
         window.setInterval(() => setFrame(frame => frame + 1), 1000 / 30);
     }, [mount]);
 
@@ -53,36 +49,58 @@ export default props => {
     return (
         <>
             <div ref={mount} />
+            <p>Setup:</p>
+            <label>Number of axons: </label>
+            <input type="number" value={axonCount} onChange={e => setAxonCount(Number(e.target.value))} />
+            <br />
+            <label>Number of joints per axon: </label>
+            <input type="number" value={jointCount} onChange={e => setJointCount(Number(e.target.value))} />
+            <br />
             <button
                 onClick={() => {
-                    synthesizer.update();
-                    setScene(synthesizer.draw(viewMode));
+                    const s = new Synthesizer(axonCount, jointCount);
+                    setSynthesizer(s);
+                    setScene(s.draw(viewMode));
                 }}>
-                Grow
+                Initialize
             </button>
-            <button
-                onClick={() => {
-                    const vm = viewMode === "ellipsoids" ? "pipes" : "ellipsoids";
-                    setViewMode(vm);
-                    setScene(synthesizer.draw(vm));
-                }}>
-                View Mode: {viewMode}
-            </button>
-            <button
-                onClick={() => {
-                    try {
-                        const link = document.createElement("a");
-                        link.setAttribute("href", "data:text/obj;charset=utf-8," + synthesizer.exportFile());
-                        link.setAttribute("download", "axons.obj");
-                        window.document.body.appendChild(link);
-                        link.click();
-                        window.document.body.removeChild(link);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                }}>
-                Export
-            </button>
+            {synthesizer && (
+                <>
+                    <p>After setup:</p>
+                    <button
+                        onClick={() => {
+                            setVolumeFraction(synthesizer.update());
+                            setScene(synthesizer.draw(viewMode));
+                        }}>
+                        Grow
+                    </button>
+                    <button
+                        onClick={() => {
+                            const vm = viewMode === "ellipsoids" ? "pipes" : "ellipsoids";
+                            setViewMode(vm);
+                            setScene(synthesizer.draw(vm));
+                        }}>
+                        View Mode: {viewMode}
+                    </button>
+                    <button
+                        onClick={() => {
+                            try {
+                                const link = document.createElement("a");
+                                link.setAttribute("href", "data:text/obj;charset=utf-8," + synthesizer.exportFile());
+                                link.setAttribute("download", "axons.obj");
+                                window.document.body.appendChild(link);
+                                link.click();
+                                window.document.body.removeChild(link);
+                            } catch (err) {
+                                console.log(err);
+                            }
+                        }}>
+                        Export as pipes
+                    </button>
+                    <div>Volume fraction: {100 * volumeFraction}%</div>
+                    <br />
+                </>
+            )}
         </>
     );
 };
