@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter";
+import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Axon from "./axon";
 import Mapping from "./mapping";
 
@@ -18,6 +20,7 @@ const randomVector = () => {
 
 export default class {
     constructor(scene, mesh) {
+        this.scene = scene;
         this.hideCount = 1;
         this.hideOffset = 0;
         this.jointCount = 64;
@@ -31,7 +34,7 @@ export default class {
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 1], [0, 0.2]);
         this.axons = [];
-        for (let i = 0; i < 200; ++i) this.addAxon(randPos().multiplyScalar(3), randPos(), 0.5, 0, scene, mesh);
+        for (let i = 0; i < 50; ++i) this.addAxon(randPos().multiplyScalar(3), randPos(), 0.5, 0, scene, mesh);
         this.normalize();
     }
     normalize() {
@@ -311,7 +314,76 @@ export default class {
         console.log("Number of iterations: " + iter);
         return vf < this.volumeFractionTarget;
     }
-    draw() {
-        this.axons.forEach(axon => axon.draw());
+    generatePipes() {
+        const addEllipsoid = (mc, pos, shape, min, max) => {
+            const metaballSize = Math.sqrt(2); // Between sqrt(2) and 2
+            for (let x = min.x; x < max.x; x++) {
+                for (let y = min.y; y < max.y; y++) {
+                    for (let z = min.z; z < max.z; z++) {
+                        if (x < 0 || x >= mc.size) continue;
+                        if (y < 0 || y >= mc.size) continue;
+                        if (z < 0 || z >= mc.size) continue;
+                        const p = new THREE.Vector3(x, y, z).divideScalar(mc.size).sub(pos);
+                        p.applyMatrix3(new THREE.Matrix3().getInverse(shape));
+                        const val = metaballSize / (0.000001 + p.dot(p)) - 1;
+                        if (val > 0) mc.field[mc.size2 * z + mc.size * y + x] += val;
+                    }
+                }
+            }
+        };
+        const scene = new THREE.Scene();
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        const light = new THREE.DirectionalLight(0xffffff, 0.4);
+        light.position.set(0, 1, 0);
+        scene.add(light);
+        this.axons.forEach((axon, i) => {
+            console.log("Adding axon " + i);
+            const mc = new MarchingCubes(64, new THREE.MeshPhongMaterial({ color: "#ffffff" }), true, false);
+            mc.isolation = 1;
+            axon.joints.forEach(joint => {
+                const bb = joint.boundingBox();
+                addEllipsoid(
+                    mc,
+                    joint.pos.clone().divide(this.voxelSize).add(new THREE.Vector3(0.5, 0.5, 0.5)),
+                    joint.shape.clone().multiplyScalar(1 / this.voxelSize.x),
+                    bb.min
+                        .divide(this.voxelSize)
+                        .add(new THREE.Vector3(0.5, 0.5, 0.5))
+                        .multiplyScalar(mc.size)
+                        .floor()
+                        .max(new THREE.Vector3(0, 0, 0)),
+                    bb.max
+                        .divide(this.voxelSize)
+                        .add(new THREE.Vector3(0.5, 0.5, 0.5))
+                        .multiplyScalar(mc.size)
+                        .ceil()
+                        .min(new THREE.Vector3(mc.size, mc.size, mc.size))
+                );
+            });
+            scene.add(
+                new THREE.Mesh(
+                    mc.generateBufferGeometry().scale(this.voxelSize.x / 2, this.voxelSize.y / 2, this.voxelSize.z / 2),
+                    new THREE.MeshPhongMaterial({ color: "#ffffff" })
+                )
+            );
+        });
+        return scene;
+    }
+    draw(mode) {
+        switch (mode) {
+            case "pipes":
+                return this.generatePipes();
+            case "ellipsoids":
+            default:
+                this.axons.forEach(axon => axon.draw());
+                return this.scene;
+        }
+    }
+    exportFile() {
+        try {
+            return new OBJExporter().parse(this.generatePipes(), {});
+        } catch (err) {
+            console.log(err);
+        }
     }
 }
