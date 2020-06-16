@@ -14,6 +14,8 @@ export default props => {
     const [frame, setFrame] = useState(0);
     const [viewMode, setViewMode] = useState("ellipsoids");
     const [volumeFraction, setVolumeFraction] = useState(0);
+    const [voxelSize, setVoxelSize] = useState(5);
+    const [gridSize, setGridSize] = useState(10);
     const [axonCount, setAxonCount] = useState(20);
     const [jointCount, setJointCount] = useState(50);
     const [growSpeed, setGrowSpeed] = useState(0.01);
@@ -56,6 +58,12 @@ export default props => {
                 <div ref={mount} style={{ flex: 1 }} />
                 <div style={{ flex: 1 }}>
                     <p>Setup:</p>
+                    <label>Voxel size: </label>
+                    <input type="number" value={voxelSize} onChange={e => setVoxelSize(Number(e.target.value))} />
+                    <br />
+                    <label>Grid size: </label>
+                    <input type="number" value={gridSize} onChange={e => setGridSize(Number(e.target.value))} />
+                    <br />
                     <label>Number of axons: </label>
                     <input type="number" value={axonCount} onChange={e => setAxonCount(Number(e.target.value))} />
                     <br />
@@ -64,7 +72,7 @@ export default props => {
                     <br />
                     <button
                         onClick={() => {
-                            const s = new Synthesizer(axonCount, jointCount);
+                            const s = new Synthesizer(voxelSize, gridSize, axonCount, jointCount);
                             setSynthesizer(s);
                             setScene(s.draw(viewMode));
                         }}>

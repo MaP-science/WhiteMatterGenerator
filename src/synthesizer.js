@@ -19,7 +19,7 @@ const randomVector = () => {
 };
 
 export default class {
-    constructor(axonCount, jointCount) {
+    constructor(voxelSize, gridSize, axonCount, jointCount) {
         const scene = new THREE.Scene();
         scene.add(new THREE.AmbientLight(0xffffff, 0.4));
         const light = new THREE.DirectionalLight(0xffffff, 0.4);
@@ -32,8 +32,8 @@ export default class {
         this.scene = scene;
         this.jointCount = jointCount;
         this.maxOverlap = 0.1;
-        this.voxelSize = new THREE.Vector3(5, 5, 5);
-        this.gridSize = new THREE.Vector3(10, 10, 10);
+        this.voxelSize = new THREE.Vector3(voxelSize, voxelSize, voxelSize);
+        this.gridSize = new THREE.Vector3(gridSize, gridSize, gridSize);
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 1], [0, 0.2]);
         this.axons = [];
