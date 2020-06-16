@@ -16,6 +16,7 @@ export default props => {
     const [volumeFraction, setVolumeFraction] = useState(0);
     const [voxelSize, setVoxelSize] = useState(5);
     const [gridSize, setGridSize] = useState(10);
+    const [maxOverlap, setMaxOverlap] = useState(0.1);
     const [axonCount, setAxonCount] = useState(20);
     const [jointCount, setJointCount] = useState(50);
     const [growSpeed, setGrowSpeed] = useState(0.01);
@@ -64,6 +65,9 @@ export default props => {
                     <label>Grid size: </label>
                     <input type="number" value={gridSize} onChange={e => setGridSize(Number(e.target.value))} />
                     <br />
+                    <label>Max overlap: </label>
+                    <input type="number" value={maxOverlap} onChange={e => setMaxOverlap(Number(e.target.value))} />
+                    <br />
                     <label>Number of axons: </label>
                     <input type="number" value={axonCount} onChange={e => setAxonCount(Number(e.target.value))} />
                     <br />
@@ -72,7 +76,7 @@ export default props => {
                     <br />
                     <button
                         onClick={() => {
-                            const s = new Synthesizer(voxelSize, gridSize, axonCount, jointCount);
+                            const s = new Synthesizer(voxelSize, gridSize, maxOverlap, axonCount, jointCount);
                             setSynthesizer(s);
                             setScene(s.draw(viewMode));
                         }}>
