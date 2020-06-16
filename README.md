@@ -1,3 +1,12 @@
+# Axon Generator Toolbox
+
+Try the [demo](http://www.student.dtu.dk/~s164179/).
+It was deployed using the following commands:
+
+`npm run build`
+
+`rsync -av ./build/ s164179@transfer.gbar.dtu.dk:public_html`
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
