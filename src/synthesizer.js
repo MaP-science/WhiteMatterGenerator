@@ -31,9 +31,6 @@ export default class {
         );
         this.scene = scene;
         this.jointCount = jointCount;
-        this.growSpeed = 0.01;
-        this.growRepeat = 10;
-        this.contractSpeed = 0.01;
         this.maxOverlap = 0.1;
         this.voxelSize = new THREE.Vector3(5, 5, 5);
         this.gridSize = new THREE.Vector3(10, 10, 10);
@@ -301,9 +298,9 @@ export default class {
         }
         return inCount / (n * n * n);
     }
-    update() {
-        this.axons.forEach(axon => axon.grow(this.growSpeed, this.growRepeat));
-        this.axons.forEach(axon => axon.contract(this.contractSpeed));
+    update(growSpeed, growRepeat, contractSpeed) {
+        this.axons.forEach(axon => axon.grow(growSpeed, growRepeat));
+        this.axons.forEach(axon => axon.contract(contractSpeed));
         while (1) {
             this.keepInVoxel();
             this.collision();

@@ -16,6 +16,9 @@ export default props => {
     const [volumeFraction, setVolumeFraction] = useState(0);
     const [axonCount, setAxonCount] = useState(20);
     const [jointCount, setJointCount] = useState(20);
+    const [growSpeed, setGrowSpeed] = useState(0.01);
+    const [growRepeat, setGrowRepeat] = useState(10);
+    const [contractSpeed, setContractSpeed] = useState(0.01);
 
     useEffect(() => {
         if (!mount.current) return;
@@ -67,9 +70,22 @@ export default props => {
             {synthesizer && (
                 <>
                     <p>After setup:</p>
+                    <label>Grow speed: </label>
+                    <input type="number" value={growSpeed} onChange={e => setGrowSpeed(Number(e.target.value))} />
+                    <br />
+                    <label>Grow repeat: </label>
+                    <input type="number" value={growRepeat} onChange={e => setGrowRepeat(Number(e.target.value))} />
+                    <br />
+                    <label>Contract speed: </label>
+                    <input
+                        type="number"
+                        value={contractSpeed}
+                        onChange={e => setContractSpeed(Number(e.target.value))}
+                    />
+                    <br />
                     <button
                         onClick={() => {
-                            setVolumeFraction(synthesizer.update());
+                            setVolumeFraction(synthesizer.update(growSpeed, growRepeat, contractSpeed));
                             setScene(synthesizer.draw(viewMode));
                         }}>
                         Grow
