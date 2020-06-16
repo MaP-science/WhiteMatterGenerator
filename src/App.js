@@ -15,10 +15,11 @@ export default props => {
     const [viewMode, setViewMode] = useState("ellipsoids");
     const [volumeFraction, setVolumeFraction] = useState(0);
     const [axonCount, setAxonCount] = useState(20);
-    const [jointCount, setJointCount] = useState(20);
+    const [jointCount, setJointCount] = useState(50);
     const [growSpeed, setGrowSpeed] = useState(0.01);
     const [growRepeat, setGrowRepeat] = useState(10);
     const [contractSpeed, setContractSpeed] = useState(0.01);
+    const source = "https://gitlab.gbar.dtu.dk/s164179/axon-generator-toolbox";
 
     useEffect(() => {
         if (!mount.current) return;
@@ -26,7 +27,7 @@ export default props => {
         const height = 480;
         // Camera
         const cam = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-        cam.position.set(2, 2, 2);
+        cam.position.set(5, 5, 5);
         cam.lookAt(0, 0, 0);
         setCamera(cam);
         // Renderer
@@ -50,78 +51,89 @@ export default props => {
     }, [controls, renderer, scene, camera, frame]);
 
     return (
-        <div style={{ display: "flex", flexDirection: "row" }}>
-            <div ref={mount} style={{ flex: 1 }} />
-            <div style={{ flex: 1 }}>
-                <p>Setup:</p>
-                <label>Number of axons: </label>
-                <input type="number" value={axonCount} onChange={e => setAxonCount(Number(e.target.value))} />
-                <br />
-                <label>Number of joints per axon: </label>
-                <input type="number" value={jointCount} onChange={e => setJointCount(Number(e.target.value))} />
-                <br />
-                <button
-                    onClick={() => {
-                        const s = new Synthesizer(axonCount, jointCount);
-                        setSynthesizer(s);
-                        setScene(s.draw(viewMode));
-                    }}>
-                    Initialize
-                </button>
-                {synthesizer && (
-                    <>
-                        <p>After setup:</p>
-                        <label>Grow speed: </label>
-                        <input type="number" value={growSpeed} onChange={e => setGrowSpeed(Number(e.target.value))} />
-                        <br />
-                        <label>Grow repeat: </label>
-                        <input type="number" value={growRepeat} onChange={e => setGrowRepeat(Number(e.target.value))} />
-                        <br />
-                        <label>Contract speed: </label>
-                        <input
-                            type="number"
-                            value={contractSpeed}
-                            onChange={e => setContractSpeed(Number(e.target.value))}
-                        />
-                        <br />
-                        <button
-                            onClick={() => {
-                                setVolumeFraction(synthesizer.update(growSpeed, growRepeat, contractSpeed));
-                                setScene(synthesizer.draw(viewMode));
-                            }}>
-                            Grow
-                        </button>
-                        <button
-                            onClick={() => {
-                                const vm = viewMode === "ellipsoids" ? "pipes" : "ellipsoids";
-                                setViewMode(vm);
-                                setScene(synthesizer.draw(vm));
-                            }}>
-                            View Mode: {viewMode}
-                        </button>
-                        <button
-                            onClick={() => {
-                                try {
-                                    const link = document.createElement("a");
-                                    link.setAttribute(
-                                        "href",
-                                        "data:text/obj;charset=utf-8," + synthesizer.exportFile()
-                                    );
-                                    link.setAttribute("download", "axons.obj");
-                                    window.document.body.appendChild(link);
-                                    link.click();
-                                    window.document.body.removeChild(link);
-                                } catch (err) {
-                                    console.log(err);
-                                }
-                            }}>
-                            Export as pipes
-                        </button>
-                        <div>Volume fraction: {100 * volumeFraction}%</div>
-                        <br />
-                    </>
-                )}
+        <>
+            <div style={{ display: "flex", flexDirection: "row" }}>
+                <div ref={mount} style={{ flex: 1 }} />
+                <div style={{ flex: 1 }}>
+                    <p>Setup:</p>
+                    <label>Number of axons: </label>
+                    <input type="number" value={axonCount} onChange={e => setAxonCount(Number(e.target.value))} />
+                    <br />
+                    <label>Number of joints per axon: </label>
+                    <input type="number" value={jointCount} onChange={e => setJointCount(Number(e.target.value))} />
+                    <br />
+                    <button
+                        onClick={() => {
+                            const s = new Synthesizer(axonCount, jointCount);
+                            setSynthesizer(s);
+                            setScene(s.draw(viewMode));
+                        }}>
+                        Initialize
+                    </button>
+                    {synthesizer && (
+                        <>
+                            <p>After setup:</p>
+                            <label>Grow speed: </label>
+                            <input
+                                type="number"
+                                value={growSpeed}
+                                onChange={e => setGrowSpeed(Number(e.target.value))}
+                            />
+                            <br />
+                            <label>Grow repeat: </label>
+                            <input
+                                type="number"
+                                value={growRepeat}
+                                onChange={e => setGrowRepeat(Number(e.target.value))}
+                            />
+                            <br />
+                            <label>Contract speed: </label>
+                            <input
+                                type="number"
+                                value={contractSpeed}
+                                onChange={e => setContractSpeed(Number(e.target.value))}
+                            />
+                            <br />
+                            <button
+                                onClick={() => {
+                                    setVolumeFraction(synthesizer.update(growSpeed, growRepeat, contractSpeed));
+                                    setScene(synthesizer.draw(viewMode));
+                                }}>
+                                Grow
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const vm = viewMode === "ellipsoids" ? "pipes" : "ellipsoids";
+                                    setViewMode(vm);
+                                    setScene(synthesizer.draw(vm));
+                                }}>
+                                View mode: {viewMode}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    try {
+                                        const link = document.createElement("a");
+                                        link.setAttribute(
+                                            "href",
+                                            "data:text/obj;charset=utf-8," + synthesizer.exportFile()
+                                        );
+                                        link.setAttribute("download", "axons.obj");
+                                        window.document.body.appendChild(link);
+                                        link.click();
+                                        window.document.body.removeChild(link);
+                                    } catch (err) {
+                                        console.log(err);
+                                    }
+                                }}>
+                                Export as pipes
+                            </button>
+                            <div>Volume fraction: {100 * volumeFraction}%</div>
+                            <br />
+                        </>
+                    )}
+                </div>
             </div>
-        </div>
+            Source: <a href={source}>{source}</a>
+        </>
     );
 };
