@@ -32,8 +32,8 @@ export default class {
         this.scene = scene;
         this.jointCount = jointCount;
         this.maxOverlap = 0.1;
-        this.voxelSize = new THREE.Vector3(voxelSize, voxelSize, voxelSize);
-        this.gridSize = new THREE.Vector3(gridSize, gridSize, gridSize);
+        this.voxelSize = voxelSize;
+        this.gridSize = gridSize;
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 1], [0, 0.2]);
         this.axons = [];
@@ -42,8 +42,8 @@ export default class {
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.scale = 2 * maxRadius;
         this.maxOverlap /= this.scale;
-        this.gridSize.multiplyScalar(1 / this.scale);
-        this.voxelSize.multiplyScalar(1 / this.scale);
+        this.gridSize /= this.scale;
+        this.voxelSize /= this.scale;
         for (let i = 0; i < this.deformation.values.length; ++i) {
             this.deformation.values[i].x /= this.scale;
             this.deformation.valuesInverse[i].y /= this.scale;
@@ -62,8 +62,8 @@ export default class {
         });
     }
     keepInVoxel() {
-        const gridMin = this.gridSize.clone().multiplyScalar(-1 / 2);
-        const gridMax = this.gridSize.clone().multiplyScalar(1 / 2);
+        const gridMin = new THREE.Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
+        const gridMax = new THREE.Vector3(this.gridSize / 2, this.gridSize / 2, this.gridSize / 2);
         this.axons.forEach(axon => axon.joints.forEach(joint => (joint.pos = min(max(joint.pos, gridMin), gridMax))));
     }
     collision() {
@@ -264,29 +264,28 @@ export default class {
         if (Math.abs(dir.x) < 0.00001) return pos.clone().add(dir.clone().multiplyScalar(1e10));
         return pos
             .clone()
-            .add(dir.clone().multiplyScalar((((dir.x > 0 ? 1 : -1) * this.gridSize.x) / 2 - pos.x) / dir.x));
+            .add(dir.clone().multiplyScalar((((dir.x > 0 ? 1 : -1) * this.gridSize) / 2 - pos.x) / dir.x));
     }
     projectY(pos, dir) {
         if (Math.abs(dir.y) < 0.00001) return pos.clone().add(dir.clone().multiplyScalar(1e10));
         return pos
             .clone()
-            .add(dir.clone().multiplyScalar((((dir.y > 0 ? 1 : -1) * this.gridSize.y) / 2 - pos.y) / dir.y));
+            .add(dir.clone().multiplyScalar((((dir.y > 0 ? 1 : -1) * this.gridSize) / 2 - pos.y) / dir.y));
     }
     projectZ(pos, dir) {
         if (Math.abs(dir.z) < 0.00001) return pos.clone().add(dir.clone().multiplyScalar(1e10));
         return pos
             .clone()
-            .add(dir.clone().multiplyScalar((((dir.z > 0 ? 1 : -1) * this.gridSize.z) / 2 - pos.z) / dir.z));
+            .add(dir.clone().multiplyScalar((((dir.z > 0 ? 1 : -1) * this.gridSize) / 2 - pos.z) / dir.z));
     }
     volumeFraction(n) {
-        const voxelMin = this.voxelSize.clone().multiplyScalar(-1 / 2);
+        const voxelMin = new THREE.Vector3(-this.voxelSize / 2, -this.voxelSize / 2, -this.voxelSize / 2);
         let inCount = 0;
         for (let i = 0; i < n; ++i) {
             for (let j = 0; j < n; ++j) {
                 for (let k = 0; k < n; ++k) {
                     const p = new THREE.Vector3(i + 0.5, j + 0.5, k + 0.5)
-                        .multiplyScalar(1 / n)
-                        .multiply(this.voxelSize)
+                        .multiplyScalar(this.voxelSize / n)
                         .add(voxelMin);
                     let inside = false;
                     this.axons.forEach(axon => {
@@ -344,16 +343,16 @@ export default class {
                 const bb = joint.boundingBox();
                 addEllipsoid(
                     mc,
-                    joint.pos.clone().divide(this.voxelSize).add(new THREE.Vector3(0.5, 0.5, 0.5)),
-                    joint.shape.clone().multiplyScalar(1 / this.voxelSize.x),
+                    joint.pos.clone().divideScalar(this.voxelSize).add(new THREE.Vector3(0.5, 0.5, 0.5)),
+                    joint.shape.clone().multiplyScalar(1 / this.voxelSize),
                     bb.min
-                        .divide(this.voxelSize)
+                        .divideScalar(this.voxelSize)
                         .add(new THREE.Vector3(0.5, 0.5, 0.5))
                         .multiplyScalar(mc.size)
                         .floor()
                         .max(new THREE.Vector3(0, 0, 0)),
                     bb.max
-                        .divide(this.voxelSize)
+                        .divideScalar(this.voxelSize)
                         .add(new THREE.Vector3(0.5, 0.5, 0.5))
                         .multiplyScalar(mc.size)
                         .ceil()
@@ -362,7 +361,7 @@ export default class {
             });
             scene.add(
                 new THREE.Mesh(
-                    mc.generateBufferGeometry().scale(this.voxelSize.x / 2, this.voxelSize.y / 2, this.voxelSize.z / 2),
+                    mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2),
                     new THREE.MeshPhongMaterial({ color: "#ffffff" })
                 )
             );
