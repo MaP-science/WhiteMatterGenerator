@@ -59,14 +59,11 @@ export default props => {
                 <div ref={mount} style={{ flex: 1 }} />
                 <div style={{ flex: 1 }}>
                     <p>Setup:</p>
-                    <label>Voxel size: </label>
+                    <label>Innver voxel size: </label>
                     <input type="number" value={voxelSize} onChange={e => setVoxelSize(Number(e.target.value))} />
                     <br />
-                    <label>Grid size: </label>
+                    <label>Outer voxel size: </label>
                     <input type="number" value={gridSize} onChange={e => setGridSize(Number(e.target.value))} />
-                    <br />
-                    <label>Max overlap: </label>
-                    <input type="number" value={maxOverlap} onChange={e => setMaxOverlap(Number(e.target.value))} />
                     <br />
                     <label>Number of axons: </label>
                     <input type="number" value={axonCount} onChange={e => setAxonCount(Number(e.target.value))} />
@@ -76,7 +73,7 @@ export default props => {
                     <br />
                     <button
                         onClick={() => {
-                            const s = new Synthesizer(voxelSize, gridSize, maxOverlap, axonCount, jointCount);
+                            const s = new Synthesizer(voxelSize, gridSize, axonCount, jointCount);
                             setSynthesizer(s);
                             setScene(s.draw(viewMode));
                         }}>
@@ -106,9 +103,18 @@ export default props => {
                                 onChange={e => setContractSpeed(Number(e.target.value))}
                             />
                             <br />
+                            <label>Max overlap: </label>
+                            <input
+                                type="number"
+                                value={maxOverlap}
+                                onChange={e => setMaxOverlap(Number(e.target.value))}
+                            />
+                            <br />
                             <button
                                 onClick={() => {
-                                    setVolumeFraction(synthesizer.update(growSpeed, growRepeat, contractSpeed));
+                                    setVolumeFraction(
+                                        synthesizer.update(growSpeed, growRepeat, contractSpeed, maxOverlap)
+                                    );
                                     setScene(synthesizer.draw(viewMode));
                                 }}>
                                 Grow

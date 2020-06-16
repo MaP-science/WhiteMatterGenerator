@@ -19,7 +19,7 @@ const randomVector = () => {
 };
 
 export default class {
-    constructor(voxelSize, gridSize, maxOverlap, axonCount, jointCount) {
+    constructor(voxelSize, gridSize, axonCount, jointCount) {
         const scene = new THREE.Scene();
         scene.add(new THREE.AmbientLight(0xffffff, 0.4));
         const light = new THREE.DirectionalLight(0xffffff, 0.4);
@@ -31,7 +31,6 @@ export default class {
         );
         this.scene = scene;
         this.jointCount = jointCount;
-        this.maxOverlap = maxOverlap;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
@@ -41,7 +40,6 @@ export default class {
         let maxRadius = 0;
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.scale = 2 * maxRadius;
-        this.maxOverlap /= this.scale;
         this.gridSize /= this.scale;
         this.voxelSize /= this.scale;
         for (let i = 0; i < this.deformation.values.length; ++i) {
@@ -297,7 +295,7 @@ export default class {
         }
         return inCount / (n * n * n);
     }
-    update(growSpeed, growRepeat, contractSpeed) {
+    update(growSpeed, growRepeat, contractSpeed, maxOverlap) {
         this.axons.forEach(axon => axon.grow(growSpeed, growRepeat));
         this.axons.forEach(axon => axon.contract(contractSpeed));
         while (1) {
@@ -305,7 +303,7 @@ export default class {
             this.collision();
             const mo = this.getMaxOverlap();
             console.log("Max overlap: " + mo * this.scale);
-            if (mo < this.maxOverlap) break;
+            if (mo < maxOverlap / this.scale) break;
         }
         const vf = this.volumeFraction(50);
         console.log("Volume fraction: " + 100 * vf + "%");
