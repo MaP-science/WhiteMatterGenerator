@@ -42,8 +42,8 @@ export default class {
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.scale = 2 * maxRadius;
         this.maxOverlap /= this.scale;
-        this.gridSize.clone().multiplyScalar(1 / this.scale);
-        this.voxelSize.clone().multiplyScalar(1 / this.scale);
+        this.gridSize.multiplyScalar(1 / this.scale);
+        this.voxelSize.multiplyScalar(1 / this.scale);
         for (let i = 0; i < this.deformation.values.length; ++i) {
             this.deformation.values[i].x /= this.scale;
             this.deformation.valuesInverse[i].y /= this.scale;
