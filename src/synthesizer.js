@@ -18,6 +18,12 @@ const randomVector = () => {
     return result.normalize();
 };
 
+const wireframeCube = size =>
+    new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.CubeGeometry(size, size, size)),
+        new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
+    );
+
 export default class {
     constructor(voxelSize, gridSize, axonCount, jointCount) {
         const scene = new THREE.Scene();
@@ -25,6 +31,10 @@ export default class {
         const light = new THREE.DirectionalLight(0xffffff, 0.4);
         light.position.set(0, 1, 0);
         scene.add(light);
+
+        scene.add(wireframeCube(voxelSize));
+        scene.add(wireframeCube(gridSize));
+
         const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(1, 16, 16),
             new THREE.MeshPhongMaterial({ color: "#ffffff" })
@@ -333,6 +343,8 @@ export default class {
         const light = new THREE.DirectionalLight(0xffffff, 0.4);
         light.position.set(0, 1, 0);
         scene.add(light);
+        scene.add(wireframeCube(this.voxelSize));
+        scene.add(wireframeCube(this.gridSize));
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
             const mc = new MarchingCubes(64, new THREE.MeshPhongMaterial({ color: "#ffffff" }), true, false);
