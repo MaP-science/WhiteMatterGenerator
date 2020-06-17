@@ -152,6 +152,14 @@ export default props => {
                 </div>
             </div>
             Source: <a href={source}>{source}</a>
+            <br />
+            <p>To get started:</p>
+            <ul>
+                <li>Press "Initialize"</li>
+                <li>Press "Grow" until the volume fraction is at least 30%</li>
+                <li>Switch the view mode to "pipes" to see the final result</li>
+                <li>Press "Export as pipes" to download the scene as an OBJ file (this might take some time)</li>
+            </ul>
         </>
     );
 };
