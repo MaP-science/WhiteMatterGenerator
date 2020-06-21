@@ -7,8 +7,6 @@ export default class {
         this.mesh.matrixAutoUpdate = false;
         this.pos = pos.clone();
         this.shape = new Matrix3().multiplyScalar(0.1);
-        this.prev = -2;
-        this.next = -1;
         this.draw();
         scene.add(this.mesh);
     }

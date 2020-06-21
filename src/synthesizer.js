@@ -95,19 +95,11 @@ export default class {
         if (a1.boundingBoxes[i1][j1].max.y < a2.boundingBoxes[i2][j2].min.y) return;
         if (a1.boundingBoxes[i1][j1].min.z > a2.boundingBoxes[i2][j2].max.z) return;
         if (a1.boundingBoxes[i1][j1].max.z < a2.boundingBoxes[i2][j2].min.z) return;
-        if (i2 === 0)
-            return this.collision3(
-                a1,
-                a2,
-                a1.joints[j1],
-                a2.joints[j2],
-                a1.joints.length * i1 + j1,
-                a2.joints.length * i2 + j2
-            );
+        if (i2 === 0) return this.collision3(a1, a2, a1.joints[j1], a2.joints[j2]);
         this.collision2(a1, a2, i1, i2 - 1, j1, 2 * j2);
         this.collision2(a1, a2, i1, i2 - 1, j1, 2 * j2 + 1);
     }
-    collision3(a1, a2, a, b, i, j) {
+    collision3(a1, a2, a, b) {
         const d = b.pos.clone().sub(a.pos);
         const dSqr = d.dot(d);
         if (dSqr > 1) return;
@@ -119,7 +111,7 @@ export default class {
             b.pos.clone().add(r);
             return;
         }
-        let [axisLength, axis] = this.collisionAxis(a.pos, a.shape, b.pos, b.shape, i, j);
+        let [axisLength, axis] = this.collisionAxis(a.pos, a.shape, b.pos, b.shape);
         if (axisLength < 0) return;
         // Collision resolution
         // Updating shape
@@ -165,21 +157,15 @@ export default class {
         if (a1.boundingBoxes[i1][j1].max.y < a2.boundingBoxes[i2][j2].min.y) return 0;
         if (a1.boundingBoxes[i1][j1].min.z > a2.boundingBoxes[i2][j2].max.z) return 0;
         if (a1.boundingBoxes[i1][j1].max.z < a2.boundingBoxes[i2][j2].min.z) return 0;
-        if (i2 === 0)
-            return this.getMaxOverlap3(
-                a1.joints[j1],
-                a2.joints[j2],
-                a1.joints.length * i1 + j1,
-                a2.joints.length * i2 + j2
-            );
+        if (i2 === 0) return this.getMaxOverlap3(a1.joints[j1], a2.joints[j2]);
         return Math.max(
             this.getMaxOverlap2(a1, a2, i1, i2 - 1, j1, 2 * j2),
             this.getMaxOverlap2(a1, a2, i1, i2 - 1, j1, 2 * j2 + 1)
         );
     }
-    getMaxOverlap3(a, b, i, j) {
+    getMaxOverlap3(a, b) {
         if (b.pos.clone().sub(a.pos).length() > 1) return 0;
-        return Math.max(this.collisionAxis(a.pos, a.shape, b.pos, b.shape, i, j)[0], 0);
+        return Math.max(this.collisionAxis(a.pos, a.shape, b.pos, b.shape)[0], 0);
     }
     axisOverlap(p, A, q, B, axis) {
         let Aaxis = axis.clone().applyMatrix3(A.clone().transpose());
@@ -194,7 +180,7 @@ export default class {
             .add(Aaxis.applyMatrix3(A).add(Baxis.applyMatrix3(B)))
             .dot(axis);
     }
-    collisionAxis(p, A, q, B, i, j) {
+    collisionAxis(p, A, q, B) {
         let a = q.clone().sub(p);
         a.normalize();
         let overlap = this.axisOverlap(p, A, q, B, a);
