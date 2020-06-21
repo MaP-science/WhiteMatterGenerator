@@ -1,39 +1,5 @@
-import { Vector3, Matrix3, Matrix4 } from "three";
-
-const add = (a, b) => new Matrix3().set(...a.elements.map((e, i) => e + b.elements[i]));
-
-const mat3ToMat4 = m =>
-    new Matrix4().set(
-        m.elements[0],
-        m.elements[1],
-        m.elements[2],
-        0,
-        m.elements[3],
-        m.elements[4],
-        m.elements[5],
-        0,
-        m.elements[6],
-        m.elements[7],
-        m.elements[8],
-        0,
-        0,
-        0,
-        0,
-        1
-    );
-
-const outerProduct = (a, b) =>
-    new Matrix3().set(
-        a.x * b.x,
-        a.x * b.y,
-        a.x * b.z,
-        a.y * b.x,
-        a.y * b.y,
-        a.y * b.z,
-        a.z * b.x,
-        a.z * b.y,
-        a.z * b.z
-    );
+import { Vector3, Matrix3 } from "three";
+import { addMatrix3, mat3ToMat4, outerProduct } from "./helperFunctions";
 
 export default class {
     constructor(scene, mesh, pos) {
@@ -47,7 +13,7 @@ export default class {
         scene.add(this.mesh);
     }
     deform(axis, s) {
-        this.shape.multiply(add(outerProduct(axis, axis).multiplyScalar(s / axis.dot(axis)), new Matrix3()));
+        this.shape.multiply(addMatrix3(outerProduct(axis, axis).multiplyScalar(s / axis.dot(axis)), new Matrix3()));
     }
     extremum(axis) {
         const a = axis.clone();

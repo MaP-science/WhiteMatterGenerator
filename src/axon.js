@@ -1,14 +1,5 @@
-import { Vector3 } from "three";
-
 import Joint from "./joint";
-
-const min = (a, b) => new Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
-const max = (a, b) => new Vector3().set(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
-const randomVector = () => {
-    const result = new Vector3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
-    if (result.length() < 0.00001) return randomVector();
-    return result.normalize();
-};
+import { min, max, randomDirection } from "./helperFunctions";
 
 export default class {
     constructor(start, end, radius, n, scene, mesh) {
@@ -49,7 +40,7 @@ export default class {
     grow(amount, repeat) {
         this.joints.forEach(joint => {
             for (let j = 0; j < repeat; ++j) {
-                const p = randomVector();
+                const p = randomDirection();
                 joint.deform(p, (this.radius / joint.extremum(p).dot(p) - 1) * amount);
             }
         });

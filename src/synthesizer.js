@@ -18,18 +18,7 @@ import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Axon from "./axon";
 import Mapping from "./mapping";
 
-const randPos = () => new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-
-const min = (a, b) => new Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
-const max = (a, b) => new Vector3().set(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
-
-let iter = 0;
-
-const randomVector = () => {
-    const result = new Vector3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
-    if (result.length() < 0.00001) return randomVector();
-    return result.normalize();
-};
+import { min, max, randomPosition, randomDirection } from "./helperFunctions";
 
 const wireframeCube = size =>
     new LineSegments(
@@ -56,7 +45,8 @@ export default class {
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 1], [0, 0.2]);
         this.axons = [];
-        for (let i = 0; i < axonCount; ++i) this.addAxon(randPos().multiplyScalar(3), randPos(), 0.5, 0, scene, mesh);
+        for (let i = 0; i < axonCount; ++i)
+            this.addAxon(randomPosition().multiplyScalar(3), randomPosition(), 0.5, 0, scene, mesh);
         let maxRadius = 0;
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.scale = 2 * maxRadius;
@@ -210,7 +200,7 @@ export default class {
         let overlap = this.axisOverlap(p, A, q, B, a);
         while (1) {
             if (overlap < 0) return [overlap, a];
-            const r = randomVector().multiplyScalar(0.1);
+            const r = randomDirection().multiplyScalar(0.1);
             let b = a.clone().add(r);
             b.normalize();
             let o = this.axisOverlap(p, A, q, B, b);
@@ -325,8 +315,6 @@ export default class {
         }
         const vf = this.volumeFraction(50);
         console.log("Volume fraction: " + 100 * vf + "%");
-        ++iter;
-        console.log("Number of iterations: " + iter);
         return vf;
     }
     generatePipes() {
