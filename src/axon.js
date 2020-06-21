@@ -1,11 +1,11 @@
-import * as THREE from "three";
+import { Vector3 } from "three";
 
 import Joint from "./joint";
 
-const min = (a, b) => new THREE.Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
-const max = (a, b) => new THREE.Vector3().set(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
+const min = (a, b) => new Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
+const max = (a, b) => new Vector3().set(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
 const randomVector = () => {
-    const result = new THREE.Vector3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
+    const result = new Vector3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
     if (result.length() < 0.00001) return randomVector();
     return result.normalize();
 };

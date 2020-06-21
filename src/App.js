@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
+import { PerspectiveCamera, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import Synthesizer from "./synthesizer";
@@ -29,12 +29,12 @@ export default props => {
         const width = 640;
         const height = 480;
         // Camera
-        const cam = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        const cam = new PerspectiveCamera(75, width / height, 0.1, 1000);
         cam.position.set(5, 5, 5);
         cam.lookAt(0, 0, 0);
         setCamera(cam);
         // Renderer
-        const ren = new THREE.WebGLRenderer({ antialias: true });
+        const ren = new WebGLRenderer({ antialias: true });
         ren.setClearColor("#000000");
         ren.setSize(width, height);
         mount.current.appendChild(ren.domElement);

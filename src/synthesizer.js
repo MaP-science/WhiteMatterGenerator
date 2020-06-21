@@ -1,44 +1,54 @@
-import * as THREE from "three";
+import {
+    Vector3,
+    Matrix3,
+    LineSegments,
+    CubeGeometry,
+    EdgesGeometry,
+    Mesh,
+    LineBasicMaterial,
+    Scene,
+    AmbientLight,
+    DirectionalLight,
+    SphereGeometry,
+    MeshPhongMaterial
+} from "three";
 
 import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Axon from "./axon";
 import Mapping from "./mapping";
 
-const randPos = () => new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+const randPos = () => new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
 
-const min = (a, b) => new THREE.Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
-const max = (a, b) => new THREE.Vector3().set(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
+const min = (a, b) => new Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
+const max = (a, b) => new Vector3().set(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
 
 let iter = 0;
 
 const randomVector = () => {
-    const result = new THREE.Vector3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
+    const result = new Vector3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
     if (result.length() < 0.00001) return randomVector();
     return result.normalize();
 };
 
 const wireframeCube = size =>
-    new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.CubeGeometry(size, size, size)),
-        new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
+    new LineSegments(
+        new EdgesGeometry(new CubeGeometry(size, size, size)),
+        new LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
     );
 
 export default class {
     constructor(voxelSize, gridSize, axonCount, jointCount) {
-        const scene = new THREE.Scene();
-        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-        const light = new THREE.DirectionalLight(0xffffff, 0.4);
+        const scene = new Scene();
+        scene.add(new AmbientLight(0xffffff, 0.4));
+        const light = new DirectionalLight(0xffffff, 0.4);
         light.position.set(0, 1, 0);
         scene.add(light);
 
         scene.add(wireframeCube(voxelSize));
         scene.add(wireframeCube(gridSize));
 
-        const mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(1, 16, 16),
-            new THREE.MeshPhongMaterial({ color: "#ffffff" })
-        );
+        const mesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
         this.scene = scene;
         this.jointCount = jointCount;
         this.voxelSize = voxelSize;
@@ -70,8 +80,8 @@ export default class {
         });
     }
     keepInVoxel() {
-        const gridMin = new THREE.Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
-        const gridMax = new THREE.Vector3(this.gridSize / 2, this.gridSize / 2, this.gridSize / 2);
+        const gridMin = new Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
+        const gridMax = new Vector3(this.gridSize / 2, this.gridSize / 2, this.gridSize / 2);
         this.axons.forEach(axon => axon.joints.forEach(joint => (joint.pos = min(max(joint.pos, gridMin), gridMax))));
     }
     collision() {
@@ -112,8 +122,8 @@ export default class {
         const dSqr = d.dot(d);
         if (dSqr > 1) return;
         if (dSqr < 0.00001) {
-            const r = new THREE.Vector3(0, 0, 0).add(
-                new THREE.Vector3(Math.random() * 0.01, Math.random() * 0.0001, Math.random() * 0.01)
+            const r = new Vector3(0, 0, 0).add(
+                new Vector3(Math.random() * 0.01, Math.random() * 0.0001, Math.random() * 0.01)
             );
             a.pos.clone().sub(r);
             b.pos.clone().add(r);
@@ -287,14 +297,12 @@ export default class {
             .add(dir.clone().multiplyScalar((((dir.z > 0 ? 1 : -1) * this.gridSize) / 2 - pos.z) / dir.z));
     }
     volumeFraction(n) {
-        const voxelMin = new THREE.Vector3(-this.voxelSize / 2, -this.voxelSize / 2, -this.voxelSize / 2);
+        const voxelMin = new Vector3(-this.voxelSize / 2, -this.voxelSize / 2, -this.voxelSize / 2);
         let inCount = 0;
         for (let i = 0; i < n; ++i) {
             for (let j = 0; j < n; ++j) {
                 for (let k = 0; k < n; ++k) {
-                    const p = new THREE.Vector3(i + 0.5, j + 0.5, k + 0.5)
-                        .multiplyScalar(this.voxelSize / n)
-                        .add(voxelMin);
+                    const p = new Vector3(i + 0.5, j + 0.5, k + 0.5).multiplyScalar(this.voxelSize / n).add(voxelMin);
                     let inside = false;
                     this.axons.forEach(axon => {
                         if (axon.inside(p)) inside = true;
@@ -330,49 +338,49 @@ export default class {
                         if (x < 0 || x >= mc.size) continue;
                         if (y < 0 || y >= mc.size) continue;
                         if (z < 0 || z >= mc.size) continue;
-                        const p = new THREE.Vector3(x, y, z).divideScalar(mc.size).sub(pos);
-                        p.applyMatrix3(new THREE.Matrix3().getInverse(shape));
+                        const p = new Vector3(x, y, z).divideScalar(mc.size).sub(pos);
+                        p.applyMatrix3(new Matrix3().getInverse(shape));
                         const val = metaballSize / (0.000001 + p.dot(p)) - 1;
                         if (val > 0) mc.field[mc.size2 * z + mc.size * y + x] += val;
                     }
                 }
             }
         };
-        const scene = new THREE.Scene();
-        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-        const light = new THREE.DirectionalLight(0xffffff, 0.4);
+        const scene = new Scene();
+        scene.add(new AmbientLight(0xffffff, 0.4));
+        const light = new DirectionalLight(0xffffff, 0.4);
         light.position.set(0, 1, 0);
         scene.add(light);
         scene.add(wireframeCube(this.voxelSize));
         scene.add(wireframeCube(this.gridSize));
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
-            const mc = new MarchingCubes(64, new THREE.MeshPhongMaterial({ color: "#ffffff" }), true, false);
+            const mc = new MarchingCubes(64, new MeshPhongMaterial({ color: "#ffffff" }), true, false);
             mc.isolation = 1;
             axon.joints.forEach(joint => {
                 const bb = joint.boundingBox();
                 addEllipsoid(
                     mc,
-                    joint.pos.clone().divideScalar(this.voxelSize).add(new THREE.Vector3(0.5, 0.5, 0.5)),
+                    joint.pos.clone().divideScalar(this.voxelSize).add(new Vector3(0.5, 0.5, 0.5)),
                     joint.shape.clone().multiplyScalar(1 / this.voxelSize),
                     bb.min
                         .divideScalar(this.voxelSize)
-                        .add(new THREE.Vector3(0.5, 0.5, 0.5))
+                        .add(new Vector3(0.5, 0.5, 0.5))
                         .multiplyScalar(mc.size)
                         .floor()
-                        .max(new THREE.Vector3(0, 0, 0)),
+                        .max(new Vector3(0, 0, 0)),
                     bb.max
                         .divideScalar(this.voxelSize)
-                        .add(new THREE.Vector3(0.5, 0.5, 0.5))
+                        .add(new Vector3(0.5, 0.5, 0.5))
                         .multiplyScalar(mc.size)
                         .ceil()
-                        .min(new THREE.Vector3(mc.size, mc.size, mc.size))
+                        .min(new Vector3(mc.size, mc.size, mc.size))
                 );
             });
             scene.add(
-                new THREE.Mesh(
+                new Mesh(
                     mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2),
-                    new THREE.MeshPhongMaterial({ color: "#ffffff" })
+                    new MeshPhongMaterial({ color: "#ffffff" })
                 )
             );
         });
