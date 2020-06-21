@@ -28,25 +28,13 @@ const wireframeCube = size =>
 
 export default class {
     constructor(voxelSize, gridSize, axonCount, jointCount) {
-        const scene = new Scene();
-        scene.add(new AmbientLight(0xffffff, 0.4));
-        const light = new DirectionalLight(0xffffff, 0.4);
-        light.position.set(0, 1, 0);
-        scene.add(light);
-
-        scene.add(wireframeCube(voxelSize));
-        scene.add(wireframeCube(gridSize));
-
-        const mesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
-        this.scene = scene;
         this.jointCount = jointCount;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
         this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 1], [0, 0.2]);
         this.axons = [];
-        for (let i = 0; i < axonCount; ++i)
-            this.addAxon(randomPosition().multiplyScalar(3), randomPosition(), 0.5, 0, scene, mesh);
+        for (let i = 0; i < axonCount; ++i) this.addAxon(randomPosition().multiplyScalar(3), randomPosition(), 0.5, 0);
         let maxRadius = 0;
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.scale = 2 * maxRadius;
@@ -223,7 +211,7 @@ export default class {
         }
         return [overlap, a];
     }
-    addAxon(pos, dir, r, minSeparation, scene, mesh) {
+    addAxon(pos, dir, r, minSeparation) {
         const a = this.project(pos, dir);
         const b = this.project(pos, dir.negate());
         this.axons.forEach(axon => {
@@ -237,7 +225,7 @@ export default class {
             if (d3.length() < minSeparation * d) return false;
             if (d4.length() < minSeparation * d) return false;
         });
-        this.axons.push(new Axon(a, b, r, this.jointCount, scene, mesh));
+        this.axons.push(new Axon(a, b, r, this.jointCount));
         return true;
     }
     project(pos, dir) {
@@ -303,7 +291,7 @@ export default class {
         console.log("Volume fraction: " + 100 * vf + "%");
         return vf;
     }
-    generatePipes() {
+    generatePipes(scene) {
         const addEllipsoid = (mc, pos, shape, min, max) => {
             const metaballSize = Math.sqrt(2); // Between sqrt(2) and 2
             for (let x = min.x; x < max.x; x++) {
@@ -320,13 +308,6 @@ export default class {
                 }
             }
         };
-        const scene = new Scene();
-        scene.add(new AmbientLight(0xffffff, 0.4));
-        const light = new DirectionalLight(0xffffff, 0.4);
-        light.position.set(0, 1, 0);
-        scene.add(light);
-        scene.add(wireframeCube(this.voxelSize));
-        scene.add(wireframeCube(this.gridSize));
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
             const mc = new MarchingCubes(64, new MeshPhongMaterial({ color: "#ffffff" }), true, false);
@@ -361,13 +342,21 @@ export default class {
         return scene;
     }
     draw(mode) {
+        const scene = new Scene();
+        scene.add(new AmbientLight(0xffffff, 0.4));
+        const light = new DirectionalLight(0xffffff, 0.4);
+        light.position.set(0, 1, 0);
+        scene.add(light);
+        scene.add(wireframeCube(this.voxelSize));
+        scene.add(wireframeCube(this.gridSize));
+        const mesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
         switch (mode) {
             case "pipes":
-                return this.generatePipes();
+                return this.generatePipes(scene);
             case "ellipsoids":
             default:
-                this.axons.forEach(axon => axon.draw());
-                return this.scene;
+                this.axons.forEach(axon => axon.draw(scene, mesh));
+                return scene;
         }
     }
     exportFile() {

@@ -2,15 +2,13 @@ import Joint from "./joint";
 import { min, max, randomDirection } from "./helperFunctions";
 
 export default class {
-    constructor(start, end, radius, n, scene, mesh) {
+    constructor(start, end, radius, n) {
         this.start = start.clone();
         this.end = end.clone();
         this.radius = radius;
         this.joints = new Array(n).fill(true).map(
             (_, i) =>
                 new Joint(
-                    scene,
-                    mesh,
                     start
                         .clone()
                         .multiplyScalar(1 - i / (n - 1))
@@ -72,7 +70,7 @@ export default class {
         if (i === 0) return this.joints[j].inside(p);
         return this.inside(p, i - 1, 2 * j) || this.inside(p, i - 1, 2 * j + 1);
     }
-    draw() {
-        this.joints.forEach(joint => joint.draw());
+    draw(scene, mesh) {
+        this.joints.forEach(joint => joint.draw(scene, mesh));
     }
 }

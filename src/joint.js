@@ -2,13 +2,9 @@ import { Vector3, Matrix3 } from "three";
 import { addMatrix3, mat3ToMat4, outerProduct } from "./helperFunctions";
 
 export default class {
-    constructor(scene, mesh, pos) {
-        this.mesh = mesh.clone();
-        this.mesh.matrixAutoUpdate = false;
+    constructor(pos) {
         this.pos = pos.clone();
         this.shape = new Matrix3().multiplyScalar(0.1);
-        this.draw();
-        scene.add(this.mesh);
     }
     deform(axis, s) {
         this.shape.multiply(addMatrix3(outerProduct(axis, axis).multiplyScalar(s / axis.dot(axis)), new Matrix3()));
@@ -30,7 +26,10 @@ export default class {
     inside(p) {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
     }
-    draw() {
-        this.mesh.matrix = mat3ToMat4(this.shape).setPosition(this.pos);
+    draw(scene, mesh) {
+        const m = mesh.clone();
+        m.matrixAutoUpdate = false;
+        m.matrix = mat3ToMat4(this.shape).setPosition(this.pos);
+        scene.add(m);
     }
 }
