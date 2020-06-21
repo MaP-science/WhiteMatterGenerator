@@ -1,8 +1,44 @@
 import Joint from "./joint";
-import { min, max, randomDirection } from "./helperFunctions";
+import { randomDirection } from "./helperFunctions";
+
+const computeCollisionTree = joints => {
+    if (joints.length === 1)
+        return { joint: joints[0], aabb: joints[0].boundingBox(), containsPoint: p => joints[0].containsPoint(p) };
+    const a = computeCollisionTree(joints.slice(0, Math.ceil(joints.length / 2)));
+    const b = computeCollisionTree(joints.slice(Math.ceil(joints.length / 2)));
+    const aabb = a.aabb.clone().union(b.aabb);
+    return {
+        a: a,
+        b: b,
+        aabb: aabb,
+        containsPoint: p => {
+            if (!aabb.containsPoint(p)) return false;
+            return a.containsPoint(p) || b.containsPoint(p);
+        }
+    };
+};
+
+const collision = (a, b) => {
+    if (!a.aabb.intersectsBox(b.aabb)) return;
+    if (b.joint) {
+        if (a.joint) return a.joint.collision(b.joint);
+        return collision(b, a);
+    }
+    collision(b.a, a);
+    collision(b.b, a);
+};
+
+const getOverlap = (a, b) => {
+    if (!a.aabb.intersectsBox(b.aabb)) return 0;
+    if (b.joint) {
+        if (a.joint) return a.joint.getOverlap(b.joint);
+        return getOverlap(b, a);
+    }
+    return Math.max(getOverlap(b.a, a), getOverlap(b.b, a));
+};
 
 export default class {
-    constructor(start, end, radius, n) {
+    constructor(start, end, radius, deformation, minDiameter, n) {
         this.start = start.clone();
         this.end = end.clone();
         this.radius = radius;
@@ -12,28 +48,21 @@ export default class {
                     start
                         .clone()
                         .multiplyScalar(1 - i / (n - 1))
-                        .add(end.clone().multiplyScalar(i / (n - 1)))
+                        .add(end.clone().multiplyScalar(i / (n - 1))),
+                    radius,
+                    deformation,
+                    minDiameter
                 )
         );
-        this.boundingBoxes = [new Array(n)];
-        for (let i = 0; this.boundingBoxes[i].length > 1; ++i) {
-            this.boundingBoxes.push(new Array(Math.floor((this.boundingBoxes[i].length + 1) / 2)));
-        }
     }
-    computeBoundingBoxes() {
-        if (this.joints.length === 0) return;
-        this.joints.forEach((joint, i) => (this.boundingBoxes[0][i] = joint.boundingBox()));
-        for (let i = 1; i < this.boundingBoxes.length; ++i) {
-            for (let j = 0; 2 * j + 1 < this.boundingBoxes[i - 1].length; ++j) {
-                const a = min(this.boundingBoxes[i - 1][2 * j].min, this.boundingBoxes[i - 1][2 * j + 1].min);
-                const b = max(this.boundingBoxes[i - 1][2 * j].max, this.boundingBoxes[i - 1][2 * j + 1].max);
-                this.boundingBoxes[i][j] = { min: a, max: b };
-            }
-            if (this.boundingBoxes[i - 1].length % 2)
-                this.boundingBoxes[i][this.boundingBoxes[i].length - 1] = this.boundingBoxes[i - 1][
-                    this.boundingBoxes[i - 1].length - 1
-                ];
-        }
+    computeCollisionTree() {
+        return computeCollisionTree(this.joints);
+    }
+    collision(axon) {
+        return collision(computeCollisionTree(this.joints), computeCollisionTree(axon.joints));
+    }
+    getOverlap(axon) {
+        return getOverlap(computeCollisionTree(this.joints), computeCollisionTree(axon.joints));
     }
     grow(amount, repeat) {
         this.joints.forEach(joint => {
@@ -57,18 +86,6 @@ export default class {
             this.joints[i].pos.add(d.multiplyScalar(c.clone().sub(this.joints[i].pos).dot(d)));
             this.joints[i].pos.add(c.clone().sub(this.joints[i].pos).multiplyScalar(amount));
         }
-    }
-    inside(p, i = -1, j = 0) {
-        if (i === -1) i = this.boundingBoxes.length - 1;
-        if (j >= this.boundingBoxes[i].length) return false;
-        if (this.boundingBoxes[i][j].min.x > p.x) return false;
-        if (this.boundingBoxes[i][j].min.y > p.y) return false;
-        if (this.boundingBoxes[i][j].min.z > p.z) return false;
-        if (this.boundingBoxes[i][j].max.x < p.x) return false;
-        if (this.boundingBoxes[i][j].max.y < p.y) return false;
-        if (this.boundingBoxes[i][j].max.z < p.z) return false;
-        if (i === 0) return this.joints[j].inside(p);
-        return this.inside(p, i - 1, 2 * j) || this.inside(p, i - 1, 2 * j + 1);
     }
     draw(scene, mesh) {
         this.joints.forEach(joint => joint.draw(scene, mesh));

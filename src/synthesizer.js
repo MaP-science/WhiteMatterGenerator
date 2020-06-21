@@ -18,7 +18,7 @@ import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Axon from "./axon";
 import Mapping from "./mapping";
 
-import { min, max, randomPosition, randomDirection } from "./helperFunctions";
+import { min, max, randomPosition } from "./helperFunctions";
 
 const wireframeCube = size =>
     new LineSegments(
@@ -63,153 +63,22 @@ export default class {
         this.axons.forEach(axon => axon.joints.forEach(joint => (joint.pos = min(max(joint.pos, gridMin), gridMax))));
     }
     collision() {
-        this.axons.forEach(axon => axon.computeBoundingBoxes());
         this.axons.forEach((a, i) => {
-            if (a.boundingBoxes.length === 0) return;
             this.axons.forEach((b, j) => {
                 if (i >= j) return;
-                if (b.boundingBoxes.length === 0) return;
-                this.collision2(a, b, a.boundingBoxes.length - 1, b.boundingBoxes.length - 1, 0, 0);
+                a.collision(b);
             });
         });
     }
-    collision2(a1, a2, i1, i2, j1, j2) {
-        if (i1 > i2) return this.collision2(a2, a1, i2, i1, j2, j1);
-        if (j1 >= a1.boundingBoxes[i1].length) return;
-        if (j2 >= a2.boundingBoxes[i2].length) return;
-        if (a1.boundingBoxes[i1][j1].min.x > a2.boundingBoxes[i2][j2].max.x) return;
-        if (a1.boundingBoxes[i1][j1].max.x < a2.boundingBoxes[i2][j2].min.x) return;
-        if (a1.boundingBoxes[i1][j1].min.y > a2.boundingBoxes[i2][j2].max.y) return;
-        if (a1.boundingBoxes[i1][j1].max.y < a2.boundingBoxes[i2][j2].min.y) return;
-        if (a1.boundingBoxes[i1][j1].min.z > a2.boundingBoxes[i2][j2].max.z) return;
-        if (a1.boundingBoxes[i1][j1].max.z < a2.boundingBoxes[i2][j2].min.z) return;
-        if (i2 === 0) return this.collision3(a1, a2, a1.joints[j1], a2.joints[j2]);
-        this.collision2(a1, a2, i1, i2 - 1, j1, 2 * j2);
-        this.collision2(a1, a2, i1, i2 - 1, j1, 2 * j2 + 1);
-    }
-    collision3(a1, a2, a, b) {
-        const d = b.pos.clone().sub(a.pos);
-        const dSqr = d.dot(d);
-        if (dSqr > 1) return;
-        if (dSqr < 0.00001) {
-            const r = new Vector3(0, 0, 0).add(
-                new Vector3(Math.random() * 0.01, Math.random() * 0.0001, Math.random() * 0.01)
-            );
-            a.pos.clone().sub(r);
-            b.pos.clone().add(r);
-            return;
-        }
-        let [axisLength, axis] = this.collisionAxis(a.pos, a.shape, b.pos, b.shape);
-        if (axisLength < 0) return;
-        // Collision resolution
-        // Updating shape
-        const c1 = a.extremum(axis).dot(axis);
-        const c2 = b.extremum(axis).dot(axis);
-        const delta1 = this.deformation.map(2 * c1);
-        const delta2 = this.deformation.map(2 * c2);
-        const mu1 = this.minDiameter.map(a1.radius * 2) / 2;
-        const mu2 = this.minDiameter.map(a2.radius * 2) / 2;
-        const s1 = Math.max((-delta1 * axisLength) / (2 * c1), mu1 / c1 - 1);
-        const s2 = Math.max((-delta2 * axisLength) / (2 * c2), mu2 / c2 - 1);
-        a.deform(axis, s1);
-        b.deform(axis, s2);
-        axisLength += s1 * c1 + s2 * c2;
-        // Updating position
-        axis.multiplyScalar(axisLength * 0.5);
-        a.pos.sub(axis);
-        b.pos.add(axis);
-    }
-    getMaxOverlap() {
-        this.axons.forEach(axon => axon.computeBoundingBoxes());
+    getOverlap() {
         let result = 0;
         this.axons.forEach((a, i) => {
-            if (a.boundingBoxes.length === 0) return;
             this.axons.forEach((b, j) => {
                 if (i >= j) return;
-                if (b.boundingBoxes.length === 0) return;
-                result = Math.max(
-                    result,
-                    this.getMaxOverlap2(a, b, a.boundingBoxes.length - 1, b.boundingBoxes.length - 1, 0, 0)
-                );
+                result = Math.max(result, a.getOverlap(b));
             });
         });
         return result;
-    }
-    getMaxOverlap2(a1, a2, i1, i2, j1, j2) {
-        if (i1 > i2) return this.getMaxOverlap2(a2, a1, i2, i1, j2, j1);
-        if (j1 >= a1.boundingBoxes[i1].length) return 0;
-        if (j2 >= a2.boundingBoxes[i2].length) return 0;
-        if (a1.boundingBoxes[i1][j1].min.x > a2.boundingBoxes[i2][j2].max.x) return 0;
-        if (a1.boundingBoxes[i1][j1].max.x < a2.boundingBoxes[i2][j2].min.x) return 0;
-        if (a1.boundingBoxes[i1][j1].min.y > a2.boundingBoxes[i2][j2].max.y) return 0;
-        if (a1.boundingBoxes[i1][j1].max.y < a2.boundingBoxes[i2][j2].min.y) return 0;
-        if (a1.boundingBoxes[i1][j1].min.z > a2.boundingBoxes[i2][j2].max.z) return 0;
-        if (a1.boundingBoxes[i1][j1].max.z < a2.boundingBoxes[i2][j2].min.z) return 0;
-        if (i2 === 0) return this.getMaxOverlap3(a1.joints[j1], a2.joints[j2]);
-        return Math.max(
-            this.getMaxOverlap2(a1, a2, i1, i2 - 1, j1, 2 * j2),
-            this.getMaxOverlap2(a1, a2, i1, i2 - 1, j1, 2 * j2 + 1)
-        );
-    }
-    getMaxOverlap3(a, b) {
-        if (b.pos.clone().sub(a.pos).length() > 1) return 0;
-        return Math.max(this.collisionAxis(a.pos, a.shape, b.pos, b.shape)[0], 0);
-    }
-    axisOverlap(p, A, q, B, axis) {
-        let Aaxis = axis.clone().applyMatrix3(A.clone().transpose());
-        let Baxis = axis.clone().applyMatrix3(B.clone().transpose());
-        const AaxisLength = Aaxis.length();
-        const BaxisLength = Baxis.length();
-        if (AaxisLength > 0.00001) Aaxis.normalize();
-        if (BaxisLength > 0.00001) Baxis.normalize();
-        return p
-            .clone()
-            .sub(q.clone())
-            .add(Aaxis.applyMatrix3(A).add(Baxis.applyMatrix3(B)))
-            .dot(axis);
-    }
-    collisionAxis(p, A, q, B) {
-        let a = q.clone().sub(p);
-        a.normalize();
-        let overlap = this.axisOverlap(p, A, q, B, a);
-        while (1) {
-            if (overlap < 0) return [overlap, a];
-            const r = randomDirection().multiplyScalar(0.1);
-            let b = a.clone().add(r);
-            b.normalize();
-            let o = this.axisOverlap(p, A, q, B, b);
-            if (o < overlap) {
-                a = b.clone();
-                overlap = o;
-                continue;
-            }
-            b = a.clone().multiplyScalar(2).sub(b);
-            o = this.axisOverlap(p, A, q, B, b);
-            if (o < overlap) {
-                a = b.clone();
-                overlap = o;
-                continue;
-            }
-            const d = a.clone().cross(b.clone().sub(a));
-            d.normalize().multiplyScalar(0.1);
-            b = a.clone().add(d);
-            b.normalize();
-            o = this.axisOverlap(p, A, q, B, b);
-            if (o < overlap) {
-                a = b.clone();
-                overlap = o;
-                continue;
-            }
-            b = a.clone().multiplyScalar(2).sub(b);
-            o = this.axisOverlap(p, A, q, B, b);
-            if (o < overlap) {
-                a = b.clone();
-                overlap = o;
-                continue;
-            }
-            break;
-        }
-        return [overlap, a];
     }
     addAxon(pos, dir, r, minSeparation) {
         const a = this.project(pos, dir);
@@ -225,7 +94,7 @@ export default class {
             if (d3.length() < minSeparation * d) return false;
             if (d4.length() < minSeparation * d) return false;
         });
-        this.axons.push(new Axon(a, b, r, this.jointCount));
+        this.axons.push(new Axon(a, b, r, this.deformation, this.minDiameter, this.jointCount));
         return true;
     }
     project(pos, dir) {
@@ -263,13 +132,14 @@ export default class {
     volumeFraction(n) {
         const voxelMin = new Vector3(-this.voxelSize / 2, -this.voxelSize / 2, -this.voxelSize / 2);
         let inCount = 0;
+        const trees = this.axons.map(axon => axon.computeCollisionTree());
         for (let i = 0; i < n; ++i) {
             for (let j = 0; j < n; ++j) {
                 for (let k = 0; k < n; ++k) {
                     const p = new Vector3(i + 0.5, j + 0.5, k + 0.5).multiplyScalar(this.voxelSize / n).add(voxelMin);
                     let inside = false;
-                    this.axons.forEach(axon => {
-                        if (axon.inside(p)) inside = true;
+                    trees.forEach(tree => {
+                        if (tree.containsPoint(p)) inside = true;
                     });
                     if (inside) ++inCount;
                 }
@@ -283,7 +153,7 @@ export default class {
         while (1) {
             this.keepInVoxel();
             this.collision();
-            const mo = this.getMaxOverlap();
+            const mo = this.getOverlap();
             console.log("Max overlap: " + mo * this.scale);
             if (mo < maxOverlap / this.scale) break;
         }
