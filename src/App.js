@@ -13,6 +13,7 @@ export default props => {
     const [synthesizer, setSynthesizer] = useState(null);
     const [frame, setFrame] = useState(0);
     const [viewMode, setViewMode] = useState("ellipsoids");
+    const [showCells, setShowCells] = useState(true);
     const [volumeFraction, setVolumeFraction] = useState(0);
     const [voxelSize, setVoxelSize] = useState(5);
     const [gridSize, setGridSize] = useState(10);
@@ -79,7 +80,7 @@ export default props => {
                         onClick={() => {
                             const s = new Synthesizer(voxelSize, gridSize, axonCount, jointCount, cellCount);
                             setSynthesizer(s);
-                            setScene(s.draw(viewMode));
+                            setScene(s.draw(viewMode, showCells));
                         }}>
                         Initialize
                     </button>
@@ -119,7 +120,7 @@ export default props => {
                                     setVolumeFraction(
                                         synthesizer.update(growSpeed, growRepeat, contractSpeed, maxOverlap)
                                     );
-                                    setScene(synthesizer.draw(viewMode));
+                                    setScene(synthesizer.draw(viewMode, showCells));
                                 }}>
                                 Grow
                             </button>
@@ -127,7 +128,7 @@ export default props => {
                                 onClick={() => {
                                     const vm = viewMode === "ellipsoids" ? "pipes" : "ellipsoids";
                                     setViewMode(vm);
-                                    setScene(synthesizer.draw(vm));
+                                    setScene(synthesizer.draw(vm, showCells));
                                 }}>
                                 View mode: {viewMode}
                             </button>
@@ -148,6 +149,13 @@ export default props => {
                                     }
                                 }}>
                                 Export as pipes
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowCells(!showCells);
+                                    setScene(synthesizer.draw(viewMode, !showCells));
+                                }}>
+                                Show cells: {String(showCells)}
                             </button>
                             <div>Volume fraction: {100 * volumeFraction}%</div>
                             <br />

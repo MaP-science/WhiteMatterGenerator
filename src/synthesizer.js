@@ -152,7 +152,7 @@ export default class {
         });
         return scene;
     }
-    draw(mode) {
+    draw(mode, showCells) {
         const scene = new Scene();
         scene.add(new AmbientLight(0xffffff, 0.4));
         const light = new DirectionalLight(0xffffff, 0.4);
@@ -160,8 +160,10 @@ export default class {
         scene.add(light);
         scene.add(wireframeCube(this.voxelSize));
         scene.add(wireframeCube(this.gridSize));
-        const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#0000ff" }));
-        this.cells.forEach(cell => cell.draw(scene, cellMesh));
+        if (showCells) {
+            const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#0000ff" }));
+            this.cells.forEach(cell => cell.draw(scene, cellMesh));
+        }
         const jointMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
         switch (mode) {
             case "pipes":
