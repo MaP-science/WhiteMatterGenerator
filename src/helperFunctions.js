@@ -46,3 +46,20 @@ export const outerProduct = (a, b) =>
         a.z * b.y,
         a.z * b.z
     );
+
+export const projectOntoCube = (pos, dir, size) => {
+    const projectCoord = (pos, dir, posCoord, dirCoord) => {
+        const scalar =
+            Math.abs(dirCoord) < 0.00001 ? 1e10 : (((dirCoord > 0 ? 1 : -1) * size) / 2 - posCoord) / dirCoord;
+        return pos.clone().add(dir.clone().multiplyScalar(scalar));
+    };
+    const p1 = projectCoord(pos, dir, pos.x, dir.x);
+    const p2 = projectCoord(pos, dir, pos.y, dir.y);
+    const p3 = projectCoord(pos, dir, pos.z, dir.z);
+    const dist1 = p1.clone().sub(pos).dot(dir);
+    const dist2 = p2.clone().sub(pos).dot(dir);
+    const dist3 = p3.clone().sub(pos).dot(dir);
+    if (dist1 < dist2 && dist1 < dist3) return p1;
+    if (dist2 < dist3) return p2;
+    return p3;
+};

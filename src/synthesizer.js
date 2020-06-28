@@ -18,7 +18,7 @@ import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Axon from "./axon";
 import Mapping from "./mapping";
 
-import { min, max, randomPosition } from "./helperFunctions";
+import { min, max, randomPosition, projectOntoCube } from "./helperFunctions";
 
 const wireframeCube = size =>
     new LineSegments(
@@ -81,8 +81,8 @@ export default class {
         return result;
     }
     addAxon(pos, dir, r, minSeparation) {
-        const a = this.project(pos, dir);
-        const b = this.project(pos, dir.negate());
+        const a = projectOntoCube(pos, dir, this.gridSize);
+        const b = projectOntoCube(pos, dir.negate(), this.gridSize);
         this.axons.forEach(axon => {
             const d1 = axon.start.clone().sub(a);
             const d2 = axon.start.clone().sub(b);
@@ -96,38 +96,6 @@ export default class {
         });
         this.axons.push(new Axon(a, b, r, this.deformation, this.minDiameter, this.jointCount));
         return true;
-    }
-    project(pos, dir) {
-        const p1 = this.projectX(pos, dir);
-        const p2 = this.projectY(pos, dir);
-        const p3 = this.projectZ(pos, dir);
-        const d1 = p1.clone().sub(pos);
-        const d2 = p2.clone().sub(pos);
-        const d3 = p3.clone().sub(pos);
-        const dist1 = d1.dot(dir);
-        const dist2 = d2.dot(dir);
-        const dist3 = d3.dot(dir);
-        if (dist1 < dist2 && dist1 < dist3) return p1;
-        if (dist2 < dist3) return p2;
-        return p3;
-    }
-    projectX(pos, dir) {
-        if (Math.abs(dir.x) < 0.00001) return pos.clone().add(dir.clone().multiplyScalar(1e10));
-        return pos
-            .clone()
-            .add(dir.clone().multiplyScalar((((dir.x > 0 ? 1 : -1) * this.gridSize) / 2 - pos.x) / dir.x));
-    }
-    projectY(pos, dir) {
-        if (Math.abs(dir.y) < 0.00001) return pos.clone().add(dir.clone().multiplyScalar(1e10));
-        return pos
-            .clone()
-            .add(dir.clone().multiplyScalar((((dir.y > 0 ? 1 : -1) * this.gridSize) / 2 - pos.y) / dir.y));
-    }
-    projectZ(pos, dir) {
-        if (Math.abs(dir.z) < 0.00001) return pos.clone().add(dir.clone().multiplyScalar(1e10));
-        return pos
-            .clone()
-            .add(dir.clone().multiplyScalar((((dir.z > 0 ? 1 : -1) * this.gridSize) / 2 - pos.z) / dir.z));
     }
     volumeFraction(n) {
         const voxelMin = new Vector3(-this.voxelSize / 2, -this.voxelSize / 2, -this.voxelSize / 2);
