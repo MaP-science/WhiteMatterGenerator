@@ -1,17 +1,5 @@
 import { Vector3, Matrix3, Box3 } from "three";
-import fmin from "fmin";
-import { addMatrix3, mat3ToMat4, outerProduct, randomDirection } from "./helperFunctions";
-
-const collisionAxis = (p, A, q, B) => {
-    const axisOverlap = param => {
-        const axis = new Vector3().fromArray(param).normalize();
-        const a = axis.clone().applyMatrix3(A.clone().transpose()).normalize().applyMatrix3(A);
-        const b = axis.clone().applyMatrix3(B.clone().transpose()).normalize().applyMatrix3(B);
-        return p.clone().sub(q).add(a).add(b).dot(axis);
-    };
-    const solution = fmin.nelderMead(axisOverlap, q.clone().sub(p).normalize().toArray());
-    return [solution.fx, new Vector3().fromArray(solution.x).normalize()];
-};
+import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum } from "./helperFunctions";
 
 export default class {
     constructor(pos, radius, deformation, minDiameter) {
@@ -21,20 +9,10 @@ export default class {
         this.minDiameter = minDiameter;
         this.shape = new Matrix3().multiplyScalar(0.1);
     }
-    deform(axis, s) {
-        this.shape.multiply(addMatrix3(outerProduct(axis, axis).multiplyScalar(s / axis.dot(axis)), new Matrix3()));
-    }
-    extremum(axis) {
-        const a = axis.clone();
-        a.applyMatrix3(this.shape.transpose());
-        const axisLength = a.length();
-        if (axisLength > 0.00001) a.divideScalar(axisLength);
-        return a.applyMatrix3(this.shape);
-    }
     boundingBox() {
-        const x = this.extremum(new Vector3(1, 0, 0)).dot(new Vector3(1, 0, 0));
-        const y = this.extremum(new Vector3(0, 1, 0)).dot(new Vector3(0, 1, 0));
-        const z = this.extremum(new Vector3(0, 0, 1)).dot(new Vector3(0, 0, 1));
+        const x = extremum(this.shape, new Vector3(1, 0, 0)).dot(new Vector3(1, 0, 0));
+        const y = extremum(this.shape, new Vector3(0, 1, 0)).dot(new Vector3(0, 1, 0));
+        const z = extremum(this.shape, new Vector3(0, 0, 1)).dot(new Vector3(0, 0, 1));
         const d = new Vector3(x, y, z);
         return new Box3(this.pos.clone().sub(d), this.pos.clone().add(d));
     }
@@ -55,16 +33,16 @@ export default class {
         if (axisLength < 0) return;
         // Collision resolution
         // Update shape
-        const c1 = this.extremum(axis).dot(axis);
-        const c2 = joint.extremum(axis).dot(axis);
+        const c1 = extremum(this.shape, axis).dot(axis);
+        const c2 = extremum(joint.shape, axis).dot(axis);
         const delta1 = this.deformation.map(c1 * 2) / (c1 * 2);
         const delta2 = this.deformation.map(c2 * 2) / (c2 * 2);
         const mu1 = this.minDiameter.map(this.radius * 2) / (c1 * 2);
         const mu2 = this.minDiameter.map(joint.radius * 2) / (c2 * 2);
         const s1 = Math.max(-axisLength * delta1, mu1 - 1);
         const s2 = Math.max(-axisLength * delta2, mu2 - 1);
-        this.deform(axis, s1);
-        joint.deform(axis, s2);
+        deform(this.shape, axis, s1);
+        deform(joint.shape, axis, s2);
         axisLength += s1 * c1 + s2 * c2;
         // Update position
         axis.multiplyScalar(axisLength / 2);
@@ -74,6 +52,12 @@ export default class {
     getOverlap(joint) {
         if (joint.pos.clone().sub(this.pos).length() > 1) return 0;
         return Math.max(collisionAxis(this.pos, this.shape, joint.pos, joint.shape)[0], 0);
+    }
+    grow(amount, repeat) {
+        for (let i = 0; i < repeat; ++i) {
+            const p = randomDirection();
+            deform(this.shape, p, (this.radius / extremum(this.shape, p).dot(p) - 1) * amount);
+        }
     }
     draw(scene, mesh) {
         const m = mesh.clone();

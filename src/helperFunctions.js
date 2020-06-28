@@ -1,4 +1,5 @@
 import { Vector3, Matrix3, Matrix4 } from "three";
+import fmin from "fmin";
 
 export const min = (a, b) => new Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
 
@@ -62,4 +63,26 @@ export const projectOntoCube = (pos, dir, size) => {
     if (dist1 < dist2 && dist1 < dist3) return p1;
     if (dist2 < dist3) return p2;
     return p3;
+};
+
+export const collisionAxis = (p, A, q, B) => {
+    const axisOverlap = param => {
+        const axis = new Vector3().fromArray(param).normalize();
+        const a = axis.clone().applyMatrix3(A.clone().transpose()).normalize().applyMatrix3(A);
+        const b = axis.clone().applyMatrix3(B.clone().transpose()).normalize().applyMatrix3(B);
+        return p.clone().sub(q).add(a).add(b).dot(axis);
+    };
+    const solution = fmin.nelderMead(axisOverlap, q.clone().sub(p).normalize().toArray());
+    return [solution.fx, new Vector3().fromArray(solution.x).normalize()];
+};
+
+export const deform = (shape, axis, amount) =>
+    shape.multiply(addMatrix3(outerProduct(axis, axis).multiplyScalar(amount / axis.dot(axis)), new Matrix3()));
+
+export const extremum = (shape, axis) => {
+    const a = axis.clone();
+    a.applyMatrix3(shape.clone().transpose());
+    const axisLength = a.length();
+    if (axisLength > 0.00001) a.divideScalar(axisLength);
+    return a.applyMatrix3(shape);
 };

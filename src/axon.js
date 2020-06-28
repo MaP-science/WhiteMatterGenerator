@@ -2,7 +2,7 @@ import { Vector3, Matrix3, MeshPhongMaterial } from "three";
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Joint from "./joint";
-import { min, max, randomDirection } from "./helperFunctions";
+import { min, max } from "./helperFunctions";
 
 const computeCollisionTree = joints => {
     if (joints.length === 1)
@@ -75,12 +75,7 @@ export default class {
         return getOverlap(computeCollisionTree(this.joints), computeCollisionTree(axon.joints));
     }
     grow(amount, repeat) {
-        this.joints.forEach(joint => {
-            for (let j = 0; j < repeat; ++j) {
-                const p = randomDirection();
-                joint.deform(p, (this.radius / joint.extremum(p).dot(p) - 1) * amount);
-            }
-        });
+        this.joints.forEach(joint => joint.grow(amount, repeat));
     }
     contract(amount) {
         if (this.joints.length === 0) return;
