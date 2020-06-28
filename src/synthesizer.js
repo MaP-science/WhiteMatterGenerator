@@ -95,18 +95,20 @@ export default class {
             if (d3.length() < minSeparation * d) create = false;
             if (d4.length() < minSeparation * d) create = false;
         });
-        if (!create) return;
+        if (!create) return false;
         this.axons.push(new Axon(a, b, r, this.deformation, this.minDiameter, this.jointCount));
         return true;
     }
     volumeFraction(n) {
-        const voxelMin = new Vector3(-this.voxelSize / 2, -this.voxelSize / 2, -this.voxelSize / 2);
-        let inCount = 0;
         const trees = this.axons.map(axon => axon.computeCollisionTree());
+        let inCount = 0;
         for (let i = 0; i < n; ++i) {
             for (let j = 0; j < n; ++j) {
                 for (let k = 0; k < n; ++k) {
-                    const p = new Vector3(i + 0.5, j + 0.5, k + 0.5).multiplyScalar(this.voxelSize / n).add(voxelMin);
+                    const p = new Vector3(i + 0.5, j + 0.5, k + 0.5)
+                        .divideScalar(n)
+                        .sub(new Vector3(0.5, 0.5, 0.5))
+                        .multiplyScalar(this.voxelSize);
                     let inside = false;
                     trees.forEach(tree => {
                         if (tree.containsPoint(p)) inside = true;
