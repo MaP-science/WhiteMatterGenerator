@@ -83,8 +83,10 @@ export default class {
                 .multiplyScalar(1 / 2);
             const d = this.joints[i + 1].pos.clone().sub(this.joints[i - 1].pos);
             d.normalize();
-            this.joints[i].pos.add(d.multiplyScalar(c.clone().sub(this.joints[i].pos).dot(d)));
-            this.joints[i].pos.add(c.clone().sub(this.joints[i].pos).multiplyScalar(amount));
+            c.sub(this.joints[i].pos);
+            this.joints[i].pos.add(d.multiplyScalar(c.dot(d)));
+            c.multiplyScalar(amount);
+            this.joints[i].pos.add(c);
         }
     }
     draw(scene, mesh) {

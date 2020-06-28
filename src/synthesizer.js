@@ -40,16 +40,16 @@ export default class {
         this.scale = 2 * maxRadius;
         this.gridSize /= this.scale;
         this.voxelSize /= this.scale;
-        for (let i = 0; i < this.deformation.values.length; ++i) {
-            this.deformation.values[i].x /= this.scale;
-            this.deformation.valuesInverse[i].y /= this.scale;
-        }
-        for (let i = 0; i < this.minDiameter.values.length; ++i) {
-            this.minDiameter.values[i].x /= this.scale;
-            this.minDiameter.values[i].y /= this.scale;
-            this.minDiameter.valuesInverse[i].x /= this.scale;
-            this.minDiameter.valuesInverse[i].y /= this.scale;
-        }
+        this.deformation.values.forEach(value => (value.x /= this.scale));
+        this.deformation.valuesInverse.forEach(value => (value.x /= this.scale));
+        this.minDiameter.values.forEach(value => {
+            value.x /= this.scale;
+            value.y /= this.scale;
+        });
+        this.minDiameter.valuesInverse.forEach(value => {
+            valuesInverse.x /= this.scale;
+            valuesInverse.y /= this.scale;
+        });
         this.axons.forEach(axon => {
             axon.start.multiplyScalar(1 / this.scale);
             axon.end.multiplyScalar(1 / this.scale);
