@@ -2,28 +2,18 @@ import { Vector3, Matrix3, Box3 } from "three";
 import { addMatrix3, mat3ToMat4, outerProduct, randomDirection } from "./helperFunctions";
 
 const axisOverlap = (p, A, q, B, axis) => {
-    let Aaxis = axis.clone().applyMatrix3(A.clone().transpose());
-    let Baxis = axis.clone().applyMatrix3(B.clone().transpose());
-    const AaxisLength = Aaxis.length();
-    const BaxisLength = Baxis.length();
-    if (AaxisLength > 0.00001) Aaxis.normalize();
-    if (BaxisLength > 0.00001) Baxis.normalize();
-    return p
-        .clone()
-        .sub(q.clone())
-        .add(Aaxis.applyMatrix3(A).add(Baxis.applyMatrix3(B)))
-        .dot(axis);
+    const a = axis.clone().applyMatrix3(A.clone().transpose()).normalize().applyMatrix3(A);
+    const b = axis.clone().applyMatrix3(B.clone().transpose()).normalize().applyMatrix3(B);
+    return p.clone().sub(q).add(a).add(b).dot(axis);
 };
 
 const collisionAxis = (p, A, q, B) => {
-    let a = q.clone().sub(p);
-    a.normalize();
+    let a = q.clone().sub(p).normalize();
     let overlap = axisOverlap(p, A, q, B, a);
     while (1) {
         if (overlap < 0) return [overlap, a];
         const r = randomDirection().multiplyScalar(0.1);
-        let b = a.clone().add(r);
-        b.normalize();
+        let b = a.clone().add(r).normalize();
         let o = axisOverlap(p, A, q, B, b);
         if (o < overlap) {
             a = b.clone();
@@ -39,8 +29,7 @@ const collisionAxis = (p, A, q, B) => {
         }
         const d = a.clone().cross(b.clone().sub(a));
         d.normalize().multiplyScalar(0.1);
-        b = a.clone().add(d);
-        b.normalize();
+        b = a.clone().add(d).normalize();
         o = axisOverlap(p, A, q, B, b);
         if (o < overlap) {
             a = b.clone();
