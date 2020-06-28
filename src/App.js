@@ -61,7 +61,7 @@ export default props => {
                 <div ref={mount} style={{ flex: 1 }} />
                 <div style={{ flex: 1 }}>
                     <p>Setup:</p>
-                    <label>Innver voxel size: </label>
+                    <label>Inner voxel size: </label>
                     <input type="number" value={voxelSize} onChange={e => setVoxelSize(Number(e.target.value))} />
                     <br />
                     <label>Outer voxel size: </label>
