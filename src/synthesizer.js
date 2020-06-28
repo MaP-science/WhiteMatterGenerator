@@ -1,6 +1,5 @@
 import {
     Vector3,
-    Matrix3,
     LineSegments,
     CubeGeometry,
     EdgesGeometry,
@@ -14,11 +13,10 @@ import {
 } from "three";
 
 import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter";
-import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Axon from "./axon";
 import Mapping from "./mapping";
 
-import { min, max, randomPosition, projectOntoCube } from "./helperFunctions";
+import { randomPosition, projectOntoCube } from "./helperFunctions";
 
 const wireframeCube = size =>
     new LineSegments(
@@ -58,9 +56,7 @@ export default class {
         });
     }
     keepInVoxel() {
-        const gridMin = new Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
-        const gridMax = new Vector3(this.gridSize / 2, this.gridSize / 2, this.gridSize / 2);
-        this.axons.forEach(axon => axon.joints.forEach(joint => (joint.pos = min(max(joint.pos, gridMin), gridMax))));
+        this.axons.forEach(axon => axon.keepInVoxel());
     }
     collision() {
         this.axons.forEach((a, i) => {
@@ -96,7 +92,9 @@ export default class {
             if (d4.length() < minSeparation * d) create = false;
         });
         if (!create) return false;
-        this.axons.push(new Axon(a, b, r, this.deformation, this.minDiameter, this.jointCount));
+        this.axons.push(
+            new Axon(a, b, r, this.deformation, this.minDiameter, this.jointCount, this.voxelSize, this.gridSize)
+        );
         return true;
     }
     volumeFraction(n) {
@@ -134,52 +132,9 @@ export default class {
         return vf;
     }
     generatePipes(scene) {
-        const addEllipsoid = (mc, pos, shape, min, max) => {
-            const metaballSize = Math.sqrt(2); // Between sqrt(2) and 2
-            for (let x = min.x; x < max.x; x++) {
-                for (let y = min.y; y < max.y; y++) {
-                    for (let z = min.z; z < max.z; z++) {
-                        if (x < 0 || x >= mc.size) continue;
-                        if (y < 0 || y >= mc.size) continue;
-                        if (z < 0 || z >= mc.size) continue;
-                        const p = new Vector3(x, y, z).divideScalar(mc.size).sub(pos);
-                        p.applyMatrix3(new Matrix3().getInverse(shape));
-                        const val = metaballSize / (0.000001 + p.dot(p)) - 1;
-                        if (val > 0) mc.field[mc.size2 * z + mc.size * y + x] += val;
-                    }
-                }
-            }
-        };
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
-            const mc = new MarchingCubes(64, new MeshPhongMaterial({ color: "#ffffff" }), true, false);
-            mc.isolation = 1;
-            axon.joints.forEach(joint => {
-                const bb = joint.boundingBox();
-                addEllipsoid(
-                    mc,
-                    joint.pos.clone().divideScalar(this.voxelSize).add(new Vector3(0.5, 0.5, 0.5)),
-                    joint.shape.clone().multiplyScalar(1 / this.voxelSize),
-                    bb.min
-                        .divideScalar(this.voxelSize)
-                        .add(new Vector3(0.5, 0.5, 0.5))
-                        .multiplyScalar(mc.size)
-                        .floor()
-                        .max(new Vector3(0, 0, 0)),
-                    bb.max
-                        .divideScalar(this.voxelSize)
-                        .add(new Vector3(0.5, 0.5, 0.5))
-                        .multiplyScalar(mc.size)
-                        .ceil()
-                        .min(new Vector3(mc.size, mc.size, mc.size))
-                );
-            });
-            scene.add(
-                new Mesh(
-                    mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2),
-                    new MeshPhongMaterial({ color: "#ffffff" })
-                )
-            );
+            scene.add(new Mesh(axon.generatePipe(), new MeshPhongMaterial({ color: "#ffffff" })));
         });
         return scene;
     }
