@@ -100,20 +100,20 @@ export default class {
         let [axisLength, axis] = collisionAxis(this.pos, this.shape, joint.pos, joint.shape);
         if (axisLength < 0) return;
         // Collision resolution
-        // Updating shape
+        // Update shape
         const c1 = this.extremum(axis).dot(axis);
         const c2 = joint.extremum(axis).dot(axis);
-        const delta1 = this.deformation.map(2 * c1);
-        const delta2 = this.deformation.map(2 * c2);
-        const mu1 = this.minDiameter.map(this.radius * 2) / 2;
-        const mu2 = this.minDiameter.map(joint.radius * 2) / 2;
-        const s1 = Math.max((-delta1 * axisLength) / (2 * c1), mu1 / c1 - 1);
-        const s2 = Math.max((-delta2 * axisLength) / (2 * c2), mu2 / c2 - 1);
+        const delta1 = this.deformation.map(c1 * 2) / (c1 * 2);
+        const delta2 = this.deformation.map(c2 * 2) / (c2 * 2);
+        const mu1 = this.minDiameter.map(this.radius * 2) / (c1 * 2);
+        const mu2 = this.minDiameter.map(joint.radius * 2) / (c2 * 2);
+        const s1 = Math.max(-axisLength * delta1, mu1 - 1);
+        const s2 = Math.max(-axisLength * delta2, mu2 - 1);
         this.deform(axis, s1);
         joint.deform(axis, s2);
         axisLength += s1 * c1 + s2 * c2;
-        // Updating position
-        axis.multiplyScalar(axisLength * 0.5);
+        // Update position
+        axis.multiplyScalar(axisLength / 2);
         this.pos.sub(axis);
         joint.pos.add(axis);
     }
