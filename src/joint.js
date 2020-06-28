@@ -74,7 +74,7 @@ export default class {
         const a = axis.clone();
         a.applyMatrix3(this.shape.transpose());
         const axisLength = a.length();
-        if (axisLength > 0.00001) a.multiplyScalar(1 / axisLength);
+        if (axisLength > 0.00001) a.divideScalar(axisLength);
         return a.applyMatrix3(this.shape);
     }
     boundingBox() {

@@ -51,10 +51,10 @@ export default class {
             value.y /= this.scale;
         });
         this.axons.forEach(axon => {
-            axon.start.multiplyScalar(1 / this.scale);
-            axon.end.multiplyScalar(1 / this.scale);
+            axon.start.divideScalar(this.scale);
+            axon.end.divideScalar(this.scale);
             axon.radius /= this.scale;
-            axon.joints.forEach(joint => joint.pos.multiplyScalar(1 / this.scale));
+            axon.joints.forEach(joint => joint.pos.divideScalar(this.scale));
         });
     }
     keepInVoxel() {

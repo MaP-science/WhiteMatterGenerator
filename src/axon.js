@@ -80,7 +80,7 @@ export default class {
             const c = this.joints[i + 1].pos
                 .clone()
                 .add(this.joints[i - 1].pos)
-                .multiplyScalar(1 / 2);
+                .divideScalar(2);
             const d = this.joints[i + 1].pos.clone().sub(this.joints[i - 1].pos);
             d.normalize();
             c.sub(this.joints[i].pos);
