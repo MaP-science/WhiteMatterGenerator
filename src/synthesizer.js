@@ -47,8 +47,8 @@ export default class {
             value.y /= this.scale;
         });
         this.minDiameter.valuesInverse.forEach(value => {
-            valuesInverse.x /= this.scale;
-            valuesInverse.y /= this.scale;
+            value.x /= this.scale;
+            value.y /= this.scale;
         });
         this.axons.forEach(axon => {
             axon.start.multiplyScalar(1 / this.scale);
