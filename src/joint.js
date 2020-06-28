@@ -1,51 +1,16 @@
 import { Vector3, Matrix3, Box3 } from "three";
+import fmin from "fmin";
 import { addMatrix3, mat3ToMat4, outerProduct, randomDirection } from "./helperFunctions";
 
-const axisOverlap = (p, A, q, B, axis) => {
-    const a = axis.clone().applyMatrix3(A.clone().transpose()).normalize().applyMatrix3(A);
-    const b = axis.clone().applyMatrix3(B.clone().transpose()).normalize().applyMatrix3(B);
-    return p.clone().sub(q).add(a).add(b).dot(axis);
-};
-
 const collisionAxis = (p, A, q, B) => {
-    let a = q.clone().sub(p).normalize();
-    let overlap = axisOverlap(p, A, q, B, a);
-    while (1) {
-        if (overlap < 0) return [overlap, a];
-        const r = randomDirection().multiplyScalar(0.1);
-        let b = a.clone().add(r).normalize();
-        let o = axisOverlap(p, A, q, B, b);
-        if (o < overlap) {
-            a = b.clone();
-            overlap = o;
-            continue;
-        }
-        b = a.clone().multiplyScalar(2).sub(b);
-        o = axisOverlap(p, A, q, B, b);
-        if (o < overlap) {
-            a = b.clone();
-            overlap = o;
-            continue;
-        }
-        const d = a.clone().cross(b.clone().sub(a));
-        d.normalize().multiplyScalar(0.1);
-        b = a.clone().add(d).normalize();
-        o = axisOverlap(p, A, q, B, b);
-        if (o < overlap) {
-            a = b.clone();
-            overlap = o;
-            continue;
-        }
-        b = a.clone().multiplyScalar(2).sub(b);
-        o = axisOverlap(p, A, q, B, b);
-        if (o < overlap) {
-            a = b.clone();
-            overlap = o;
-            continue;
-        }
-        break;
-    }
-    return [overlap, a];
+    const axisOverlap = param => {
+        const axis = new Vector3().fromArray(param).normalize();
+        const a = axis.clone().applyMatrix3(A.clone().transpose()).normalize().applyMatrix3(A);
+        const b = axis.clone().applyMatrix3(B.clone().transpose()).normalize().applyMatrix3(B);
+        return p.clone().sub(q).add(a).add(b).dot(axis);
+    };
+    const solution = fmin.nelderMead(axisOverlap, q.clone().sub(p).normalize().toArray());
+    return [solution.fx, new Vector3().fromArray(solution.x).normalize()];
 };
 
 export default class {
