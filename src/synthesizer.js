@@ -82,18 +82,20 @@ export default class {
     }
     addAxon(pos, dir, r, minSeparation) {
         const a = projectOntoCube(pos, dir, this.gridSize);
-        const b = projectOntoCube(pos, dir.negate(), this.gridSize);
+        const b = projectOntoCube(pos, dir.clone().negate(), this.gridSize);
+        let create = true;
         this.axons.forEach(axon => {
             const d1 = axon.start.clone().sub(a);
             const d2 = axon.start.clone().sub(b);
             const d3 = axon.end.clone().sub(a);
             const d4 = axon.end.clone().sub(b);
             const d = axon.radius + r;
-            if (d1.length() < minSeparation * d) return false;
-            if (d2.length() < minSeparation * d) return false;
-            if (d3.length() < minSeparation * d) return false;
-            if (d4.length() < minSeparation * d) return false;
+            if (d1.length() < minSeparation * d) create = false;
+            if (d2.length() < minSeparation * d) create = false;
+            if (d3.length() < minSeparation * d) create = false;
+            if (d4.length() < minSeparation * d) create = false;
         });
+        if (!create) return;
         this.axons.push(new Axon(a, b, r, this.deformation, this.minDiameter, this.jointCount));
         return true;
     }
