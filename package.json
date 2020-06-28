@@ -12,7 +12,8 @@
         "react-dom": "^16.13.1",
         "react-scripts": "3.4.1",
         "three": "^0.117.1",
-        "three-orbit-controls": "^82.1.0"
+        "three-orbit-controls": "^82.1.0",
+        "uuid": "^8.2.0"
     },
     "scripts": {
         "start": "react-scripts start",

@@ -1,5 +1,6 @@
 import { Vector3, Matrix3, Box3 } from "three";
-import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum } from "./helperFunctions";
+import { v4 } from "uuid";
+import { addMatrix3, mat3ToMat4, randomDirection, collisionAxis, deform, extremum } from "./helperFunctions";
 
 export default class {
     constructor(pos, radius, deformation, minDiameter, movement) {
@@ -9,6 +10,8 @@ export default class {
         this.minDiameter = minDiameter;
         this.movement = movement;
         this.shape = new Matrix3().multiplyScalar(0.1);
+        this.id = v4();
+        this.axisCache = {};
     }
     boundingBox() {
         const x = extremum(this.shape, new Vector3(1, 0, 0)).dot(new Vector3(1, 0, 0));
@@ -20,7 +23,7 @@ export default class {
     containsPoint(p) {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
     }
-    collision(joint) {
+    collision(joint, maxOverlap) {
         const d = joint.pos.clone().sub(this.pos);
         const dSqr = d.dot(d);
         if (dSqr > 1) return;
@@ -30,7 +33,15 @@ export default class {
             joint.pos.add(r);
             return;
         }
-        let [axisLength, axis] = collisionAxis(this.pos, this.shape, joint.pos, joint.shape);
+        let [axisLength, axis] = collisionAxis(
+            this.pos,
+            this.shape,
+            joint.pos,
+            joint.shape,
+            this.axisCache[joint.id],
+            maxOverlap
+        );
+        this.axisCache[joint.id] = axis;
         if (axisLength < 0) return;
         // Collision resolution
         // Update shape
@@ -50,11 +61,26 @@ export default class {
         this.pos.sub(axis.clone().multiplyScalar(this.movement * w));
         joint.pos.add(axis.clone().multiplyScalar(joint.movement * w));
     }
-    getOverlap(joint) {
+    getOverlap(joint, maxOverlap) {
         if (joint.pos.clone().sub(this.pos).length() > 1) return 0;
-        return Math.max(collisionAxis(this.pos, this.shape, joint.pos, joint.shape)[0], 0);
+        let [axisLength, axis] = collisionAxis(
+            this.pos,
+            this.shape,
+            joint.pos,
+            joint.shape,
+            this.axisCache[joint.id],
+            maxOverlap
+        );
+        this.axisCache[joint.id] = axis;
+        return Math.max(axisLength, 0);
     }
     grow(amount, repeat) {
+        const w = 0.1;
+        this.shape = addMatrix3(
+            this.shape.clone().multiplyScalar(1 - w),
+            new Matrix3().multiplyScalar(this.radius * w)
+        );
+        return;
         for (let i = 0; i < repeat; ++i) {
             const p = randomDirection();
             deform(this.shape, p, (this.radius / extremum(this.shape, p).dot(p) - 1) * amount);

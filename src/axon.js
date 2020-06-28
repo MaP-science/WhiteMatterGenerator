@@ -21,23 +21,23 @@ const computeCollisionTree = joints => {
     };
 };
 
-const collision = (a, b) => {
+const collision = (a, b, maxOverlap) => {
     if (!a.aabb.intersectsBox(b.aabb)) return;
     if (b.joint) {
-        if (a.joint) return a.joint.collision(b.joint);
+        if (a.joint) return a.joint.collision(b.joint, maxOverlap);
         return collision(b, a);
     }
-    collision(b.a, a);
-    collision(b.b, a);
+    collision(b.a, a, maxOverlap);
+    collision(b.b, a, maxOverlap);
 };
 
-const getOverlap = (a, b) => {
+const getOverlap = (a, b, maxOverlap) => {
     if (!a.aabb.intersectsBox(b.aabb)) return 0;
     if (b.joint) {
-        if (a.joint) return a.joint.getOverlap(b.joint);
-        return getOverlap(b, a);
+        if (a.joint) return a.joint.getOverlap(b.joint, maxOverlap);
+        return getOverlap(b, a, maxOverlap);
     }
-    return Math.max(getOverlap(b.a, a), getOverlap(b.b, a));
+    return Math.max(getOverlap(b.a, a, maxOverlap), getOverlap(b.b, a, maxOverlap));
 };
 
 export default class {
@@ -60,6 +60,7 @@ export default class {
         );
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
+        this.collisionTree = this.computeCollisionTree();
     }
     keepInVoxel() {
         const gridMin = new Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
@@ -67,13 +68,13 @@ export default class {
         this.joints.forEach(joint => (joint.pos = min(max(joint.pos, gridMin), gridMax)));
     }
     computeCollisionTree() {
-        return computeCollisionTree(this.joints);
+        this.collisionTree = computeCollisionTree(this.joints);
     }
-    collision(axon) {
-        return collision(computeCollisionTree(this.joints), computeCollisionTree(axon.joints));
+    collision(axon, maxOverlap) {
+        return collision(this.collisionTree, axon.collisionTree, maxOverlap);
     }
-    getOverlap(axon) {
-        return getOverlap(computeCollisionTree(this.joints), computeCollisionTree(axon.joints));
+    getOverlap(axon, maxOverlap) {
+        return getOverlap(this.collisionTree, axon.collisionTree, maxOverlap);
     }
     grow(amount, repeat) {
         this.joints.forEach(joint => joint.grow(amount, repeat));

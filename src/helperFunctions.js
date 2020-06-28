@@ -65,14 +65,20 @@ export const projectOntoCube = (pos, dir, size) => {
     return p3;
 };
 
-export const collisionAxis = (p, A, q, B) => {
+export const collisionAxis = (p, A, q, B, init, maxOverlap) => {
+    const Ainv = new Matrix3().getInverse(A);
+    const Binv = new Matrix3().getInverse(A);
     const axisOverlap = param => {
         const axis = new Vector3().fromArray(param).normalize();
-        const a = axis.clone().applyMatrix3(A.clone().transpose()).normalize().applyMatrix3(A);
-        const b = axis.clone().applyMatrix3(B.clone().transpose()).normalize().applyMatrix3(B);
+        const a = axis.clone().applyMatrix3(Ainv).normalize().applyMatrix3(A);
+        const b = axis.clone().applyMatrix3(Binv).normalize().applyMatrix3(B);
         return p.clone().sub(q).add(a).add(b).dot(axis);
     };
-    const solution = fmin.nelderMead(axisOverlap, q.clone().sub(p).normalize().toArray());
+    if (init) {
+        const ao = axisOverlap(init.toArray());
+        if (ao < maxOverlap) return [ao, init];
+    }
+    const solution = fmin.nelderMead(axisOverlap, (init || q.clone().sub(p).normalize()).toArray());
     return [solution.fx, new Vector3().fromArray(solution.x).normalize()];
 };
 
@@ -81,7 +87,7 @@ export const deform = (shape, axis, amount) =>
 
 export const extremum = (shape, axis) => {
     const a = axis.clone();
-    a.applyMatrix3(shape.clone().transpose());
+    a.applyMatrix3(new Matrix3().getInverse(shape));
     const axisLength = a.length();
     if (axisLength > 0.00001) a.divideScalar(axisLength);
     return a.applyMatrix3(shape);

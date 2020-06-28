@@ -30,31 +30,17 @@ export default class {
         this.jointCount = jointCount;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
-        this.deformation = new Mapping([0, 0.8, 2], [0, 0.5, 1]);
-        this.minDiameter = new Mapping([0, 1], [0, 0.2]);
+        this.deformation = new Mapping([0, 0.4, 1], [0, 0.5, 1]);
+        this.minDiameter = new Mapping([0, 2], [0, 0.2]);
         this.axons = [];
-        for (let i = 0; i < axonCount; ++i) this.addAxon(randomPosition().multiplyScalar(3), randomPosition(), 0.5, 0);
+        for (let i = 0; i < axonCount; ++i)
+            for (let j = 0; j < 100; ++j) {
+                if (this.addAxon(randomPosition().multiplyScalar(gridSize), randomPosition(), 0.5 + Math.random(), 0.8))
+                    break;
+            }
+        console.log("Total number of axons: " + this.axons.length);
         let maxRadius = 0;
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
-        this.scale = 2 * maxRadius;
-        this.gridSize /= this.scale;
-        this.voxelSize /= this.scale;
-        this.deformation.values.forEach(value => (value.x /= this.scale));
-        this.deformation.valuesInverse.forEach(value => (value.x /= this.scale));
-        this.minDiameter.values.forEach(value => {
-            value.x /= this.scale;
-            value.y /= this.scale;
-        });
-        this.minDiameter.valuesInverse.forEach(value => {
-            value.x /= this.scale;
-            value.y /= this.scale;
-        });
-        this.axons.forEach(axon => {
-            axon.start.divideScalar(this.scale);
-            axon.end.divideScalar(this.scale);
-            axon.radius /= this.scale;
-            axon.joints.forEach(joint => joint.pos.divideScalar(this.scale));
-        });
         this.cells = [];
         for (let i = 0; i < cellCount; ++i) {
             const cell = new Joint(
@@ -71,21 +57,25 @@ export default class {
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
     }
-    collision() {
+    collision(maxOverlap) {
+        this.axons.forEach(a => a.computeCollisionTree());
         this.axons.forEach((a, i) => {
             this.axons.forEach((b, j) => {
                 if (i >= j) return;
-                a.collision(b);
+                a.collision(b, maxOverlap);
             });
         });
-        this.axons.forEach((a, i) => a.joints.forEach(joint => this.cells.forEach(c => joint.collision(c))));
+        this.axons.forEach((a, i) =>
+            a.joints.forEach(joint => this.cells.forEach(c => joint.collision(c, maxOverlap)))
+        );
     }
-    getOverlap() {
-        let result = 0;
+    getOverlap(maxOverlap) {
+        let result = maxOverlap;
+        this.axons.forEach(a => a.computeCollisionTree());
         this.axons.forEach((a, i) => {
             this.axons.forEach((b, j) => {
                 if (i >= j) return;
-                result = Math.max(result, a.getOverlap(b));
+                result = Math.max(result, a.getOverlap(b, result));
             });
         });
         return result;
@@ -112,7 +102,7 @@ export default class {
         return true;
     }
     volumeFraction(n) {
-        const trees = this.axons.map(axon => axon.computeCollisionTree());
+        this.axons.forEach(axon => axon.computeCollisionTree());
         let inCount = 0;
         for (let i = 0; i < n; ++i) {
             for (let j = 0; j < n; ++j) {
@@ -122,8 +112,8 @@ export default class {
                         .sub(new Vector3(0.5, 0.5, 0.5))
                         .multiplyScalar(this.voxelSize);
                     let inside = false;
-                    trees.forEach(tree => {
-                        if (tree.containsPoint(p)) inside = true;
+                    this.axons.forEach(axon => {
+                        if (axon.collisionTree.containsPoint(p)) inside = true;
                     });
                     if (inside) ++inCount;
                 }
@@ -136,12 +126,12 @@ export default class {
         this.axons.forEach(axon => axon.contract(contractSpeed));
         while (1) {
             this.keepInVoxel();
-            this.collision();
-            const mo = this.getOverlap();
-            console.log("Max overlap: " + mo * this.scale);
-            if (mo < maxOverlap / this.scale) break;
+            this.collision(maxOverlap);
+            const mo = this.getOverlap(maxOverlap * 0.999);
+            console.log("Max overlap: " + mo);
+            if (mo < maxOverlap) break;
         }
-        const vf = this.volumeFraction(50);
+        const vf = this.volumeFraction(20);
         console.log("Volume fraction: " + 100 * vf + "%");
         return vf;
     }
