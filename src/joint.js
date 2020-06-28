@@ -92,11 +92,9 @@ export default class {
         const dSqr = d.dot(d);
         if (dSqr > 1) return;
         if (dSqr < 0.00001) {
-            const r = new Vector3(0, 0, 0).add(
-                new Vector3(Math.random() * 0.01, Math.random() * 0.0001, Math.random() * 0.01)
-            );
-            this.pos.clone().sub(r);
-            joint.pos.clone().add(r);
+            const r = randomDirection().multiplyScalar(0.0001);
+            this.pos.sub(r);
+            joint.pos.add(r);
             return;
         }
         let [axisLength, axis] = collisionAxis(this.pos, this.shape, joint.pos, joint.shape);
