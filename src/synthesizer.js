@@ -14,6 +14,7 @@ import {
 
 import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter";
 import Axon from "./axon";
+import Joint from "./joint";
 import Mapping from "./mapping";
 
 import { randomPosition, projectOntoCube } from "./helperFunctions";
@@ -25,7 +26,7 @@ const wireframeCube = size =>
     );
 
 export default class {
-    constructor(voxelSize, gridSize, axonCount, jointCount) {
+    constructor(voxelSize, gridSize, axonCount, jointCount, cellCount) {
         this.jointCount = jointCount;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
@@ -54,6 +55,18 @@ export default class {
             axon.radius /= this.scale;
             axon.joints.forEach(joint => joint.pos.divideScalar(this.scale));
         });
+        this.cells = [];
+        for (let i = 0; i < cellCount; ++i) {
+            const cell = new Joint(
+                randomPosition().multiplyScalar(gridSize),
+                Math.random(),
+                new Mapping([0], [0]),
+                new Mapping([0], [0]),
+                0
+            );
+            cell.grow(0.1, 100);
+            this.cells.push(cell);
+        }
     }
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
@@ -65,6 +78,7 @@ export default class {
                 a.collision(b);
             });
         });
+        this.axons.forEach((a, i) => a.joints.forEach(joint => this.cells.forEach(c => joint.collision(c))));
     }
     getOverlap() {
         let result = 0;
@@ -93,7 +107,7 @@ export default class {
         });
         if (!create) return false;
         this.axons.push(
-            new Axon(a, b, r, this.deformation, this.minDiameter, this.jointCount, this.voxelSize, this.gridSize)
+            new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.jointCount, this.voxelSize, this.gridSize)
         );
         return true;
     }
@@ -146,13 +160,15 @@ export default class {
         scene.add(light);
         scene.add(wireframeCube(this.voxelSize));
         scene.add(wireframeCube(this.gridSize));
-        const mesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
+        const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#0000ff" }));
+        this.cells.forEach(cell => cell.draw(scene, cellMesh));
+        const jointMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
         switch (mode) {
             case "pipes":
                 return this.generatePipes(scene);
             case "ellipsoids":
             default:
-                this.axons.forEach(axon => axon.draw(scene, mesh));
+                this.axons.forEach(axon => axon.draw(scene, jointMesh));
                 return scene;
         }
     }

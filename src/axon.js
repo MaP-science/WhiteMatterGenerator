@@ -41,7 +41,7 @@ const getOverlap = (a, b) => {
 };
 
 export default class {
-    constructor(start, end, radius, deformation, minDiameter, n, voxelSize, gridSize) {
+    constructor(start, end, radius, deformation, minDiameter, movement, n, voxelSize, gridSize) {
         this.start = start.clone();
         this.end = end.clone();
         this.radius = radius;
@@ -54,7 +54,8 @@ export default class {
                         .add(end.clone().multiplyScalar(i / (n - 1))),
                     radius,
                     deformation,
-                    minDiameter
+                    minDiameter,
+                    movement
                 )
         );
         this.voxelSize = voxelSize;

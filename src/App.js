@@ -19,6 +19,7 @@ export default props => {
     const [maxOverlap, setMaxOverlap] = useState(0.1);
     const [axonCount, setAxonCount] = useState(20);
     const [jointCount, setJointCount] = useState(50);
+    const [cellCount, setCellCount] = useState(5);
     const [growSpeed, setGrowSpeed] = useState(0.01);
     const [growRepeat, setGrowRepeat] = useState(10);
     const [contractSpeed, setContractSpeed] = useState(0.01);
@@ -71,9 +72,12 @@ export default props => {
                     <label>Number of joints per axon: </label>
                     <input type="number" value={jointCount} onChange={e => setJointCount(Number(e.target.value))} />
                     <br />
+                    <label>Number of cells: </label>
+                    <input type="number" value={cellCount} onChange={e => setCellCount(Number(e.target.value))} />
+                    <br />
                     <button
                         onClick={() => {
-                            const s = new Synthesizer(voxelSize, gridSize, axonCount, jointCount);
+                            const s = new Synthesizer(voxelSize, gridSize, axonCount, jointCount, cellCount);
                             setSynthesizer(s);
                             setScene(s.draw(viewMode));
                         }}>

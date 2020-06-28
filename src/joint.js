@@ -2,11 +2,12 @@ import { Vector3, Matrix3, Box3 } from "three";
 import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum } from "./helperFunctions";
 
 export default class {
-    constructor(pos, radius, deformation, minDiameter) {
+    constructor(pos, radius, deformation, minDiameter, movement) {
         this.pos = pos.clone();
         this.radius = radius;
         this.deformation = deformation;
         this.minDiameter = minDiameter;
+        this.movement = movement;
         this.shape = new Matrix3().multiplyScalar(0.1);
     }
     boundingBox() {
@@ -36,18 +37,18 @@ export default class {
         const c1 = extremum(this.shape, axis).dot(axis);
         const c2 = extremum(joint.shape, axis).dot(axis);
         const delta1 = this.deformation.map(c1 * 2) / (c1 * 2);
-        const delta2 = this.deformation.map(c2 * 2) / (c2 * 2);
+        const delta2 = joint.deformation.map(c2 * 2) / (c2 * 2);
         const mu1 = this.minDiameter.map(this.radius * 2) / (c1 * 2);
-        const mu2 = this.minDiameter.map(joint.radius * 2) / (c2 * 2);
+        const mu2 = joint.minDiameter.map(joint.radius * 2) / (c2 * 2);
         const s1 = Math.max(-axisLength * delta1, mu1 - 1);
         const s2 = Math.max(-axisLength * delta2, mu2 - 1);
         deform(this.shape, axis, s1);
         deform(joint.shape, axis, s2);
         axisLength += s1 * c1 + s2 * c2;
         // Update position
-        axis.multiplyScalar(axisLength / 2);
-        this.pos.sub(axis);
-        joint.pos.add(axis);
+        const w = axisLength / (this.movement + joint.movement);
+        this.pos.sub(axis.clone().multiplyScalar(this.movement * w));
+        joint.pos.add(axis.clone().multiplyScalar(joint.movement * w));
     }
     getOverlap(joint) {
         if (joint.pos.clone().sub(this.pos).length() > 1) return 0;
