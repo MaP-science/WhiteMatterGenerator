@@ -62,7 +62,6 @@ export default class {
         joint.pos.add(axis.clone().multiplyScalar(joint.movement * w));
     }
     getOverlap(joint, maxOverlap) {
-        if (joint.pos.clone().sub(this.pos).length() > 1) return 0;
         let [axisLength, axis] = collisionAxis(
             this.pos,
             this.shape,

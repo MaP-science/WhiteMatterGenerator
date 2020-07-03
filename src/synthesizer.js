@@ -42,17 +42,22 @@ export default class {
         let maxRadius = 0;
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.cells = [];
-        for (let i = 0; i < cellCount; ++i) {
+        for (let i = 0; this.cells.length < cellCount && i < 10 * cellCount; ++i) {
             const cell = new Joint(
                 randomPosition().multiplyScalar(gridSize),
-                Math.random(),
+                Math.random() * 10,
                 new Mapping([0], [0]),
                 new Mapping([0], [0]),
                 0
             );
             cell.grow(0.1, 100);
-            this.cells.push(cell);
+            let create = true;
+            this.cells.forEach(c => {
+                if (c.getOverlap(cell, Infinity) > 0) create = false;
+            });
+            if (create) this.cells.push(cell);
         }
+        console.log("Total number of cells: " + this.cells.length);
     }
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
