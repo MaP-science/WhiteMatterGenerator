@@ -6,6 +6,7 @@ import Synthesizer from "./synthesizer";
 
 export default props => {
     const mount = useRef();
+    const maxOverlap = 0.0001;
     const [controls, setControls] = useState(null);
     const [scene, setScene] = useState(null);
     const [camera, setCamera] = useState(null);
@@ -17,13 +18,13 @@ export default props => {
     const [volumeFraction, setVolumeFraction] = useState(0);
     const [voxelSize, setVoxelSize] = useState(5);
     const [gridSize, setGridSize] = useState(6);
-    const [maxOverlap, setMaxOverlap] = useState(0.0001);
     const [axonCount, setAxonCount] = useState(200);
     const [jointCount, setJointCount] = useState(50);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
     const [growRepeat, setGrowRepeat] = useState(20);
     const [contractSpeed, setContractSpeed] = useState(0.01);
+    const [minSeparation, setMinSeparation] = useState(0.3);
     const source = "https://gitlab.gbar.dtu.dk/s164179/axon-generator-toolbox";
 
     useEffect(() => {
@@ -76,9 +77,23 @@ export default props => {
                     <label>Number of cells: </label>
                     <input type="number" value={cellCount} onChange={e => setCellCount(Number(e.target.value))} />
                     <br />
+                    <label>Minimum separation of axon endpoints (0: none, 1: completely separated): </label>
+                    <input
+                        type="number"
+                        value={minSeparation}
+                        onChange={e => setMinSeparation(Number(e.target.value))}
+                    />
+                    <br />
                     <button
                         onClick={() => {
-                            const s = new Synthesizer(voxelSize, gridSize, axonCount, jointCount, cellCount);
+                            const s = new Synthesizer(
+                                voxelSize,
+                                gridSize,
+                                axonCount,
+                                jointCount,
+                                cellCount,
+                                minSeparation
+                            );
                             setSynthesizer(s);
                             setScene(s.draw(viewMode, showCells));
                         }}>
@@ -106,13 +121,6 @@ export default props => {
                                 type="number"
                                 value={contractSpeed}
                                 onChange={e => setContractSpeed(Number(e.target.value))}
-                            />
-                            <br />
-                            <label>Max overlap: </label>
-                            <input
-                                type="number"
-                                value={maxOverlap}
-                                onChange={e => setMaxOverlap(Number(e.target.value))}
                             />
                             <br />
                             <button

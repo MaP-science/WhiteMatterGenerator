@@ -26,7 +26,7 @@ const wireframeCube = size =>
     );
 
 export default class {
-    constructor(voxelSize, gridSize, axonCount, jointCount, cellCount) {
+    constructor(voxelSize, gridSize, axonCount, jointCount, cellCount, minSeparation) {
         this.jointCount = jointCount;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
@@ -35,7 +35,14 @@ export default class {
         this.axons = [];
         for (let i = 0; i < axonCount; ++i)
             for (let j = 0; j < 100; ++j) {
-                if (this.addAxon(randomPosition().multiplyScalar(gridSize), randomPosition(), 0.5 + Math.random(), 0.8))
+                if (
+                    this.addAxon(
+                        randomPosition().multiplyScalar(gridSize),
+                        randomPosition(),
+                        0.5 + Math.random(),
+                        minSeparation
+                    )
+                )
                     break;
             }
         console.log("Total number of axons: " + this.axons.length);
