@@ -57,7 +57,7 @@ export default class {
                 new Mapping([0], [0]),
                 0
             );
-            cell.grow(0.1, 100);
+            cell.grow(0.1);
             let create = true;
             this.cells.forEach(c => {
                 if (c.getOverlap(cell, Infinity) > 0) create = false;
@@ -133,10 +133,10 @@ export default class {
         }
         return inCount / (n * n * n);
     }
-    update(growSpeed, growRepeat, contractSpeed, maxOverlap) {
-        this.axons.forEach(axon => axon.grow(growSpeed, growRepeat));
+    update(growSpeed, contractSpeed, maxOverlap) {
+        this.axons.forEach(axon => axon.grow(growSpeed));
         this.axons.forEach(axon => axon.contract(contractSpeed));
-        while (1) {
+        for (let i = 0; i < 100; ++i) {
             this.keepInVoxel();
             this.collision(maxOverlap);
             const mo = this.getOverlap(maxOverlap * 0.999);
@@ -177,10 +177,6 @@ export default class {
         }
     }
     exportFile() {
-        try {
-            return new OBJExporter().parse(this.generatePipes(), {});
-        } catch (err) {
-            console.log(err);
-        }
+        return new OBJExporter().parse(this.generatePipes(new Scene()), {});
     }
 }

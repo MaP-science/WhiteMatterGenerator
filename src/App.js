@@ -22,7 +22,6 @@ export default props => {
     const [jointCount, setJointCount] = useState(50);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
-    const [growRepeat, setGrowRepeat] = useState(20);
     const [contractSpeed, setContractSpeed] = useState(0.01);
     const [minSeparation, setMinSeparation] = useState(0.3);
     const source = "https://gitlab.gbar.dtu.dk/s164179/axon-generator-toolbox";
@@ -102,18 +101,11 @@ export default props => {
                     {synthesizer && (
                         <>
                             <p>After setup:</p>
-                            <label>Grow speed: </label>
+                            <label>Grow speed (between 0 and 1): </label>
                             <input
                                 type="number"
                                 value={growSpeed}
                                 onChange={e => setGrowSpeed(Number(e.target.value))}
-                            />
-                            <br />
-                            <label>Grow repeat: </label>
-                            <input
-                                type="number"
-                                value={growRepeat}
-                                onChange={e => setGrowRepeat(Number(e.target.value))}
                             />
                             <br />
                             <label>Contract speed: </label>
@@ -125,9 +117,7 @@ export default props => {
                             <br />
                             <button
                                 onClick={() => {
-                                    setVolumeFraction(
-                                        synthesizer.update(growSpeed, growRepeat, contractSpeed, maxOverlap)
-                                    );
+                                    setVolumeFraction(synthesizer.update(growSpeed, contractSpeed, maxOverlap));
                                     setScene(synthesizer.draw(viewMode, showCells));
                                 }}>
                                 Grow

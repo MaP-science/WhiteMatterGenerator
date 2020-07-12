@@ -76,8 +76,8 @@ export default class {
     getOverlap(axon, maxOverlap) {
         return getOverlap(this.collisionTree, axon.collisionTree, maxOverlap);
     }
-    grow(amount, repeat) {
-        this.joints.forEach(joint => joint.grow(amount, repeat));
+    grow(amount) {
+        this.joints.forEach(joint => joint.grow(amount));
     }
     contract(amount) {
         if (this.joints.length === 0) return;

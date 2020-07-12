@@ -1,6 +1,6 @@
 import { Vector3, Matrix3, Box3 } from "three";
 import { v4 } from "uuid";
-import { addMatrix3, mat3ToMat4, randomDirection, collisionAxis, deform, extremum } from "./helperFunctions";
+import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum } from "./helperFunctions";
 
 export default class {
     constructor(pos, radius, deformation, minDiameter, movement) {
@@ -26,7 +26,6 @@ export default class {
     collision(joint, maxOverlap) {
         const d = joint.pos.clone().sub(this.pos);
         const dSqr = d.dot(d);
-        if (dSqr > 1) return;
         if (dSqr < 0.00001) {
             const r = randomDirection().multiplyScalar(0.0001);
             this.pos.sub(r);
@@ -73,17 +72,24 @@ export default class {
         this.axisCache[joint.id] = axis;
         return Math.max(axisLength, 0);
     }
-    grow(amount, repeat) {
-        const w = 0.1;
-        this.shape = addMatrix3(
-            this.shape.clone().multiplyScalar(1 - w),
-            new Matrix3().multiplyScalar(this.radius * w)
+    grow(amount) {
+        const s = this.shape.clone().transpose().multiply(this.shape);
+        const sx = Math.sqrt(s.elements[0]);
+        const sy = Math.sqrt(s.elements[4]);
+        const sz = Math.sqrt(s.elements[8]);
+        this.shape.multiply(
+            new Matrix3().set(
+                1 + amount * (this.radius / sx - 1),
+                0,
+                0,
+                0,
+                1 + amount * (this.radius / sy - 1),
+                0,
+                0,
+                0,
+                1 + amount * (this.radius / sz - 1)
+            )
         );
-        return;
-        for (let i = 0; i < repeat; ++i) {
-            const p = randomDirection();
-            deform(this.shape, p, (this.radius / extremum(this.shape, p).dot(p) - 1) * amount);
-        }
     }
     draw(scene, mesh) {
         const m = mesh.clone();
