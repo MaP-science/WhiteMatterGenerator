@@ -33,8 +33,6 @@ export default class {
         this.deformation = new Mapping([0, 0.4, 1], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 2], [0, 0.2]);
         this.axons = [];
-        let maxRadius = 0;
-        this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.cells = [];
     }
     keepInVoxel() {
