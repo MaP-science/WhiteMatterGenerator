@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { PerspectiveCamera, WebGLRenderer } from "three";
+import { Vector3, PerspectiveCamera, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import Synthesizer from "./synthesizer";
@@ -25,6 +25,8 @@ export default props => {
     const [contractSpeed, setContractSpeed] = useState(0.01);
     const [minSeparation, setMinSeparation] = useState(0.3);
     const source = "https://gitlab.gbar.dtu.dk/s164179/axon-generator-toolbox";
+    const inputFileRef = useRef();
+    const [inputFile, setInputFile] = useState(null);
 
     useEffect(() => {
         if (!mount.current) return;
@@ -54,6 +56,29 @@ export default props => {
         if (controls) controls.update();
         if (renderer && scene && camera) renderer.render(scene, camera);
     }, [controls, renderer, scene, camera, frame]);
+
+    const readInputFile = data => {
+        console.log(data);
+        setVoxelSize(data.voxelSizeInner);
+        setGridSize(data.voxelSizeOuter);
+        setJointCount(data.jointsPerAxon);
+
+        const s = new Synthesizer(data.voxelSizeInner, data.voxelSizeOuter, data.jointsPerAxon);
+        data.axons.forEach(axon =>
+            s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter, 0)
+        );
+        setSynthesizer(s);
+        setScene(s.draw(viewMode, showCells));
+    };
+
+    useEffect(() => {
+        if (!inputFile) return;
+        const reader = new FileReader();
+        reader.onload = async event => {
+            readInputFile(JSON.parse(event.target.result));
+        };
+        reader.readAsText(inputFile);
+    }, [inputFile]);
 
     return (
         <>
@@ -85,19 +110,30 @@ export default props => {
                     <br />
                     <button
                         onClick={() => {
-                            const s = new Synthesizer(
-                                voxelSize,
-                                gridSize,
-                                axonCount,
-                                jointCount,
-                                cellCount,
-                                minSeparation
-                            );
+                            const s = new Synthesizer(voxelSize, gridSize, jointCount);
+                            s.addAxonsRandomly(axonCount, minSeparation);
+                            s.addCellsRandomly(cellCount);
                             setSynthesizer(s);
                             setScene(s.draw(viewMode, showCells));
                         }}>
                         Initialize
                     </button>
+                    {" or "}
+                    <button
+                        onClick={() => {
+                            inputFileRef.current.click();
+                        }}>
+                        upload input file
+                    </button>
+                    <input
+                        ref={inputFileRef}
+                        type="file"
+                        style={{ display: "none" }}
+                        onClick={e => (e.target.value = null)}
+                        onChange={e => {
+                            setInputFile(e.target.files[0]);
+                        }}
+                    />
                     {synthesizer && (
                         <>
                             <p>After setup:</p>

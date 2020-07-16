@@ -26,45 +26,16 @@ const wireframeCube = size =>
     );
 
 export default class {
-    constructor(voxelSize, gridSize, axonCount, jointCount, cellCount, minSeparation) {
+    constructor(voxelSize, gridSize, jointCount) {
         this.jointCount = jointCount;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
         this.deformation = new Mapping([0, 0.4, 1], [0, 0.5, 1]);
         this.minDiameter = new Mapping([0, 2], [0, 0.2]);
         this.axons = [];
-        for (let i = 0; i < axonCount; ++i)
-            for (let j = 0; j < 100; ++j) {
-                if (
-                    this.addAxon(
-                        randomPosition().multiplyScalar(gridSize),
-                        randomPosition(),
-                        0.5 + Math.random(),
-                        minSeparation
-                    )
-                )
-                    break;
-            }
-        console.log("Total number of axons: " + this.axons.length);
         let maxRadius = 0;
         this.axons.forEach(axon => (maxRadius = Math.max(maxRadius, axon.radius)));
         this.cells = [];
-        for (let i = 0; this.cells.length < cellCount && i < 10 * cellCount; ++i) {
-            const cell = new Joint(
-                randomPosition().multiplyScalar(gridSize),
-                Math.random() * 10,
-                new Mapping([0], [0]),
-                new Mapping([0], [0]),
-                0
-            );
-            cell.grow(0.1);
-            let create = true;
-            this.cells.forEach(c => {
-                if (c.getOverlap(cell, Infinity) > 0) create = false;
-            });
-            if (create) this.cells.push(cell);
-        }
-        console.log("Total number of cells: " + this.cells.length);
     }
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
@@ -92,6 +63,21 @@ export default class {
         });
         return result;
     }
+    addAxonsRandomly(axonCount, minSeparation) {
+        for (let i = 0; i < axonCount; ++i)
+            for (let j = 0; j < 100; ++j) {
+                if (
+                    this.addAxon(
+                        randomPosition().multiplyScalar(this.gridSize),
+                        randomPosition(),
+                        0.5 + Math.random(),
+                        minSeparation
+                    )
+                )
+                    break;
+            }
+        console.log("Total number of axons: " + this.axons.length);
+    }
     addAxon(pos, dir, r, minSeparation) {
         const a = projectOntoCube(pos, dir, this.gridSize);
         const b = projectOntoCube(pos, dir.clone().negate(), this.gridSize);
@@ -112,6 +98,24 @@ export default class {
             new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.jointCount, this.voxelSize, this.gridSize)
         );
         return true;
+    }
+    addCellsRandomly(cellCount) {
+        for (let i = 0; this.cells.length < cellCount && i < 10 * cellCount; ++i) {
+            const cell = new Joint(
+                randomPosition().multiplyScalar(this.gridSize),
+                Math.random() * 10,
+                new Mapping([0], [0]),
+                new Mapping([0], [0]),
+                0
+            );
+            cell.grow(0.1);
+            let create = true;
+            this.cells.forEach(c => {
+                if (c.getOverlap(cell, Infinity) > 0) create = false;
+            });
+            if (create) this.cells.push(cell);
+        }
+        console.log("Total number of cells: " + this.cells.length);
     }
     volumeFraction(n) {
         this.axons.forEach(axon => axon.computeCollisionTree());
