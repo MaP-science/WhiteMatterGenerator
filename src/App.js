@@ -3,6 +3,7 @@ import { Vector3, PerspectiveCamera, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import Synthesizer from "./synthesizer";
+import Mapping from "./mapping";
 
 export default props => {
     const mount = useRef();
@@ -62,8 +63,16 @@ export default props => {
         setVoxelSize(data.voxelSizeInner);
         setGridSize(data.voxelSizeOuter);
         setJointCount(data.jointsPerAxon);
+        setGrowSpeed(data.grow);
+        setContractSpeed(data.contract);
 
-        const s = new Synthesizer(data.voxelSizeInner, data.voxelSizeOuter, data.jointsPerAxon);
+        const s = new Synthesizer(
+            data.voxelSizeInner,
+            data.voxelSizeOuter,
+            data.jointsPerAxon,
+            new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
+            new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
+        );
         data.axons.forEach(axon =>
             s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter, 0)
         );
@@ -110,7 +119,13 @@ export default props => {
                     <br />
                     <button
                         onClick={() => {
-                            const s = new Synthesizer(voxelSize, gridSize, jointCount);
+                            const s = new Synthesizer(
+                                voxelSize,
+                                gridSize,
+                                jointCount,
+                                new Mapping([0, 0.4, 1], [0, 0.5, 1]),
+                                new Mapping([0, 2], [0, 0.2])
+                            );
                             s.addAxonsRandomly(axonCount, minSeparation);
                             s.addCellsRandomly(cellCount);
                             setSynthesizer(s);

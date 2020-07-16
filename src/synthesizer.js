@@ -26,12 +26,12 @@ const wireframeCube = size =>
     );
 
 export default class {
-    constructor(voxelSize, gridSize, jointCount) {
+    constructor(voxelSize, gridSize, jointCount, deformation, minDiameter) {
         this.jointCount = jointCount;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
-        this.deformation = new Mapping([0, 0.4, 1], [0, 0.5, 1]);
-        this.minDiameter = new Mapping([0, 2], [0, 0.2]);
+        this.deformation = deformation;
+        this.minDiameter = minDiameter;
         this.axons = [];
         this.cells = [];
     }
