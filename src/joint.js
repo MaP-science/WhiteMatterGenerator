@@ -9,7 +9,7 @@ export default class {
         this.deformation = deformation;
         this.minDiameter = minDiameter;
         this.movement = movement;
-        this.shape = new Matrix3().multiplyScalar(0.1);
+        this.shape = new Matrix3().multiplyScalar(this.minDiameter.map(this.radius * 2) / 2);
         this.id = v4();
         this.axisCache = {};
     }

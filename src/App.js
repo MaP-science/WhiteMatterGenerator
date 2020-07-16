@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Vector3, PerspectiveCamera, WebGLRenderer } from "three";
+import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import Synthesizer from "./synthesizer";
@@ -59,7 +59,6 @@ export default props => {
     }, [controls, renderer, scene, camera, frame]);
 
     const readInputFile = data => {
-        console.log(data);
         setVoxelSize(data.voxelSizeInner);
         setGridSize(data.voxelSizeOuter);
         setJointCount(data.jointsPerAxon);
@@ -76,6 +75,7 @@ export default props => {
         data.axons.forEach(axon =>
             s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter, 0)
         );
+        data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
         setSynthesizer(s);
         setScene(s.draw(viewMode, showCells));
     };
@@ -127,7 +127,7 @@ export default props => {
                                 new Mapping([0, 2], [0, 0.2])
                             );
                             s.addAxonsRandomly(axonCount, minSeparation);
-                            s.addCellsRandomly(cellCount);
+                            s.addCellsRandomly(cellCount, minSeparation);
                             setSynthesizer(s);
                             setScene(s.draw(viewMode, showCells));
                         }}>

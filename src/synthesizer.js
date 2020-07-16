@@ -80,40 +80,46 @@ export default class {
         const a = projectOntoCube(pos, dir, this.gridSize);
         const b = projectOntoCube(pos, dir.clone().negate(), this.gridSize);
         let create = true;
-        this.axons.forEach(axon => {
-            const d1 = axon.start.clone().sub(a);
-            const d2 = axon.start.clone().sub(b);
-            const d3 = axon.end.clone().sub(a);
-            const d4 = axon.end.clone().sub(b);
-            const d = axon.radius + r;
-            if (d1.length() < minSeparation * d) create = false;
-            if (d2.length() < minSeparation * d) create = false;
-            if (d3.length() < minSeparation * d) create = false;
-            if (d4.length() < minSeparation * d) create = false;
-        });
+        [this.axons.map(axon => [axon.joints[0], axon.joints[axon.joints.length - 1]]).flat(), this.cells]
+            .flat()
+            .forEach(joint => {
+                const d1 = joint.pos.clone().sub(a);
+                const d2 = joint.pos.clone().sub(b);
+                const d = joint.radius + r;
+                if (d1.length() < minSeparation * d) create = false;
+                if (d2.length() < minSeparation * d) create = false;
+            });
         if (!create) return false;
         this.axons.push(
             new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.jointCount, this.voxelSize, this.gridSize)
         );
         return true;
     }
-    addCellsRandomly(cellCount) {
-        for (let i = 0; this.cells.length < cellCount && i < 10 * cellCount; ++i) {
-            const cell = new Joint(
-                randomPosition().multiplyScalar(this.gridSize),
-                Math.random() * 10,
-                new Mapping([0], [0]),
-                new Mapping([0], [0]),
-                0
-            );
-            cell.grow(0.1);
-            let create = true;
-            this.cells.forEach(c => {
-                if (c.getOverlap(cell, Infinity) > 0) create = false;
-            });
-            if (create) this.cells.push(cell);
-        }
+    addCellsRandomly(cellCount, minSeparation) {
+        for (let i = 0; i < cellCount; ++i)
+            for (let j = 0; j < 100; ++j) {
+                const p = randomPosition().multiplyScalar(this.gridSize);
+                const r = 0.1 + Math.random() * 0.5;
+                let create = true;
+                [this.axons.map(axon => [axon.joints[0], axon.joints[axon.joints.length - 1]]).flat(), this.cells]
+                    .flat()
+                    .forEach(joint => {
+                        const dist = joint.pos.clone().sub(p);
+                        const d = joint.radius + r;
+                        if (dist.length() < d) create = false;
+                    });
+                if (!create) continue;
+                const cell = new Joint(p, r, new Mapping([0], [0]), new Mapping([0, 1], [0, 1]), 0);
+                cell.grow(1);
+                this.cells.push(cell);
+                break;
+            }
         console.log("Total number of cells: " + this.cells.length);
+    }
+    addCell(pos, shape) {
+        const cell = new Joint(pos, 0, new Mapping([0], [0]), new Mapping([0], [0]), 0);
+        cell.shape = shape.clone();
+        this.cells.push(cell);
     }
     volumeFraction(n) {
         this.axons.forEach(axon => axon.computeCollisionTree());
