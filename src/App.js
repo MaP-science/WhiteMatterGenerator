@@ -120,6 +120,7 @@ export default props => {
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);
             setScene(s.draw(viewMode, showCells));
+            setUpdateState(s.updateState);
         };
         reader.readAsText(inputFile);
         setInputFile(null);
