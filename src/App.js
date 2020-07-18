@@ -5,6 +5,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";
 
+import InputFormat from "./inputFormat";
+
 export default props => {
     const mount = useRef();
     const maxOverlap = 0.0001;
@@ -92,7 +94,10 @@ export default props => {
         growSpeed,
         contractSpeed,
         maxOverlap,
-        volumeFraction
+        volumeFraction,
+        automaticGrowth,
+        growCount,
+        volumeFractionTarget
     ]);
 
     useEffect(() => {
@@ -284,12 +289,14 @@ export default props => {
                     )}
                 </div>
             </div>
-            <p>To get started:</p>
+            <b>To get started:</b>
             <ul>
                 <li>Press "Initialize"</li>
                 <li>Press "Perform 1 grow step" until the volume fraction is at least 30%</li>
                 <li>Switch the view mode to "pipes" to see the final result</li>
             </ul>
+            <br />
+            <InputFormat />
             <br />
             Source: <a href={source}>{source}</a>
         </>
