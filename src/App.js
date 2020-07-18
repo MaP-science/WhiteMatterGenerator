@@ -29,6 +29,7 @@ export default props => {
     const inputFileRef = useRef();
     const [inputFile, setInputFile] = useState(null);
     const [updateState, setUpdateState] = useState({});
+    const [growCount, setGrowCount] = useState(null);
 
     useEffect(() => {
         if (!mount.current) return;
@@ -68,6 +69,7 @@ export default props => {
         if (volumeFraction === updateState.volumeFraction) return;
         setVolumeFraction(updateState.volumeFraction);
         setScene(synthesizer.draw(viewMode, showCells));
+        setGrowCount(growCount === null ? 0 : growCount + 1);
     }, [
         controls,
         renderer,
@@ -196,8 +198,22 @@ export default props => {
                                 onClick={() =>
                                     setUpdateState({ ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) })
                                 }>
-                                Grow
+                                Perform 1 grow step
                             </button>
+                            <div>Volume fraction of inner voxel:</div>
+                            <ul>
+                                <li>Axons: {100 * (volumeFraction || ["", ""])[0]}%</li>
+                                <li>Cells: {100 * (volumeFraction || ["", ""])[1]}%</li>
+                                <li>
+                                    Total: {100 * ((volumeFraction || ["", ""])[0] + (volumeFraction || ["", ""])[1])}%
+                                </li>
+                            </ul>
+                            <br />
+                            <div>
+                                Status: {updateState.name}
+                                {updateState.progress !== undefined ? `, iteration ${updateState.progress}` : ""}
+                            </div>
+                            <div>Grow steps completed: {growCount}</div>
                             <button
                                 onClick={() => {
                                     const vm = viewMode === "ellipsoids" ? "pipes" : "ellipsoids";
@@ -231,19 +247,6 @@ export default props => {
                                 }}>
                                 Show cells: {String(showCells)}
                             </button>
-                            <div>Volume fraction of inner voxel:</div>
-                            <ul>
-                                <li>Axons: {100 * (volumeFraction || ["", ""])[0]}%</li>
-                                <li>Cells: {100 * (volumeFraction || ["", ""])[1]}%</li>
-                                <li>
-                                    Total: {100 * ((volumeFraction || ["", ""])[0] + (volumeFraction || ["", ""])[1])}%
-                                </li>
-                            </ul>
-                            <br />
-                            <div>
-                                Status: {updateState.name}
-                                {updateState.progress !== undefined ? `, iteration ${updateState.progress}` : ""}
-                            </div>
                         </>
                     )}
                 </div>
