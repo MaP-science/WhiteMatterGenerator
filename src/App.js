@@ -30,6 +30,7 @@ export default props => {
     const [inputFile, setInputFile] = useState(null);
     const [updateState, setUpdateState] = useState({});
     const [growCount, setGrowCount] = useState(null);
+    const [automaticGrowth, setAutomaticGrowth] = useState(false);
 
     useEffect(() => {
         if (!mount.current) return;
@@ -61,15 +62,16 @@ export default props => {
         if (!synthesizer) return;
         if (!updateState.name) return;
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
-        if (updateState.name !== "ready") {
+        if (updateState.name === "ready" && volumeFraction !== updateState.volumeFraction) {
+            setVolumeFraction(updateState.volumeFraction);
+            setScene(synthesizer.draw(viewMode, showCells));
+            setGrowCount(growCount === null ? 0 : growCount + 1);
+        }
+        if (updateState.name !== "ready" || automaticGrowth) {
             const us = { ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) };
             window.setTimeout(() => setUpdateState(us), 0);
             return;
         }
-        if (volumeFraction === updateState.volumeFraction) return;
-        setVolumeFraction(updateState.volumeFraction);
-        setScene(synthesizer.draw(viewMode, showCells));
-        setGrowCount(growCount === null ? 0 : growCount + 1);
     }, [
         controls,
         renderer,
@@ -194,12 +196,17 @@ export default props => {
                                 onChange={e => setContractSpeed(Number(e.target.value))}
                             />
                             <br />
-                            <button
-                                onClick={() =>
-                                    setUpdateState({ ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) })
-                                }>
-                                Perform 1 grow step
+                            <button onClick={() => setAutomaticGrowth(!automaticGrowth)}>
+                                Automatic growth: {automaticGrowth ? "on" : "off"}
                             </button>
+                            {!automaticGrowth && (
+                                <button
+                                    onClick={() =>
+                                        setUpdateState({ ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) })
+                                    }>
+                                    Perform 1 grow step
+                                </button>
+                            )}
                             <div>Volume fraction of inner voxel:</div>
                             <ul>
                                 <li>Axons: {100 * (volumeFraction || ["", ""])[0]}%</li>
