@@ -34,6 +34,7 @@ export default class {
         this.minDiameter = minDiameter;
         this.axons = [];
         this.cells = [];
+        this.updateState = { name: "ready" };
     }
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
@@ -148,18 +149,47 @@ export default class {
         return [axonCount / (n * n * n), cellCount / (n * n * n)];
     }
     update(growSpeed, contractSpeed, maxOverlap) {
-        this.axons.forEach(axon => axon.grow(growSpeed));
-        this.axons.forEach(axon => axon.contract(contractSpeed));
-        for (let i = 0; i < 100; ++i) {
-            this.keepInVoxel();
-            this.collision(maxOverlap);
-            const mo = this.getOverlap(maxOverlap * 0.999);
-            console.log("Max overlap: " + mo);
-            if (mo < maxOverlap) break;
+        switch (this.updateState.name) {
+            case "ready":
+                this.updateState = { name: "grow" };
+                break;
+            case "grow":
+                this.axons.forEach(axon => axon.grow(growSpeed));
+                this.updateState = { name: "contract" };
+                break;
+            case "contract":
+                this.axons.forEach(axon => axon.contract(contractSpeed));
+                this.updateState = { name: "keepInVoxel", progress: 0 };
+                break;
+            case "keepInVoxel":
+                this.keepInVoxel();
+                this.updateState.name = "collision";
+                break;
+            case "collision":
+                this.collision(maxOverlap);
+                this.updateState.name = "getOverlap";
+                break;
+            case "getOverlap":
+                const mo = this.getOverlap(maxOverlap * 0.999);
+                console.log("Max overlap: " + mo);
+                if (mo < maxOverlap) {
+                    this.updateState = { name: "volumeFraction", progress: 0 };
+                    break;
+                }
+                ++this.updateState.progress;
+                if (this.updateState.progress === 100) this.updateState = { name: "volumeFraction", progress: 0 };
+                else this.updateState.name = "keepInVoxel";
+                break;
+            case "volumeFraction":
+                const [avf, cvf] = this.volumeFraction(20);
+                console.log(`Volume fraction: ${100 * avf} % + ${100 * cvf} % = ${100 * (avf + cvf)} %`);
+                this.updateState = { name: "ready", volumeFraction: [avf, cvf] };
+                break;
+            default:
+                this.updateState = { name: "ready" };
+                break;
         }
-        const [avf, cvf] = this.volumeFraction(20);
-        console.log(`Volume fraction: ${100 * avf} % + ${100 * cvf} % = ${100 * (avf + cvf)} %`);
-        return [avf, cvf];
+        return this.updateState;
     }
     generatePipes(scene) {
         this.axons.forEach((axon, i) => {

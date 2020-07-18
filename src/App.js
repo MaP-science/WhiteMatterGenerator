@@ -16,7 +16,7 @@ export default props => {
     const [frame, setFrame] = useState(0);
     const [viewMode, setViewMode] = useState("ellipsoids");
     const [showCells, setShowCells] = useState(true);
-    const [volumeFraction, setVolumeFraction] = useState(0);
+    const [volumeFraction, setVolumeFraction] = useState([]);
     const [voxelSize, setVoxelSize] = useState(5);
     const [gridSize, setGridSize] = useState(6);
     const [axonCount, setAxonCount] = useState(200);
@@ -28,6 +28,7 @@ export default props => {
     const source = "https://gitlab.gbar.dtu.dk/s164179/axon-generator-toolbox";
     const inputFileRef = useRef();
     const [inputFile, setInputFile] = useState(null);
+    const [updateState, setUpdateState] = useState({});
 
     useEffect(() => {
         if (!mount.current) return;
@@ -56,7 +57,32 @@ export default props => {
     useEffect(() => {
         if (controls) controls.update();
         if (renderer && scene && camera) renderer.render(scene, camera);
-    }, [controls, renderer, scene, camera, frame]);
+        if (!synthesizer) return;
+        if (!updateState.name) return;
+        if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
+        if (updateState.name !== "ready") {
+            const us = { ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) };
+            window.setTimeout(() => setUpdateState(us), 0);
+            return;
+        }
+        if (volumeFraction === updateState.volumeFraction) return;
+        setVolumeFraction(updateState.volumeFraction);
+        setScene(synthesizer.draw(viewMode, showCells));
+    }, [
+        controls,
+        renderer,
+        scene,
+        camera,
+        frame,
+        updateState,
+        synthesizer,
+        viewMode,
+        showCells,
+        growSpeed,
+        contractSpeed,
+        maxOverlap,
+        volumeFraction
+    ]);
 
     useEffect(() => {
         if (!inputFile) return;
@@ -129,6 +155,7 @@ export default props => {
                             s.addCellsRandomly(cellCount, minSeparation);
                             setSynthesizer(s);
                             setScene(s.draw(viewMode, showCells));
+                            setUpdateState(s.updateState);
                         }}>
                         Initialize
                     </button>
@@ -166,10 +193,9 @@ export default props => {
                             />
                             <br />
                             <button
-                                onClick={() => {
-                                    setVolumeFraction(synthesizer.update(growSpeed, contractSpeed, maxOverlap));
-                                    setScene(synthesizer.draw(viewMode, showCells));
-                                }}>
+                                onClick={() =>
+                                    setUpdateState({ ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) })
+                                }>
                                 Grow
                             </button>
                             <button
@@ -207,11 +233,17 @@ export default props => {
                             </button>
                             <div>Volume fraction of inner voxel:</div>
                             <ul>
-                                <li>Axons: {100 * volumeFraction[0]}%</li>
-                                <li>Cells: {100 * volumeFraction[1]}%</li>
-                                <li>Total: {100 * (volumeFraction[0] + volumeFraction[1])}%</li>
+                                <li>Axons: {100 * (volumeFraction || ["", ""])[0]}%</li>
+                                <li>Cells: {100 * (volumeFraction || ["", ""])[1]}%</li>
+                                <li>
+                                    Total: {100 * ((volumeFraction || ["", ""])[0] + (volumeFraction || ["", ""])[1])}%
+                                </li>
                             </ul>
                             <br />
+                            <div>
+                                Status: {updateState.name}
+                                {updateState.progress !== undefined ? `, iteration ${updateState.progress}` : ""}
+                            </div>
                         </>
                     )}
                 </div>
