@@ -224,6 +224,14 @@ export default props => {
                             </button>
                             <button
                                 onClick={() => {
+                                    setShowCells(!showCells);
+                                    setScene(synthesizer.draw(viewMode, !showCells));
+                                }}>
+                                Show cells: {String(showCells)}
+                            </button>
+                            <br />
+                            <button
+                                onClick={() => {
                                     try {
                                         const link = document.createElement("a");
                                         link.setAttribute(
@@ -240,26 +248,18 @@ export default props => {
                                 }}>
                                 Export as pipes
                             </button>
-                            <button
-                                onClick={() => {
-                                    setShowCells(!showCells);
-                                    setScene(synthesizer.draw(viewMode, !showCells));
-                                }}>
-                                Show cells: {String(showCells)}
-                            </button>
                         </>
                     )}
                 </div>
             </div>
-            Source: <a href={source}>{source}</a>
-            <br />
             <p>To get started:</p>
             <ul>
                 <li>Press "Initialize"</li>
-                <li>Press "Grow" until the volume fraction is at least 30%</li>
+                <li>Press "Perform 1 grow step" until the volume fraction is at least 30%</li>
                 <li>Switch the view mode to "pipes" to see the final result</li>
-                <li>Press "Export as pipes" to download the scene as an OBJ file (this might take some time)</li>
             </ul>
+            <br />
+            Source: <a href={source}>{source}</a>
         </>
     );
 };
