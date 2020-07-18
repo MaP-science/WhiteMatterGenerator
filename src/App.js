@@ -17,6 +17,7 @@ export default props => {
     const [viewMode, setViewMode] = useState("ellipsoids");
     const [showCells, setShowCells] = useState(true);
     const [volumeFraction, setVolumeFraction] = useState([]);
+    const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
     const [voxelSize, setVoxelSize] = useState(5);
     const [gridSize, setGridSize] = useState(6);
     const [axonCount, setAxonCount] = useState(200);
@@ -61,6 +62,12 @@ export default props => {
         if (renderer && scene && camera) renderer.render(scene, camera);
         if (!synthesizer) return;
         if (!updateState.name) return;
+        if (
+            automaticGrowth &&
+            updateState.volumeFraction &&
+            100 * (updateState.volumeFraction[0] + updateState.volumeFraction[1]) >= volumeFractionTarget
+        )
+            return setAutomaticGrowth(false);
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "ready" && volumeFraction !== updateState.volumeFraction) {
             setVolumeFraction(updateState.volumeFraction);
@@ -196,10 +203,27 @@ export default props => {
                                 onChange={e => setContractSpeed(Number(e.target.value))}
                             />
                             <br />
-                            <button onClick={() => setAutomaticGrowth(!automaticGrowth)}>
+                            <button
+                                onClick={() => {
+                                    if (automaticGrowth) return setAutomaticGrowth(false);
+                                    const target = window.prompt("Specify total volume fraction target in %");
+                                    if (!target) return;
+                                    setVolumeFractionTarget(target);
+                                    setAutomaticGrowth(true);
+                                }}>
                                 Automatic growth: {automaticGrowth ? "on" : "off"}
                             </button>
-                            {!automaticGrowth && (
+                            {automaticGrowth ? (
+                                <>
+                                    Stop when total volume fraction is{" "}
+                                    <input
+                                        type="number"
+                                        value={volumeFractionTarget}
+                                        onChange={e => setVolumeFractionTarget(Number(e.target.value))}
+                                    />{" "}
+                                    %
+                                </>
+                            ) : (
                                 <button
                                     onClick={() =>
                                         setUpdateState({ ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) })
