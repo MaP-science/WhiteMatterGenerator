@@ -58,36 +58,35 @@ export default props => {
         if (renderer && scene && camera) renderer.render(scene, camera);
     }, [controls, renderer, scene, camera, frame]);
 
-    const readInputFile = data => {
-        setVoxelSize(data.voxelSizeInner);
-        setGridSize(data.voxelSizeOuter);
-        setJointCount(data.jointsPerAxon);
-        setGrowSpeed(data.grow);
-        setContractSpeed(data.contract);
-
-        const s = new Synthesizer(
-            data.voxelSizeInner,
-            data.voxelSizeOuter,
-            data.jointsPerAxon,
-            new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
-            new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
-        );
-        data.axons.forEach(axon =>
-            s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter, 0)
-        );
-        data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
-        setSynthesizer(s);
-        setScene(s.draw(viewMode, showCells));
-    };
-
     useEffect(() => {
         if (!inputFile) return;
         const reader = new FileReader();
         reader.onload = async event => {
-            readInputFile(JSON.parse(event.target.result));
+            const data = JSON.parse(event.target.result);
+
+            setVoxelSize(data.voxelSizeInner);
+            setGridSize(data.voxelSizeOuter);
+            setJointCount(data.jointsPerAxon);
+            setGrowSpeed(data.grow);
+            setContractSpeed(data.contract);
+
+            const s = new Synthesizer(
+                data.voxelSizeInner,
+                data.voxelSizeOuter,
+                data.jointsPerAxon,
+                new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
+                new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
+            );
+            data.axons.forEach(axon =>
+                s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter, 0)
+            );
+            data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
+            setSynthesizer(s);
+            setScene(s.draw(viewMode, showCells));
         };
         reader.readAsText(inputFile);
-    }, [inputFile]);
+        setInputFile(null);
+    }, [inputFile, viewMode, showCells]);
 
     return (
         <>
@@ -159,7 +158,7 @@ export default props => {
                                 onChange={e => setGrowSpeed(Number(e.target.value))}
                             />
                             <br />
-                            <label>Contract speed: </label>
+                            <label>Contract speed (between 0 and 1): </label>
                             <input
                                 type="number"
                                 value={contractSpeed}
@@ -206,7 +205,12 @@ export default props => {
                                 }}>
                                 Show cells: {String(showCells)}
                             </button>
-                            <div>Volume fraction: {100 * volumeFraction}%</div>
+                            <div>Volume fraction of inner voxel:</div>
+                            <ul>
+                                <li>Axons: {100 * volumeFraction[0]}%</li>
+                                <li>Cells: {100 * volumeFraction[1]}%</li>
+                                <li>Total: {100 * (volumeFraction[0] + volumeFraction[1])}%</li>
+                            </ul>
                             <br />
                         </>
                     )}

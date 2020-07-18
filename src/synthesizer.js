@@ -123,7 +123,8 @@ export default class {
     }
     volumeFraction(n) {
         this.axons.forEach(axon => axon.computeCollisionTree());
-        let inCount = 0;
+        let axonCount = 0;
+        let cellCount = 0;
         for (let i = 0; i < n; ++i) {
             for (let j = 0; j < n; ++j) {
                 for (let k = 0; k < n; ++k) {
@@ -135,11 +136,16 @@ export default class {
                     this.axons.forEach(axon => {
                         if (axon.collisionTree.containsPoint(p)) inside = true;
                     });
-                    if (inside) ++inCount;
+                    if (inside) ++axonCount;
+                    inside = false;
+                    this.cells.forEach(cell => {
+                        if (cell.containsPoint(p)) inside = true;
+                    });
+                    if (inside) ++cellCount;
                 }
             }
         }
-        return inCount / (n * n * n);
+        return [axonCount / (n * n * n), cellCount / (n * n * n)];
     }
     update(growSpeed, contractSpeed, maxOverlap) {
         this.axons.forEach(axon => axon.grow(growSpeed));
@@ -151,9 +157,9 @@ export default class {
             console.log("Max overlap: " + mo);
             if (mo < maxOverlap) break;
         }
-        const vf = this.volumeFraction(20);
-        console.log("Volume fraction: " + 100 * vf + "%");
-        return vf;
+        const [avf, cvf] = this.volumeFraction(20);
+        console.log(`Volume fraction: ${100 * avf} % + ${100 * cvf} % = ${100 * (avf + cvf)} %`);
+        return [avf, cvf];
     }
     generatePipes(scene) {
         this.axons.forEach((axon, i) => {
