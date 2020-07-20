@@ -198,29 +198,41 @@ export default class {
         });
         return scene;
     }
-    draw(mode, showCells) {
-        const scene = new Scene();
+    drawLight(scene) {
         scene.add(new AmbientLight(0xffffff, 0.4));
         const light = new DirectionalLight(0xffffff, 0.4);
         light.position.set(0, 1, 0);
         scene.add(light);
+    }
+    drawVoxels(scene, mode) {
+        if (mode === "none") return;
         scene.add(wireframeCube(this.voxelSize));
         scene.add(wireframeCube(this.gridSize));
-        if (showCells) {
-            const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#0000ff" }));
-            this.cells.forEach(cell => cell.draw(scene, cellMesh));
-        }
-        const jointMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
+    }
+    drawAxons(scene, mode) {
         switch (mode) {
             case "pipes":
                 return this.generatePipes(scene);
-            case "ellipsoids":
-            default:
+            case "ellipsoids": {
+                const jointMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
                 this.axons.forEach(axon => axon.draw(scene, jointMesh));
-                return scene;
+            }
+            case "none":
+            default:
+                break;
         }
     }
-    exportFile() {
-        return new OBJExporter().parse(this.generatePipes(new Scene()), {});
+    drawCells(scene, mode) {
+        if (mode === "none") return;
+        const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#0000ff" }));
+        this.cells.forEach(cell => cell.draw(scene, cellMesh));
+    }
+    draw(axonMode, cellMode) {
+        const scene = new Scene();
+        this.drawLight(scene);
+        this.drawVoxels(scene, "all");
+        this.drawCells(scene, cellMode);
+        this.drawAxons(scene, axonMode);
+        return scene;
     }
 }

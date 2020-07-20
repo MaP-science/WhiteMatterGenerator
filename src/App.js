@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter";
+import { PLYExporter } from "three/examples/jsm/exporters/PLYExporter";
 
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";
@@ -16,8 +18,8 @@ export default props => {
     const [renderer, setRenderer] = useState(null);
     const [synthesizer, setSynthesizer] = useState(null);
     const [frame, setFrame] = useState(0);
-    const [viewMode, setViewMode] = useState("ellipsoids");
-    const [showCells, setShowCells] = useState(true);
+    const [viewModeAxon, setViewModeAxon] = useState("ellipsoids");
+    const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
     const [voxelSize, setVoxelSize] = useState(5);
@@ -34,6 +36,7 @@ export default props => {
     const [updateState, setUpdateState] = useState({});
     const [growCount, setGrowCount] = useState(null);
     const [automaticGrowth, setAutomaticGrowth] = useState(false);
+    const [exportFormat, setExportFormat] = useState("obj");
 
     useEffect(() => {
         if (!mount.current) return;
@@ -73,7 +76,7 @@ export default props => {
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "ready" && volumeFraction !== updateState.volumeFraction) {
             setVolumeFraction(updateState.volumeFraction);
-            setScene(synthesizer.draw(viewMode, showCells));
+            setScene(synthesizer.draw(viewModeAxon, viewModeCell));
             setGrowCount(growCount === null ? 0 : growCount + 1);
         }
         if (updateState.name !== "ready" || automaticGrowth) {
@@ -89,8 +92,8 @@ export default props => {
         frame,
         updateState,
         synthesizer,
-        viewMode,
-        showCells,
+        viewModeAxon,
+        viewModeCell,
         growSpeed,
         contractSpeed,
         maxOverlap,
@@ -124,19 +127,20 @@ export default props => {
             );
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);
-            setScene(s.draw(viewMode, showCells));
+            setScene(s.draw(viewModeAxon, viewModeCell));
             setUpdateState(s.updateState);
         };
         reader.readAsText(inputFile);
         setInputFile(null);
-    }, [inputFile, viewMode, showCells]);
+    }, [inputFile, viewModeAxon, viewModeCell]);
 
     return (
         <>
             <div style={{ display: "flex", flexDirection: "row" }}>
                 <div ref={mount} style={{ flex: 1 }} />
                 <div style={{ flex: 1 }}>
-                    <p>Setup:</p>
+                    <b>Setup:</b>
+                    <br />
                     <label>Inner voxel size: </label>
                     <input type="number" value={voxelSize} onChange={e => setVoxelSize(Number(e.target.value))} />
                     <br />
@@ -171,7 +175,7 @@ export default props => {
                             s.addAxonsRandomly(axonCount, minSeparation);
                             s.addCellsRandomly(cellCount, minSeparation);
                             setSynthesizer(s);
-                            setScene(s.draw(viewMode, showCells));
+                            setScene(s.draw(viewModeAxon, viewModeCell));
                             setUpdateState(s.updateState);
                         }}>
                         Initialize
@@ -194,7 +198,9 @@ export default props => {
                     />
                     {synthesizer && (
                         <>
-                            <p>After setup:</p>
+                            <br />
+                            <b>After setup:</b>
+                            <br />
                             <label>Grow speed (between 0 and 1): </label>
                             <input
                                 type="number"
@@ -251,31 +257,60 @@ export default props => {
                                 {updateState.progress !== undefined ? `, iteration ${updateState.progress}` : ""}
                             </div>
                             <div>Grow steps completed: {growCount}</div>
-                            <button
-                                onClick={() => {
-                                    const vm = viewMode === "ellipsoids" ? "pipes" : "ellipsoids";
-                                    setViewMode(vm);
-                                    setScene(synthesizer.draw(vm, showCells));
+                            <b>Visual</b>
+                            <br />
+                            <label>Axons: </label>
+                            <select
+                                value={viewModeAxon}
+                                onChange={event => {
+                                    const vm = event.target.value;
+                                    setViewModeAxon(vm);
+                                    setScene(synthesizer.draw(vm, viewModeCell));
                                 }}>
-                                View mode: {viewMode}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowCells(!showCells);
-                                    setScene(synthesizer.draw(viewMode, !showCells));
+                                <option value="none">hide</option>
+                                <option value="ellipsoids">ellipsoids</option>
+                                <option value="pipes">pipes</option>
+                            </select>
+                            <br />
+                            <label>Cells: </label>
+                            <select
+                                value={viewModeCell}
+                                onChange={event => {
+                                    const vm = event.target.value;
+                                    setViewModeCell(vm);
+                                    setScene(synthesizer.draw(viewModeAxon, vm));
                                 }}>
-                                Show cells: {String(showCells)}
-                            </button>
+                                <option value="none">hide</option>
+                                <option value="all">show</option>
+                            </select>
+                            <br />
+                            <label>Format:</label>
+                            <select value={exportFormat} onChange={event => setExportFormat(event.target.value)}>
+                                <option value="obj">OBJ</option>
+                                <option value="ply">PLY</option>
+                            </select>
                             <br />
                             <button
                                 onClick={() => {
+                                    let exporter = null;
+                                    switch (exportFormat) {
+                                        case "obj":
+                                            exporter = OBJExporter;
+                                            break;
+                                        case "ply":
+                                            exporter = PLYExporter;
+                                            break;
+                                        default:
+                                            exporter = OBJExporter;
+                                            break;
+                                    }
                                     try {
                                         const link = document.createElement("a");
                                         link.setAttribute(
                                             "href",
-                                            "data:text/obj;charset=utf-8," + synthesizer.exportFile()
+                                            "data:text/obj;charset=utf-8," + new exporter().parse(scene, {})
                                         );
-                                        link.setAttribute("download", "axons.obj");
+                                        link.setAttribute("download", "axons." + exportFormat);
                                         window.document.body.appendChild(link);
                                         link.click();
                                         window.document.body.removeChild(link);
@@ -283,7 +318,7 @@ export default props => {
                                         console.log(err);
                                     }
                                 }}>
-                                Export as pipes
+                                Export
                             </button>
                         </>
                     )}
