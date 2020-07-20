@@ -227,10 +227,10 @@ export default class {
         const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#0000ff" }));
         this.cells.forEach(cell => cell.draw(scene, cellMesh));
     }
-    draw(axonMode, cellMode) {
+    draw(voxelMode, axonMode, cellMode) {
         const scene = new Scene();
         this.drawLight(scene);
-        this.drawVoxels(scene, "all");
+        this.drawVoxels(scene, voxelMode);
         this.drawCells(scene, cellMode);
         this.drawAxons(scene, axonMode);
         return scene;

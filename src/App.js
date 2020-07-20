@@ -18,6 +18,7 @@ export default props => {
     const [renderer, setRenderer] = useState(null);
     const [synthesizer, setSynthesizer] = useState(null);
     const [frame, setFrame] = useState(0);
+    const [viewModeVoxel, setViewModeVoxel] = useState("all");
     const [viewModeAxon, setViewModeAxon] = useState("ellipsoids");
     const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
@@ -76,7 +77,7 @@ export default props => {
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "ready" && volumeFraction !== updateState.volumeFraction) {
             setVolumeFraction(updateState.volumeFraction);
-            setScene(synthesizer.draw(viewModeAxon, viewModeCell));
+            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell));
             setGrowCount(growCount === null ? 0 : growCount + 1);
         }
         if (updateState.name !== "ready" || automaticGrowth) {
@@ -92,6 +93,7 @@ export default props => {
         frame,
         updateState,
         synthesizer,
+        viewModeVoxel,
         viewModeAxon,
         viewModeCell,
         growSpeed,
@@ -127,12 +129,12 @@ export default props => {
             );
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);
-            setScene(s.draw(viewModeAxon, viewModeCell));
+            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
             setUpdateState(s.updateState);
         };
         reader.readAsText(inputFile);
         setInputFile(null);
-    }, [inputFile, viewModeAxon, viewModeCell]);
+    }, [inputFile, viewModeVoxel, viewModeAxon, viewModeCell]);
 
     return (
         <>
@@ -175,7 +177,7 @@ export default props => {
                             s.addAxonsRandomly(axonCount, minSeparation);
                             s.addCellsRandomly(cellCount, minSeparation);
                             setSynthesizer(s);
-                            setScene(s.draw(viewModeAxon, viewModeCell));
+                            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
                             setUpdateState(s.updateState);
                         }}>
                         Initialize
@@ -259,13 +261,25 @@ export default props => {
                             <div>Grow steps completed: {growCount}</div>
                             <b>Visual</b>
                             <br />
+                            <label>Voxels: </label>
+                            <select
+                                value={viewModeVoxel}
+                                onChange={event => {
+                                    const vm = event.target.value;
+                                    setViewModeVoxel(vm);
+                                    setScene(synthesizer.draw(vm, viewModeAxon, viewModeCell));
+                                }}>
+                                <option value="none">hide</option>
+                                <option value="all">show</option>
+                            </select>
+                            <br />
                             <label>Axons: </label>
                             <select
                                 value={viewModeAxon}
                                 onChange={event => {
                                     const vm = event.target.value;
                                     setViewModeAxon(vm);
-                                    setScene(synthesizer.draw(vm, viewModeCell));
+                                    setScene(synthesizer.draw(viewModeVoxel, vm, viewModeCell));
                                 }}>
                                 <option value="none">hide</option>
                                 <option value="ellipsoids">ellipsoids</option>
@@ -278,7 +292,7 @@ export default props => {
                                 onChange={event => {
                                     const vm = event.target.value;
                                     setViewModeCell(vm);
-                                    setScene(synthesizer.draw(viewModeAxon, vm));
+                                    setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, vm));
                                 }}>
                                 <option value="none">hide</option>
                                 <option value="all">show</option>
