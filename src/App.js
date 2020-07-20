@@ -283,6 +283,7 @@ export default props => {
                                 }}>
                                 <option value="none">hide</option>
                                 <option value="ellipsoids">ellipsoids</option>
+                                <option value="skeleton">skeleton</option>
                                 <option value="pipes">pipes</option>
                             </select>
                             <br />

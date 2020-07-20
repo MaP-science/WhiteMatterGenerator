@@ -1,4 +1,4 @@
-import { Vector3, Matrix3, MeshPhongMaterial } from "three";
+import { Vector3, Matrix3, MeshPhongMaterial, LineBasicMaterial, BufferGeometry, Line } from "three";
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Joint from "./joint";
@@ -136,6 +136,16 @@ export default class {
             );
         });
         return mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2);
+    }
+    generateSkeleton(scene) {
+        scene.add(
+            new Line(
+                new BufferGeometry().setFromPoints(this.joints.map(joint => joint.pos)),
+                new LineBasicMaterial({
+                    color: 0xffffff
+                })
+            )
+        );
     }
     draw(scene, mesh) {
         this.joints.forEach(joint => joint.draw(scene, mesh));

@@ -211,8 +211,12 @@ export default class {
     }
     drawAxons(scene, mode) {
         switch (mode) {
+            case "skeleton":
+                this.axons.forEach(axon => axon.generateSkeleton(scene));
+                break;
             case "pipes":
-                return this.generatePipes(scene);
+                this.generatePipes(scene);
+                break;
             case "ellipsoids": {
                 const jointMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
                 this.axons.forEach(axon => axon.draw(scene, jointMesh));
