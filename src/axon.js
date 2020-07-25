@@ -41,10 +41,11 @@ const getOverlap = (a, b, maxOverlap) => {
 };
 
 export default class {
-    constructor(start, end, radius, deformation, minDiameter, movement, n, voxelSize, gridSize) {
+    constructor(start, end, radius, deformation, minDiameter, movement, jointDensity, voxelSize, gridSize) {
         this.start = start.clone();
         this.end = end.clone();
         this.radius = radius;
+        const n = Math.max(Math.round(end.clone().sub(start.clone()).length() * jointDensity), 2);
         this.joints = new Array(n).fill(true).map(
             (_, i) =>
                 new Joint(

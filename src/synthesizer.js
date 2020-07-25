@@ -12,7 +12,6 @@ import {
     MeshPhongMaterial
 } from "three";
 
-import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter";
 import Axon from "./axon";
 import Joint from "./joint";
 import Mapping from "./mapping";
@@ -26,8 +25,8 @@ const wireframeCube = size =>
     );
 
 export default class {
-    constructor(voxelSize, gridSize, jointCount, deformation, minDiameter) {
-        this.jointCount = jointCount;
+    constructor(voxelSize, gridSize, jointDensity, deformation, minDiameter) {
+        this.jointDensity = jointDensity;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
         this.deformation = deformation;
@@ -92,7 +91,7 @@ export default class {
             });
         if (!create) return false;
         this.axons.push(
-            new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.jointCount, this.voxelSize, this.gridSize)
+            new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.jointDensity, this.voxelSize, this.gridSize)
         );
         return true;
     }
@@ -220,8 +219,8 @@ export default class {
             case "ellipsoids": {
                 const jointMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
                 this.axons.forEach(axon => axon.draw(scene, jointMesh));
+                break;
             }
-            case "none":
             default:
                 break;
         }

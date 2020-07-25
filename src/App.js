@@ -26,7 +26,7 @@ export default props => {
     const [voxelSize, setVoxelSize] = useState(5);
     const [gridSize, setGridSize] = useState(6);
     const [axonCount, setAxonCount] = useState(200);
-    const [jointCount, setJointCount] = useState(50);
+    const [jointDensity, setJointDensity] = useState(10);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
     const [contractSpeed, setContractSpeed] = useState(0.01);
@@ -113,7 +113,7 @@ export default props => {
 
             setVoxelSize(data.voxelSizeInner);
             setGridSize(data.voxelSizeOuter);
-            setJointCount(data.jointsPerAxon);
+            setJointDensity(data.jointsPerAxon);
             setGrowSpeed(data.grow);
             setContractSpeed(data.contract);
 
@@ -152,8 +152,8 @@ export default props => {
                     <label>Number of axons: </label>
                     <input type="number" value={axonCount} onChange={e => setAxonCount(Number(e.target.value))} />
                     <br />
-                    <label>Number of joints per axon: </label>
-                    <input type="number" value={jointCount} onChange={e => setJointCount(Number(e.target.value))} />
+                    <label>Number of joints per unit length: </label>
+                    <input type="number" value={jointDensity} onChange={e => setJointDensity(Number(e.target.value))} />
                     <br />
                     <label>Number of cells: </label>
                     <input type="number" value={cellCount} onChange={e => setCellCount(Number(e.target.value))} />
@@ -170,7 +170,7 @@ export default props => {
                             const s = new Synthesizer(
                                 voxelSize,
                                 gridSize,
-                                jointCount,
+                                jointDensity,
                                 new Mapping([0, 0.4, 1], [0, 0.5, 1]),
                                 new Mapping([0, 2], [0, 0.2])
                             );
