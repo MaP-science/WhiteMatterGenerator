@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter";
 import { PLYExporter } from "three/examples/jsm/exporters/PLYExporter";
 
 import Synthesizer from "./synthesizer";
@@ -37,7 +36,7 @@ export default props => {
     const [updateState, setUpdateState] = useState({});
     const [growCount, setGrowCount] = useState(null);
     const [automaticGrowth, setAutomaticGrowth] = useState(false);
-    const [exportFormat, setExportFormat] = useState("obj");
+    const [exportFormat, setExportFormat] = useState("ply");
 
     useEffect(() => {
         if (!mount.current) return;
@@ -301,7 +300,6 @@ export default props => {
                             <br />
                             <label>Format:</label>
                             <select value={exportFormat} onChange={event => setExportFormat(event.target.value)}>
-                                <option value="obj">OBJ</option>
                                 <option value="ply">PLY</option>
                             </select>
                             <br />
@@ -309,21 +307,18 @@ export default props => {
                                 onClick={() => {
                                     let exporter = null;
                                     switch (exportFormat) {
-                                        case "obj":
-                                            exporter = OBJExporter;
-                                            break;
                                         case "ply":
                                             exporter = PLYExporter;
                                             break;
                                         default:
-                                            exporter = OBJExporter;
+                                            exporter = PLYExporter;
                                             break;
                                     }
                                     try {
                                         const link = document.createElement("a");
                                         link.setAttribute(
                                             "href",
-                                            "data:text/obj;charset=utf-8," + new exporter().parse(scene, {})
+                                            "data:text/obj;charset=utf-8," + new exporter().parse(scene)
                                         );
                                         link.setAttribute("download", "axons." + exportFormat);
                                         window.document.body.appendChild(link);
