@@ -29,7 +29,6 @@ export default props => {
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
     const [contractSpeed, setContractSpeed] = useState(0.01);
-    const [minSeparation, setMinSeparation] = useState(0.3);
     const source = "https://gitlab.gbar.dtu.dk/s164179/axon-generator-toolbox";
     const inputFileRef = useRef();
     const [inputFile, setInputFile] = useState(null);
@@ -157,13 +156,6 @@ export default props => {
                     <label>Number of cells: </label>
                     <input type="number" value={cellCount} onChange={e => setCellCount(Number(e.target.value))} />
                     <br />
-                    <label>Minimum separation of axon endpoints (0: none, 1: completely separated): </label>
-                    <input
-                        type="number"
-                        value={minSeparation}
-                        onChange={e => setMinSeparation(Number(e.target.value))}
-                    />
-                    <br />
                     <button
                         onClick={() => {
                             const s = new Synthesizer(
@@ -173,8 +165,8 @@ export default props => {
                                 new Mapping([0, 0.4, 1], [0, 0.5, 1]),
                                 new Mapping([0, 2], [0, 0.2])
                             );
-                            s.addAxonsRandomly(axonCount, minSeparation);
-                            s.addCellsRandomly(cellCount, minSeparation);
+                            s.addAxonsRandomly(axonCount);
+                            s.addCellsRandomly(cellCount);
                             setSynthesizer(s);
                             setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
                             setUpdateState(s.updateState);

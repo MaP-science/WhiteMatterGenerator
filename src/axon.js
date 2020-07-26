@@ -67,6 +67,14 @@ export default class {
         const gridMin = new Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
         const gridMax = new Vector3(this.gridSize / 2, this.gridSize / 2, this.gridSize / 2);
         this.joints.forEach(joint => (joint.pos = min(max(joint.pos, gridMin), gridMax)));
+        [this.joints[0], this.joints[this.joints.length - 1]].forEach(joint => {
+            const ax = Math.abs(joint.pos.x);
+            const ay = Math.abs(joint.pos.y);
+            const az = Math.abs(joint.pos.z);
+            if (ax > ay && ax > az) return (joint.pos.x *= this.gridSize / (2 * ax));
+            if (ay > az) return (joint.pos.y *= this.gridSize / (2 * ay));
+            joint.pos.z *= this.gridSize / (2 * az);
+        });
     }
     computeCollisionTree() {
         this.collisionTree = computeCollisionTree(this.joints);
@@ -81,9 +89,6 @@ export default class {
         this.joints.forEach(joint => joint.grow(amount));
     }
     contract(amount) {
-        if (this.joints.length === 0) return;
-        this.joints[0].pos = this.start.clone();
-        this.joints[this.joints.length - 1].pos = this.end.clone();
         for (let i = 1; i + 1 < this.joints.length; ++i) {
             const c = this.joints[i + 1].pos
                 .clone()

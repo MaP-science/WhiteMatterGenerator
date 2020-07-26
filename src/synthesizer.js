@@ -61,41 +61,23 @@ export default class {
         });
         return result;
     }
-    addAxonsRandomly(axonCount, minSeparation) {
+    addAxonsRandomly(axonCount) {
         for (let i = 0; i < axonCount; ++i)
             for (let j = 0; j < 100; ++j) {
-                if (
-                    this.addAxon(
-                        randomPosition().multiplyScalar(this.gridSize),
-                        randomPosition(),
-                        0.5 + Math.random(),
-                        minSeparation
-                    )
-                )
+                if (this.addAxon(randomPosition().multiplyScalar(this.gridSize), randomPosition(), 0.5 + Math.random()))
                     break;
             }
         console.log("Total number of axons: " + this.axons.length);
     }
-    addAxon(pos, dir, r, minSeparation) {
+    addAxon(pos, dir, r) {
         const a = projectOntoCube(pos, dir, this.gridSize);
         const b = projectOntoCube(pos, dir.clone().negate(), this.gridSize);
-        let create = true;
-        [this.axons.map(axon => [axon.joints[0], axon.joints[axon.joints.length - 1]]).flat(), this.cells]
-            .flat()
-            .forEach(joint => {
-                const d1 = joint.pos.clone().sub(a);
-                const d2 = joint.pos.clone().sub(b);
-                const d = joint.radius + r;
-                if (d1.length() < minSeparation * d) create = false;
-                if (d2.length() < minSeparation * d) create = false;
-            });
-        if (!create) return false;
         this.axons.push(
             new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.jointDensity, this.voxelSize, this.gridSize)
         );
         return true;
     }
-    addCellsRandomly(cellCount, minSeparation) {
+    addCellsRandomly(cellCount) {
         for (let i = 0; i < cellCount; ++i)
             for (let j = 0; j < 100; ++j) {
                 const p = randomPosition().multiplyScalar(this.gridSize);
