@@ -35,20 +35,20 @@ export default props => (
                         <b>to</b> (array of numbers)
                     </li>
                 </ul>
-                <li>
-                    <b>axons</b> (array of objects)
-                    <ul>
-                        <li>
-                            <b>position</b> (array of 3 numbers)
-                        </li>
-                        <li>
-                            <b>direction</b> (array of 3 numbers)
-                        </li>
-                        <li>
-                            <b>maxDiameter</b> (number)
-                        </li>
-                    </ul>
-                </li>
+            </li>
+            <li>
+                <b>axons</b> (array of objects)
+                <ul>
+                    <li>
+                        <b>position</b> (array of 3 numbers)
+                    </li>
+                    <li>
+                        <b>direction</b> (array of 3 numbers)
+                    </li>
+                    <li>
+                        <b>maxDiameter</b> (number)
+                    </li>
+                </ul>
             </li>
             <li>
                 <b>cells</b> (array of objects)
