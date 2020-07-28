@@ -38,25 +38,25 @@ export default class {
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
     }
-    collision(maxOverlap) {
-        this.axons.forEach(a => a.computeCollisionTree());
+    collision(minDist, maxOverlap) {
+        this.axons.forEach(a => a.computeCollisionTree(minDist));
         this.axons.forEach((a, i) => {
             this.axons.forEach((b, j) => {
                 if (i >= j) return;
-                a.collision(b, maxOverlap);
+                a.collision(b, minDist, maxOverlap);
             });
         });
         this.axons.forEach((a, i) =>
-            a.joints.forEach(joint => this.cells.forEach(c => joint.collision(c, maxOverlap)))
+            a.joints.forEach(joint => this.cells.forEach(c => joint.collision(c, minDist, maxOverlap)))
         );
     }
-    getOverlap(maxOverlap) {
+    getOverlap(minDist, maxOverlap) {
         let result = maxOverlap;
-        this.axons.forEach(a => a.computeCollisionTree());
+        this.axons.forEach(a => a.computeCollisionTree(minDist));
         this.axons.forEach((a, i) => {
             this.axons.forEach((b, j) => {
                 if (i >= j) return;
-                result = Math.max(result, a.getOverlap(b, result));
+                result = Math.max(result, a.getOverlap(b, minDist, result));
             });
         });
         return result;
@@ -104,7 +104,7 @@ export default class {
         this.cells.push(cell);
     }
     volumeFraction(n) {
-        this.axons.forEach(axon => axon.computeCollisionTree());
+        this.axons.forEach(axon => axon.computeCollisionTree(0));
         let axonCount = 0;
         let cellCount = 0;
         for (let i = 0; i < n; ++i) {
@@ -129,7 +129,7 @@ export default class {
         }
         return [axonCount / (n * n * n), cellCount / (n * n * n)];
     }
-    update(growSpeed, contractSpeed, maxOverlap) {
+    update(growSpeed, contractSpeed, minDist, maxOverlap) {
         switch (this.updateState.name) {
             case "ready":
                 this.updateState = { name: "grow" };
@@ -147,11 +147,11 @@ export default class {
                 this.updateState.name = "collision";
                 break;
             case "collision":
-                this.collision(maxOverlap);
+                this.collision(minDist, maxOverlap);
                 this.updateState.name = "getOverlap";
                 break;
             case "getOverlap":
-                const mo = this.getOverlap(maxOverlap * 0.999);
+                const mo = this.getOverlap(minDist, maxOverlap * 0.999);
                 console.log("Max overlap: " + mo);
                 if (mo < maxOverlap) {
                     this.updateState = { name: "volumeFraction", progress: 0 };

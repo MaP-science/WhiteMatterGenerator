@@ -13,17 +13,17 @@ export default class {
         this.id = v4();
         this.axisCache = {};
     }
-    boundingBox() {
+    boundingBox(minDist) {
         const x = extremum(this.shape, new Vector3(1, 0, 0)).dot(new Vector3(1, 0, 0));
         const y = extremum(this.shape, new Vector3(0, 1, 0)).dot(new Vector3(0, 1, 0));
         const z = extremum(this.shape, new Vector3(0, 0, 1)).dot(new Vector3(0, 0, 1));
-        const d = new Vector3(x, y, z);
+        const d = new Vector3(x + minDist / 2, y + minDist / 2, z + minDist / 2);
         return new Box3(this.pos.clone().sub(d), this.pos.clone().add(d));
     }
     containsPoint(p) {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
     }
-    collision(joint, maxOverlap) {
+    collision(joint, minDist, maxOverlap) {
         const d = joint.pos.clone().sub(this.pos);
         const dSqr = d.dot(d);
         if (dSqr < 0.00001) {
@@ -41,6 +41,7 @@ export default class {
             maxOverlap
         );
         this.axisCache[joint.id] = axis;
+        axisLength += minDist;
         if (axisLength < 0) return;
         // Collision resolution
         // Update shape
@@ -60,7 +61,7 @@ export default class {
         this.pos.sub(axis.clone().multiplyScalar(this.movement * w));
         joint.pos.add(axis.clone().multiplyScalar(joint.movement * w));
     }
-    getOverlap(joint, maxOverlap) {
+    getOverlap(joint, minDist, maxOverlap) {
         let [axisLength, axis] = collisionAxis(
             this.pos,
             this.shape,
@@ -70,7 +71,7 @@ export default class {
             maxOverlap
         );
         this.axisCache[joint.id] = axis;
-        return Math.max(axisLength, 0);
+        return Math.max(axisLength + minDist, 0);
     }
     grow(amount) {
         const s = this.shape.clone().transpose().multiply(this.shape);

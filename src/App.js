@@ -24,11 +24,12 @@ export default props => {
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
     const [voxelSize, setVoxelSize] = useState(5);
     const [gridSize, setGridSize] = useState(6);
-    const [axonCount, setAxonCount] = useState(200);
+    const [axonCount, setAxonCount] = useState(80);
     const [jointDensity, setJointDensity] = useState(10);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
     const [contractSpeed, setContractSpeed] = useState(0.01);
+    const [minDist, setMinDist] = useState(0.01);
     const source = "https://gitlab.gbar.dtu.dk/s164179/axon-generator-toolbox";
     const inputFileRef = useRef();
     const [inputFile, setInputFile] = useState(null);
@@ -79,7 +80,7 @@ export default props => {
             setGrowCount(growCount === null ? 0 : growCount + 1);
         }
         if (updateState.name !== "ready" || automaticGrowth) {
-            const us = { ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) };
+            const us = { ...synthesizer.update(growSpeed, contractSpeed, minDist, maxOverlap) };
             window.setTimeout(() => setUpdateState(us), 0);
             return;
         }
@@ -96,6 +97,7 @@ export default props => {
         viewModeCell,
         growSpeed,
         contractSpeed,
+        minDist,
         maxOverlap,
         volumeFraction,
         automaticGrowth,
@@ -208,6 +210,9 @@ export default props => {
                                 onChange={e => setContractSpeed(Number(e.target.value))}
                             />
                             <br />
+                            <label>Minimum distance between objects: </label>
+                            <input type="number" value={minDist} onChange={e => setMinDist(Number(e.target.value))} />
+                            <br />
                             <button
                                 onClick={() => {
                                     if (automaticGrowth) return setAutomaticGrowth(false);
@@ -231,7 +236,9 @@ export default props => {
                             ) : (
                                 <button
                                     onClick={() =>
-                                        setUpdateState({ ...synthesizer.update(growSpeed, contractSpeed, maxOverlap) })
+                                        setUpdateState({
+                                            ...synthesizer.update(growSpeed, contractSpeed, minDist, maxOverlap)
+                                        })
                                     }>
                                     Perform 1 grow step
                                 </button>
@@ -329,8 +336,9 @@ export default props => {
             <b>To get started:</b>
             <ul>
                 <li>Press "Initialize"</li>
-                <li>Press "Perform 1 grow step" until the volume fraction is at least 30%</li>
-                <li>Switch the view mode to "pipes" to see the final result</li>
+                <li>Switch on automatic growth and set the volume fraction to at least 30</li>
+                <li>Wait for the axons to grow</li>
+                <li>Switch the view mode of axons to "pipes" to see the final result</li>
             </ul>
             <br />
             <InputFormat />

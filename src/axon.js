@@ -4,11 +4,15 @@ import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Joint from "./joint";
 import { min, max } from "./helperFunctions";
 
-const computeCollisionTree = joints => {
+const computeCollisionTree = (joints, minDist) => {
     if (joints.length === 1)
-        return { joint: joints[0], aabb: joints[0].boundingBox(), containsPoint: p => joints[0].containsPoint(p) };
-    const a = computeCollisionTree(joints.slice(0, Math.ceil(joints.length / 2)));
-    const b = computeCollisionTree(joints.slice(Math.ceil(joints.length / 2)));
+        return {
+            joint: joints[0],
+            aabb: joints[0].boundingBox(minDist),
+            containsPoint: p => joints[0].containsPoint(p)
+        };
+    const a = computeCollisionTree(joints.slice(0, Math.ceil(joints.length / 2)), minDist);
+    const b = computeCollisionTree(joints.slice(Math.ceil(joints.length / 2)), minDist);
     const aabb = a.aabb.clone().union(b.aabb);
     return {
         a: a,
@@ -21,23 +25,23 @@ const computeCollisionTree = joints => {
     };
 };
 
-const collision = (a, b, maxOverlap) => {
+const collision = (a, b, minDist, maxOverlap) => {
     if (!a.aabb.intersectsBox(b.aabb)) return;
     if (b.joint) {
-        if (a.joint) return a.joint.collision(b.joint, maxOverlap);
-        return collision(b, a);
+        if (a.joint) return a.joint.collision(b.joint, minDist, maxOverlap);
+        return collision(b, a, minDist, maxOverlap);
     }
-    collision(b.a, a, maxOverlap);
-    collision(b.b, a, maxOverlap);
+    collision(b.a, a, minDist, maxOverlap);
+    collision(b.b, a, minDist, maxOverlap);
 };
 
-const getOverlap = (a, b, maxOverlap) => {
+const getOverlap = (a, b, minDist, maxOverlap) => {
     if (!a.aabb.intersectsBox(b.aabb)) return 0;
     if (b.joint) {
-        if (a.joint) return a.joint.getOverlap(b.joint, maxOverlap);
-        return getOverlap(b, a, maxOverlap);
+        if (a.joint) return a.joint.getOverlap(b.joint, minDist, maxOverlap);
+        return getOverlap(b, a, minDist, maxOverlap);
     }
-    return Math.max(getOverlap(b.a, a, maxOverlap), getOverlap(b.b, a, maxOverlap));
+    return Math.max(getOverlap(b.a, a, minDist, maxOverlap), getOverlap(b.b, a, minDist, maxOverlap));
 };
 
 export default class {
@@ -61,7 +65,6 @@ export default class {
         );
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
-        this.collisionTree = this.computeCollisionTree();
     }
     keepInVoxel() {
         const gridMin = new Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
@@ -76,14 +79,14 @@ export default class {
             joint.pos.z *= this.gridSize / (2 * az);
         });
     }
-    computeCollisionTree() {
-        this.collisionTree = computeCollisionTree(this.joints);
+    computeCollisionTree(minDist) {
+        this.collisionTree = computeCollisionTree(this.joints, minDist);
     }
-    collision(axon, maxOverlap) {
-        return collision(this.collisionTree, axon.collisionTree, maxOverlap);
+    collision(axon, minDist, maxOverlap) {
+        return collision(this.collisionTree, axon.collisionTree, minDist, maxOverlap);
     }
-    getOverlap(axon, maxOverlap) {
-        return getOverlap(this.collisionTree, axon.collisionTree, maxOverlap);
+    getOverlap(axon, minDist, maxOverlap) {
+        return getOverlap(this.collisionTree, axon.collisionTree, minDist, maxOverlap);
     }
     grow(amount) {
         this.joints.forEach(joint => joint.grow(amount));
@@ -122,7 +125,7 @@ export default class {
         const mc = new MarchingCubes(64, new MeshPhongMaterial({ color: "#ffffff" }), true, false);
         mc.isolation = 1;
         this.joints.forEach(joint => {
-            const bb = joint.boundingBox();
+            const bb = joint.boundingBox(0);
             addEllipsoid(
                 mc,
                 joint.pos.clone().divideScalar(this.voxelSize).add(new Vector3(0.5, 0.5, 0.5)),
