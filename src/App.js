@@ -36,7 +36,6 @@ export default props => {
     const [updateState, setUpdateState] = useState({});
     const [growCount, setGrowCount] = useState(null);
     const [automaticGrowth, setAutomaticGrowth] = useState(false);
-    const [exportFormat, setExportFormat] = useState("ply");
 
     useEffect(() => {
         if (!mount.current) return;
@@ -176,20 +175,13 @@ export default props => {
                         Initialize
                     </button>
                     {" or "}
-                    <button
-                        onClick={() => {
-                            inputFileRef.current.click();
-                        }}>
-                        upload input file
-                    </button>
+                    <button onClick={() => inputFileRef.current.click()}>upload input file</button>
                     <input
                         ref={inputFileRef}
                         type="file"
                         style={{ display: "none" }}
                         onClick={e => (e.target.value = null)}
-                        onChange={e => {
-                            setInputFile(e.target.files[0]);
-                        }}
+                        onChange={e => setInputFile(e.target.files[0])}
                     />
                     {synthesizer && (
                         <>
@@ -297,29 +289,15 @@ export default props => {
                                 <option value="all">show</option>
                             </select>
                             <br />
-                            <label>Format:</label>
-                            <select value={exportFormat} onChange={event => setExportFormat(event.target.value)}>
-                                <option value="ply">PLY</option>
-                            </select>
-                            <br />
                             <button
                                 onClick={() => {
-                                    let exporter = null;
-                                    switch (exportFormat) {
-                                        case "ply":
-                                            exporter = PLYExporter;
-                                            break;
-                                        default:
-                                            exporter = PLYExporter;
-                                            break;
-                                    }
                                     try {
                                         const link = document.createElement("a");
                                         link.setAttribute(
                                             "href",
-                                            "data:text/obj;charset=utf-8," + new exporter().parse(scene)
+                                            "data:text/obj;charset=utf-8," + new PLYExporter().parse(scene)
                                         );
-                                        link.setAttribute("download", "axons." + exportFormat);
+                                        link.setAttribute("download", "axons.ply");
                                         window.document.body.appendChild(link);
                                         link.click();
                                         window.document.body.removeChild(link);
