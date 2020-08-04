@@ -2,7 +2,24 @@ import React, { useEffect, useRef, useState } from "react";
 import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { PLYExporter } from "three/examples/jsm/exporters/PLYExporter";
-import { Grid, Paper, makeStyles } from "@material-ui/core";
+import {
+    Grid,
+    Paper,
+    makeStyles,
+    TextField,
+    Button,
+    List,
+    ListItem,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableRow,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem
+} from "@material-ui/core";
 
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";
@@ -47,7 +64,7 @@ export default props => {
 
     useEffect(() => {
         if (!mount.current) return;
-        const width = window.innerWidth * 0.7;
+        const width = window.innerWidth * 0.6;
         const height = window.innerHeight * 0.9;
         // Camera
         const cam = new PerspectiveCamera(75, width / height, 0.1, 1000);
@@ -146,228 +163,272 @@ export default props => {
     return (
         <>
             <Grid container xs={11}>
-                <Grid item xs={3}>
+                <Grid item xs={4}>
                     <Grid container direction="column">
                         <Grid item className={classes.gridItem}>
                             <Paper>
-                                <b>Setup:</b>
-                                <br />
-                                <label>Inner voxel size: </label>
-                                <input
-                                    type="number"
-                                    value={voxelSize}
-                                    onChange={e => setVoxelSize(Number(e.target.value))}
-                                />
-                                <br />
-                                <label>Outer voxel size: </label>
-                                <input
-                                    type="number"
-                                    value={gridSize}
-                                    onChange={e => setGridSize(Number(e.target.value))}
-                                />
-                                <br />
-                                <label>Number of axons: </label>
-                                <input
-                                    type="number"
-                                    value={axonCount}
-                                    onChange={e => setAxonCount(Number(e.target.value))}
-                                />
-                                <br />
-                                <label>Number of joints per unit length: </label>
-                                <input
-                                    type="number"
-                                    value={jointDensity}
-                                    onChange={e => setJointDensity(Number(e.target.value))}
-                                />
-                                <br />
-                                <label>Number of cells: </label>
-                                <input
-                                    type="number"
-                                    value={cellCount}
-                                    onChange={e => setCellCount(Number(e.target.value))}
-                                />
-                                <br />
-                                <button
-                                    onClick={() => {
-                                        const s = new Synthesizer(
-                                            voxelSize,
-                                            gridSize,
-                                            jointDensity,
-                                            new Mapping([0, 0.4, 1], [0, 0.5, 1]),
-                                            new Mapping([0, 2], [0, 0.2])
-                                        );
-                                        s.addAxonsRandomly(axonCount);
-                                        s.addCellsRandomly(cellCount);
-                                        setSynthesizer(s);
-                                        setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
-                                        setUpdateState(s.updateState);
-                                    }}>
-                                    Initialize
-                                </button>
-                                {" or "}
-                                <button onClick={() => inputFileRef.current.click()}>upload input file</button>
-                                <input
-                                    ref={inputFileRef}
-                                    type="file"
-                                    style={{ display: "none" }}
-                                    onClick={e => (e.target.value = null)}
-                                    onChange={e => setInputFile(e.target.files[0])}
-                                />
+                                <List>
+                                    <ListItem>
+                                        <b>Setup</b>
+                                    </ListItem>
+                                    <ListItem>
+                                        <TextField
+                                            type="number"
+                                            label="Inner voxel size"
+                                            value={voxelSize}
+                                            onChange={e => setVoxelSize(e.target.value)}
+                                        />
+                                        <TextField
+                                            type="number"
+                                            label="Outer voxel size"
+                                            value={gridSize}
+                                            onChange={e => setGridSize(e.target.value)}
+                                        />
+                                        <TextField
+                                            type="number"
+                                            label="Number of axons"
+                                            value={axonCount}
+                                            onChange={e => setAxonCount(e.target.value)}
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <TextField
+                                            type="number"
+                                            label="Number of joints per unit length"
+                                            value={jointDensity}
+                                            onChange={e => setJointDensity(e.target.value)}
+                                        />
+                                        <TextField
+                                            type="number"
+                                            label="Number of cells"
+                                            value={cellCount}
+                                            onChange={e => setCellCount(e.target.value)}
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => {
+                                                const s = new Synthesizer(
+                                                    voxelSize,
+                                                    gridSize,
+                                                    jointDensity,
+                                                    new Mapping([0, 0.4, 1], [0, 0.5, 1]),
+                                                    new Mapping([0, 2], [0, 0.2])
+                                                );
+                                                s.addAxonsRandomly(axonCount);
+                                                s.addCellsRandomly(cellCount);
+                                                setSynthesizer(s);
+                                                setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
+                                                setUpdateState(s.updateState);
+                                            }}>
+                                            Initialize
+                                        </Button>
+                                        {" or "}
+                                        <Button variant="contained" onClick={() => inputFileRef.current.click()}>
+                                            upload input file
+                                        </Button>
+                                    </ListItem>
+                                    <input
+                                        ref={inputFileRef}
+                                        type="file"
+                                        style={{ display: "none" }}
+                                        onClick={e => (e.target.value = null)}
+                                        onChange={e => setInputFile(e.target.files[0])}
+                                    />
+                                </List>
                             </Paper>
                         </Grid>
                         {synthesizer && (
                             <>
                                 <Grid item className={classes.gridItem}>
                                     <Paper>
-                                        <br />
-                                        <b>After setup:</b>
-                                        <br />
-                                        <label>Grow speed (between 0 and 1): </label>
-                                        <input
-                                            type="number"
-                                            value={growSpeed}
-                                            onChange={e => setGrowSpeed(Number(e.target.value))}
-                                        />
-                                        <br />
-                                        <label>Contract speed (between 0 and 1): </label>
-                                        <input
-                                            type="number"
-                                            value={contractSpeed}
-                                            onChange={e => setContractSpeed(Number(e.target.value))}
-                                        />
-                                        <br />
-                                        <label>Minimum distance between objects: </label>
-                                        <input
-                                            type="number"
-                                            value={minDist}
-                                            onChange={e => setMinDist(Number(e.target.value))}
-                                        />
-                                        <br />
-                                        <button
-                                            onClick={() => {
-                                                if (automaticGrowth) return setAutomaticGrowth(false);
-                                                const target = window.prompt(
-                                                    "Specify total volume fraction target in %"
-                                                );
-                                                if (!target) return;
-                                                setVolumeFractionTarget(target);
-                                                setAutomaticGrowth(true);
-                                            }}>
-                                            Automatic growth: {automaticGrowth ? "on" : "off"}
-                                        </button>
-                                        {automaticGrowth ? (
-                                            <>
-                                                Stop when total volume fraction is{" "}
-                                                <input
+                                        <List>
+                                            <ListItem>
+                                                <b>After setup</b>
+                                            </ListItem>
+                                            <ListItem>
+                                                <TextField
                                                     type="number"
-                                                    value={volumeFractionTarget}
-                                                    onChange={e => setVolumeFractionTarget(Number(e.target.value))}
-                                                />{" "}
-                                                %
-                                            </>
-                                        ) : (
-                                            <button
-                                                onClick={() =>
-                                                    setUpdateState({
-                                                        ...synthesizer.update(
-                                                            growSpeed,
-                                                            contractSpeed,
-                                                            minDist,
-                                                            maxOverlap
-                                                        )
-                                                    })
-                                                }>
-                                                Perform 1 grow step
-                                            </button>
-                                        )}
-                                        <div>Volume fraction of inner voxel:</div>
-                                        <ul>
-                                            <li>Axons: {100 * (volumeFraction || ["", ""])[0]}%</li>
-                                            <li>Cells: {100 * (volumeFraction || ["", ""])[1]}%</li>
-                                            <li>
-                                                Total:{" "}
-                                                {100 *
-                                                    ((volumeFraction || ["", ""])[0] + (volumeFraction || ["", ""])[1])}
-                                                %
-                                            </li>
-                                        </ul>
-                                        <br />
-                                        <div>
-                                            Status: {updateState.name}
-                                            {updateState.progress !== undefined
-                                                ? `, iteration ${updateState.progress}`
-                                                : ""}
-                                        </div>
-                                        <div>Grow steps completed: {growCount}</div>
+                                                    label="Grow speed"
+                                                    value={growSpeed}
+                                                    onChange={e => setGrowSpeed(e.target.value)}
+                                                />
+                                                <TextField
+                                                    type="number"
+                                                    label="Contract speed"
+                                                    value={contractSpeed}
+                                                    onChange={e => setContractSpeed(e.target.value)}
+                                                />
+                                                <TextField
+                                                    type="number"
+                                                    label="Minimum distance"
+                                                    value={minDist}
+                                                    onChange={e => setMinDist(e.target.value)}
+                                                />
+                                            </ListItem>
+                                            <ListItem>
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => {
+                                                        if (automaticGrowth) return setAutomaticGrowth(false);
+                                                        const target = window.prompt(
+                                                            "Specify total volume fraction target in %"
+                                                        );
+                                                        if (!target) return;
+                                                        setVolumeFractionTarget(target);
+                                                        setAutomaticGrowth(true);
+                                                    }}>
+                                                    Automatic growth: {automaticGrowth ? "on" : "off"}
+                                                </Button>
+                                                {automaticGrowth ? (
+                                                    <>
+                                                        <TextField
+                                                            type="number"
+                                                            label="Target volume fraction"
+                                                            value={volumeFractionTarget}
+                                                            onChange={e =>
+                                                                setVolumeFractionTarget(Number(e.target.value))
+                                                            }
+                                                        />{" "}
+                                                        %
+                                                    </>
+                                                ) : (
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={() =>
+                                                            setUpdateState({
+                                                                ...synthesizer.update(
+                                                                    growSpeed,
+                                                                    contractSpeed,
+                                                                    minDist,
+                                                                    maxOverlap
+                                                                )
+                                                            })
+                                                        }>
+                                                        Perform 1 grow step
+                                                    </Button>
+                                                )}
+                                            </ListItem>
+                                            <Grid item>Volume fraction of inner voxel:</Grid>
+                                            <TableContainer component={Paper}>
+                                                <Table className={classes.table} aria-label="simple table">
+                                                    <TableBody>
+                                                        <TableRow>
+                                                            <TableCell component="th" scope="row">
+                                                                Axons
+                                                            </TableCell>
+                                                            <TableCell component="th" scope="row">
+                                                                Cells
+                                                            </TableCell>
+                                                            <TableCell component="th" scope="row">
+                                                                Total
+                                                            </TableCell>
+                                                        </TableRow>
+                                                        <TableRow>
+                                                            <TableCell>
+                                                                {100 * (volumeFraction || ["", ""])[0]}%
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {100 * (volumeFraction || ["", ""])[1]}%
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {100 *
+                                                                    ((volumeFraction || ["", ""])[0] +
+                                                                        (volumeFraction || ["", ""])[1])}
+                                                                %
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    </TableBody>
+                                                </Table>
+                                            </TableContainer>
+                                            <Grid item>
+                                                Status: {updateState.name}
+                                                {updateState.progress !== undefined
+                                                    ? `, iteration ${updateState.progress}`
+                                                    : ""}
+                                            </Grid>
+                                            <Grid item>Grow steps completed: {growCount}</Grid>
+                                        </List>
                                     </Paper>
                                 </Grid>
                                 <Grid item className={classes.gridItem}>
                                     <Paper>
-                                        <b>Visual</b>
-                                        <br />
-                                        <label>Voxels: </label>
-                                        <select
-                                            value={viewModeVoxel}
-                                            onChange={event => {
-                                                const vm = event.target.value;
-                                                setViewModeVoxel(vm);
-                                                setScene(synthesizer.draw(vm, viewModeAxon, viewModeCell));
-                                            }}>
-                                            <option value="none">hide</option>
-                                            <option value="all">show</option>
-                                        </select>
-                                        <br />
-                                        <label>Axons: </label>
-                                        <select
-                                            value={viewModeAxon}
-                                            onChange={event => {
-                                                const vm = event.target.value;
-                                                setViewModeAxon(vm);
-                                                setScene(synthesizer.draw(viewModeVoxel, vm, viewModeCell));
-                                            }}>
-                                            <option value="none">hide</option>
-                                            <option value="ellipsoids">ellipsoids</option>
-                                            <option value="skeleton">skeleton</option>
-                                            <option value="pipes">pipes</option>
-                                        </select>
-                                        <br />
-                                        <label>Cells: </label>
-                                        <select
-                                            value={viewModeCell}
-                                            onChange={event => {
-                                                const vm = event.target.value;
-                                                setViewModeCell(vm);
-                                                setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, vm));
-                                            }}>
-                                            <option value="none">hide</option>
-                                            <option value="all">show</option>
-                                        </select>
-                                        <br />
-                                        <button
-                                            onClick={() => {
-                                                try {
-                                                    const link = document.createElement("a");
-                                                    link.setAttribute(
-                                                        "href",
-                                                        "data:text/obj;charset=utf-8," + new PLYExporter().parse(scene)
-                                                    );
-                                                    link.setAttribute("download", "axons.ply");
-                                                    window.document.body.appendChild(link);
-                                                    link.click();
-                                                    window.document.body.removeChild(link);
-                                                } catch (err) {
-                                                    console.log(err);
-                                                }
-                                            }}>
-                                            Export
-                                        </button>
+                                        <List>
+                                            <ListItem>
+                                                <b>Visual</b>
+                                            </ListItem>
+                                            <ListItem>
+                                                <FormControl>
+                                                    <InputLabel>Voxels</InputLabel>
+                                                    <Select
+                                                        value={viewModeVoxel}
+                                                        onChange={event => {
+                                                            const vm = event.target.value;
+                                                            setViewModeVoxel(vm);
+                                                            setScene(synthesizer.draw(vm, viewModeAxon, viewModeCell));
+                                                        }}>
+                                                        <MenuItem value="none">hide</MenuItem>
+                                                        <MenuItem value="all">show</MenuItem>
+                                                    </Select>
+                                                </FormControl>
+                                                <FormControl>
+                                                    <InputLabel>Axons</InputLabel>
+                                                    <Select
+                                                        value={viewModeAxon}
+                                                        onChange={event => {
+                                                            const vm = event.target.value;
+                                                            setViewModeAxon(vm);
+                                                            setScene(synthesizer.draw(viewModeVoxel, vm, viewModeCell));
+                                                        }}>
+                                                        <MenuItem value="none">hide</MenuItem>
+                                                        <MenuItem value="ellipsoids">ellipsoids</MenuItem>
+                                                        <MenuItem value="skeleton">skeleton</MenuItem>
+                                                        <MenuItem value="pipes">pipes</MenuItem>
+                                                    </Select>
+                                                </FormControl>
+                                                <FormControl>
+                                                    <InputLabel>Cells</InputLabel>
+                                                    <Select
+                                                        value={viewModeCell}
+                                                        onChange={event => {
+                                                            const vm = event.target.value;
+                                                            setViewModeCell(vm);
+                                                            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, vm));
+                                                        }}>
+                                                        <MenuItem value="none">hide</MenuItem>
+                                                        <MenuItem value="all">show</MenuItem>
+                                                    </Select>
+                                                </FormControl>
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => {
+                                                        try {
+                                                            const link = document.createElement("a");
+                                                            link.setAttribute(
+                                                                "href",
+                                                                "data:text/obj;charset=utf-8," +
+                                                                    new PLYExporter().parse(scene)
+                                                            );
+                                                            link.setAttribute("download", "axons.ply");
+                                                            window.document.body.appendChild(link);
+                                                            link.click();
+                                                            window.document.body.removeChild(link);
+                                                        } catch (err) {
+                                                            console.log(err);
+                                                        }
+                                                    }}>
+                                                    Export
+                                                </Button>
+                                            </ListItem>
+                                        </List>
                                     </Paper>
                                 </Grid>
                             </>
                         )}
                     </Grid>
                 </Grid>
-                <Grid item xs={6} ref={mount} />
+                <Grid item xs={5} ref={mount} />
             </Grid>
             <b>To get started:</b>
             <ul>
