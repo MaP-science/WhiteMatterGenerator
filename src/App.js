@@ -137,14 +137,14 @@ export default props => {
 
             setVoxelSize(data.voxelSizeInner);
             setGridSize(data.voxelSizeOuter);
-            setJointDensity(data.jointsPerAxon);
+            setJointDensity(data.jointDensity);
             setGrowSpeed(data.grow);
             setContractSpeed(data.contract);
 
             const s = new Synthesizer(
                 data.voxelSizeInner,
                 data.voxelSizeOuter,
-                data.jointsPerAxon,
+                data.jointDensity,
                 new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
                 new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
             );

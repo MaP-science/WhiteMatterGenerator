@@ -1,7 +1,9 @@
 export default {
     voxelSizeInner: 9,
     voxelSizeOuter: 10,
-    jointsPerAxon: 100,
+    jointDensity: 100,
+    grow: 0.05,
+    contract: 0.05,
     mapFromDiameterToDeformationFactor: {
         from: [0, 0.8, 2],
         to: [0, 0.5, 1]
@@ -27,7 +29,5 @@ export default {
             position: [2, 1, 0],
             shape: [1.5, 0, 0, 0, 1, 0, 0, 0, 1]
         }
-    ],
-    grow: 0.05,
-    contract: 0.05
+    ]
 };
