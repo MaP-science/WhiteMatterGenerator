@@ -107,7 +107,6 @@ export default class {
     }
     generatePipe() {
         const addEllipsoid = (mc, pos, shape, min, max) => {
-            const metaballSize = Math.sqrt(2); // Between sqrt(2) and 2
             for (let x = min.x; x < max.x; x++) {
                 for (let y = min.y; y < max.y; y++) {
                     for (let z = min.z; z < max.z; z++) {
@@ -116,7 +115,7 @@ export default class {
                         if (z < 0 || z >= mc.size) continue;
                         const p = new Vector3(x, y, z).divideScalar(mc.size).sub(pos);
                         p.applyMatrix3(new Matrix3().getInverse(shape));
-                        const val = metaballSize / (0.000001 + p.dot(p)) - 1;
+                        const val = 1.000001 / (0.000001 + Math.pow(p.dot(p), 3)) - 1;
                         if (val > 0) mc.field[mc.size2 * z + mc.size * y + x] += val;
                     }
                 }
