@@ -1,5 +1,4 @@
 import React from "react";
-import inputExample from "./inputExample";
 
 export default props => (
     <>
@@ -79,8 +78,5 @@ export default props => (
                 </ul>
             </li>
         </ul>
-        <br />
-        <b>Example of input file:</b>
-        <pre>{JSON.stringify(inputExample, null, 4)}</pre>
     </>
 );
