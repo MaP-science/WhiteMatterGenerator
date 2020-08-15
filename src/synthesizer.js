@@ -16,7 +16,7 @@ import Axon from "./axon";
 import Joint from "./joint";
 import Mapping from "./mapping";
 
-import { randomPosition, projectOntoCube } from "./helperFunctions";
+import { randomPosition, projectOntoCube, shuffle } from "./helperFunctions";
 
 const wireframeCube = size =>
     new LineSegments(
@@ -40,12 +40,14 @@ export default class {
     }
     collision(minDist, maxOverlap) {
         this.axons.forEach(a => a.computeCollisionTree(minDist));
+        const pairs = [];
         this.axons.forEach((a, i) => {
             this.axons.forEach((b, j) => {
-                if (i >= j) return;
-                a.collision(b, minDist, maxOverlap);
+                if (i < j) pairs.push(shuffle([a, b]));
             });
         });
+        shuffle(pairs);
+        pairs.forEach(pair => pair[0].collision(pair[1], minDist, maxOverlap));
         this.axons.forEach((a, i) =>
             a.joints.forEach(joint => this.cells.forEach(c => joint.collision(c, minDist, maxOverlap)))
         );

@@ -31,8 +31,15 @@ const collision = (a, b, minDist, maxOverlap) => {
         if (a.joint) return a.joint.collision(b.joint, minDist, maxOverlap);
         return collision(b, a, minDist, maxOverlap);
     }
-    collision(b.a, a, minDist, maxOverlap);
-    collision(b.b, a, minDist, maxOverlap);
+    const f1 = () => collision(b.a, a, minDist, maxOverlap);
+    const f2 = () => collision(b.b, a, minDist, maxOverlap);
+    if (Math.random() < 0.5) {
+        f1();
+        f2();
+    } else {
+        f2();
+        f1();
+    }
 };
 
 const getOverlap = (a, b, minDist, maxOverlap) => {
