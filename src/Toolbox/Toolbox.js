@@ -175,19 +175,19 @@ export default props => {
                                             type="number"
                                             label="Inner voxel size"
                                             value={voxelSize}
-                                            onChange={e => setVoxelSize(e.target.value)}
+                                            onChange={e => setVoxelSize(Number(e.target.value))}
                                         />
                                         <TextField
                                             type="number"
                                             label="Outer voxel size"
                                             value={gridSize}
-                                            onChange={e => setGridSize(e.target.value)}
+                                            onChange={e => setGridSize(Number(e.target.value))}
                                         />
                                         <TextField
                                             type="number"
                                             label="Number of axons"
                                             value={axonCount}
-                                            onChange={e => setAxonCount(e.target.value)}
+                                            onChange={e => setAxonCount(Number(e.target.value))}
                                         />
                                     </ListItem>
                                     <ListItem>
@@ -195,13 +195,13 @@ export default props => {
                                             type="number"
                                             label="Number of joints per unit length"
                                             value={jointDensity}
-                                            onChange={e => setJointDensity(e.target.value)}
+                                            onChange={e => setJointDensity(Number(e.target.value))}
                                         />
                                         <TextField
                                             type="number"
                                             label="Number of cells"
                                             value={cellCount}
-                                            onChange={e => setCellCount(e.target.value)}
+                                            onChange={e => setCellCount(Number(e.target.value))}
                                         />
                                     </ListItem>
                                     <ListItem>
@@ -251,19 +251,19 @@ export default props => {
                                                     type="number"
                                                     label="Grow speed"
                                                     value={growSpeed}
-                                                    onChange={e => setGrowSpeed(e.target.value)}
+                                                    onChange={e => setGrowSpeed(Number(e.target.value))}
                                                 />
                                                 <TextField
                                                     type="number"
                                                     label="Contract speed"
                                                     value={contractSpeed}
-                                                    onChange={e => setContractSpeed(e.target.value)}
+                                                    onChange={e => setContractSpeed(Number(e.target.value))}
                                                 />
                                                 <TextField
                                                     type="number"
                                                     label="Minimum distance"
                                                     value={minDist}
-                                                    onChange={e => setMinDist(e.target.value)}
+                                                    onChange={e => setMinDist(Number(e.target.value))}
                                                 />
                                             </ListItem>
                                             <ListItem>
