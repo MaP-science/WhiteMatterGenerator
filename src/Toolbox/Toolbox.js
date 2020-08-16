@@ -23,6 +23,7 @@ import {
 
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";
+import { round2Decimals } from "./helperFunctions";
 
 const useStyles = makeStyles(theme => ({
     gridItem: {
@@ -325,15 +326,17 @@ export default props => {
                                                         </TableRow>
                                                         <TableRow>
                                                             <TableCell>
-                                                                {100 * (volumeFraction || ["", ""])[0]}%
+                                                                {round2Decimals(100 * (volumeFraction || [0, 0])[0])}%
                                                             </TableCell>
                                                             <TableCell>
-                                                                {100 * (volumeFraction || ["", ""])[1]}%
+                                                                {round2Decimals(100 * (volumeFraction || [0, 0])[1])}%
                                                             </TableCell>
                                                             <TableCell>
-                                                                {100 *
-                                                                    ((volumeFraction || ["", ""])[0] +
-                                                                        (volumeFraction || ["", ""])[1])}
+                                                                {round2Decimals(
+                                                                    100 *
+                                                                        ((volumeFraction || [0, 0])[0] +
+                                                                            (volumeFraction || [0, 0])[1])
+                                                                )}
                                                                 %
                                                             </TableCell>
                                                         </TableRow>

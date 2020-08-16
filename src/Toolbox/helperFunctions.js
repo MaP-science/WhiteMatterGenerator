@@ -96,3 +96,5 @@ export const shuffle = a => {
     }
     return a;
 };
+
+export const round2Decimals = n => Math.round(n * 100) / 100;
