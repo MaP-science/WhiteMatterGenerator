@@ -2,8 +2,7 @@ import React from "react";
 
 export default props => (
     <>
-        TODO
-        <b>To get started:</b>
+        If you just want to try out the toolbox and see that it works try out the following:
         <ul>
             <li>Under "Setup" Press "Initialize"</li>
             <li>Under "After setup" turn on automatic growth and set the volume fraction to at least 30</li>
