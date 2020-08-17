@@ -1,5 +1,5 @@
 import React from "react";
-const source = "https://gitlab.gbar.dtu.dk/s164179/axon-generator-toolbox";
+const source = "https://github.com/Peulicke/axon-generator-toolbox";
 
 export default props => (
     <>

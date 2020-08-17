@@ -52,8 +52,12 @@ export default props => {
                                             key={i}
                                             button
                                             className={classes.nested}
-                                            onClick={() => history.push(`${c.path}${item.path}`)}
-                                            selected={props.match.url === `${c.path}${item.path}`}>
+                                            onClick={() =>
+                                                history.push(`${process.env.PUBLIC_URL}${c.path}${item.path}`)
+                                            }
+                                            selected={
+                                                props.match.url === `${process.env.PUBLIC_URL}${c.path}${item.path}`
+                                            }>
                                             <ListItemText primary={item.title} />
                                         </ListItem>
                                     ))}
@@ -62,8 +66,8 @@ export default props => {
                                 <ListItem
                                     key={i}
                                     button
-                                    onClick={() => history.push(c.path)}
-                                    selected={props.match.url === `${c.path}`}>
+                                    onClick={() => history.push(`${process.env.PUBLIC_URL}${c.path}`)}
+                                    selected={props.match.url === `${process.env.PUBLIC_URL}${c.path}`}>
                                     <ListItemText primary={c.title} />
                                 </ListItem>
                             )
