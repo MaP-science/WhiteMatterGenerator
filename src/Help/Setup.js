@@ -6,20 +6,20 @@ export default props => (
         <p>The first phase is the setup phase. Here you can specify:</p>
         <ul>
             <li>
-                <b>Inner voxel size</b> - This is the side length of the inner voxel which is used when computing the
-                volume fraction.
+                <b>Inner voxel side length</b> - This is the side length of the inner voxel which is used when computing
+                the volume fraction.
             </li>
             <li>
-                <b>Outer voxel size</b> - This is the side length of the outer voxel which is used when generating the
-                axons and cells.
+                <b>Outer voxel side length</b> - This is the side length of the outer voxel which is used when
+                generating the axons and cells.
             </li>
             <li>
                 <b>Number of axons</b> - This is the number of axons to be generated. Each axon is made up of ellipsoids
                 (here called joints).
             </li>
             <li>
-                <b>Number of joints per unit length</b> - This is the number of ellipsoids per unit length along axons.
-                A higher number results in higher precision of the model but is also more computation heavy.
+                <b>Joint density of axons</b> - This is the number of ellipsoids per µm along axons. A higher number
+                results in higher precision of the model but is also more computation heavy.
             </li>
             <li>
                 <b>Number of cells</b> - This is the number of cells to be generated. Each cell has the shape of an
@@ -29,19 +29,19 @@ export default props => (
         <p>
             When you are ready click the "Initialize" button. If you want more control of exactly how the axons and
             cells are generated, you can instead provide a JSON file by clicking the "Upload input file" button. The
-            file can specify the following values:
+            file can specify the following values (the unit of length is µm):
         </p>
         <ul>
             <li>
-                <b>voxelSizeInner</b> (number) - This is the size of the inner voxel which is used when computing the
-                volume fraction.
+                <b>voxelSizeInner</b> (number) - This is the side length of the inner voxel which is used when computing
+                the volume fraction.
             </li>
             <li>
-                <b>voxelSizeOuter</b> (number) - This is the size of the outer voxel which is used when generating the
-                axons.
+                <b>voxelSizeOuter</b> (number) - This is the side length of the outer voxel which is used when
+                generating the axons.
             </li>
             <li>
-                <b>jointDensity</b> (number) - This is the number of joints per unit length along axons.
+                <b>jointDensity</b> (number) - This is the number of joints per µm along axons.
             </li>
             <li>
                 <b>grow</b> (number) - How much the axons grow per step. 0 means no growth, 1 means that the axon will

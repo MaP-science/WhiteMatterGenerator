@@ -17,6 +17,7 @@ import {
     TableRow,
     FormControl,
     InputLabel,
+    InputAdornment,
     Select,
     MenuItem
 } from "@material-ui/core";
@@ -173,13 +174,19 @@ export default props => {
                                     <ListItem>
                                         <TextField
                                             type="number"
-                                            label="Inner voxel size"
+                                            label="Inner voxel side length"
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="start">µm</InputAdornment>
+                                            }}
                                             value={voxelSize}
                                             onChange={e => setVoxelSize(Number(e.target.value))}
                                         />
                                         <TextField
                                             type="number"
-                                            label="Outer voxel size"
+                                            label="Outer voxel side length"
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="start">µm</InputAdornment>
+                                            }}
                                             value={gridSize}
                                             onChange={e => setGridSize(Number(e.target.value))}
                                         />
@@ -193,7 +200,10 @@ export default props => {
                                     <ListItem>
                                         <TextField
                                             type="number"
-                                            label="Number of joints per unit length"
+                                            label="Joint density of axons"
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="start">µm⁻¹</InputAdornment>
+                                            }}
                                             value={jointDensity}
                                             onChange={e => setJointDensity(Number(e.target.value))}
                                         />
@@ -262,6 +272,11 @@ export default props => {
                                                 <TextField
                                                     type="number"
                                                     label="Minimum distance"
+                                                    InputProps={{
+                                                        endAdornment: (
+                                                            <InputAdornment position="start">µm</InputAdornment>
+                                                        )
+                                                    }}
                                                     value={minDist}
                                                     onChange={e => setMinDist(Number(e.target.value))}
                                                 />
