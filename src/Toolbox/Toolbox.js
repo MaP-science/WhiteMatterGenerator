@@ -45,6 +45,7 @@ export default props => {
     const [frame, setFrame] = useState(0);
     const [viewModeVoxel, setViewModeVoxel] = useState("all");
     const [viewModeAxon, setViewModeAxon] = useState("ellipsoids");
+    const [pipeResolution, setPipeResolution] = useState(64);
     const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
@@ -100,7 +101,7 @@ export default props => {
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "ready" && volumeFraction !== updateState.volumeFraction) {
             setVolumeFraction(updateState.volumeFraction);
-            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell));
+            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, pipeResolution, viewModeCell));
             setGrowCount(growCount === null ? 0 : growCount + 1);
         }
         if (updateState.name !== "ready" || automaticGrowth) {
@@ -118,6 +119,7 @@ export default props => {
         synthesizer,
         viewModeVoxel,
         viewModeAxon,
+        pipeResolution,
         viewModeCell,
         growSpeed,
         contractSpeed,
@@ -153,12 +155,12 @@ export default props => {
             );
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);
-            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
+            setScene(s.draw(viewModeVoxel, viewModeAxon, pipeResolution, viewModeCell));
             setUpdateState(s.updateState);
         };
         reader.readAsText(inputFile);
         setInputFile(null);
-    }, [inputFile, viewModeVoxel, viewModeAxon, viewModeCell]);
+    }, [inputFile, viewModeVoxel, viewModeAxon, pipeResolution, viewModeCell]);
 
     return (
         <>
@@ -228,7 +230,9 @@ export default props => {
                                                 s.addAxonsRandomly(axonCount);
                                                 s.addCellsRandomly(cellCount);
                                                 setSynthesizer(s);
-                                                setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
+                                                setScene(
+                                                    s.draw(viewModeVoxel, viewModeAxon, pipeResolution, viewModeCell)
+                                                );
                                                 setUpdateState(s.updateState);
                                             }}>
                                             Initialize
@@ -382,7 +386,14 @@ export default props => {
                                                         onChange={event => {
                                                             const vm = event.target.value;
                                                             setViewModeVoxel(vm);
-                                                            setScene(synthesizer.draw(vm, viewModeAxon, viewModeCell));
+                                                            setScene(
+                                                                synthesizer.draw(
+                                                                    vm,
+                                                                    viewModeAxon,
+                                                                    pipeResolution,
+                                                                    viewModeCell
+                                                                )
+                                                            );
                                                         }}>
                                                         <MenuItem value="none">hide</MenuItem>
                                                         <MenuItem value="all">show</MenuItem>
@@ -395,7 +406,14 @@ export default props => {
                                                         onChange={event => {
                                                             const vm = event.target.value;
                                                             setViewModeAxon(vm);
-                                                            setScene(synthesizer.draw(viewModeVoxel, vm, viewModeCell));
+                                                            const pr =
+                                                                vm === "pipes"
+                                                                    ? Number(window.prompt("Resolution", 64)) || 64
+                                                                    : pipeResolution;
+                                                            if (vm === "pipes") setPipeResolution(pr);
+                                                            setScene(
+                                                                synthesizer.draw(viewModeVoxel, vm, pr, viewModeCell)
+                                                            );
                                                         }}>
                                                         <MenuItem value="none">hide</MenuItem>
                                                         <MenuItem value="ellipsoids">ellipsoids</MenuItem>

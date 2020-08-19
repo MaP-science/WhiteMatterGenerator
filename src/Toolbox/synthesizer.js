@@ -75,7 +75,17 @@ export default class {
         const a = projectOntoCube(pos, dir, this.gridSize);
         const b = projectOntoCube(pos, dir.clone().negate(), this.gridSize);
         this.axons.push(
-            new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.ellipsoidDensity, this.voxelSize, this.gridSize)
+            new Axon(
+                a,
+                b,
+                r,
+                this.deformation,
+                this.minDiameter,
+                1,
+                this.ellipsoidDensity,
+                this.voxelSize,
+                this.gridSize
+            )
         );
         return true;
     }
@@ -85,7 +95,10 @@ export default class {
                 const p = randomPosition().multiplyScalar(this.gridSize);
                 const r = 0.1 + Math.random() * 0.5;
                 let create = true;
-                [this.axons.map(axon => [axon.ellipsoids[0], axon.ellipsoids[axon.ellipsoids.length - 1]]).flat(), this.cells]
+                [
+                    this.axons.map(axon => [axon.ellipsoids[0], axon.ellipsoids[axon.ellipsoids.length - 1]]).flat(),
+                    this.cells
+                ]
                     .flat()
                     .forEach(ellipsoid => {
                         const dist = ellipsoid.pos.clone().sub(p);
@@ -174,10 +187,10 @@ export default class {
         }
         return this.updateState;
     }
-    generatePipes(scene) {
+    generatePipes(scene, resolution) {
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
-            scene.add(new Mesh(axon.generatePipe(), new MeshPhongMaterial({ color: "#ffffff" })));
+            scene.add(new Mesh(axon.generatePipe(resolution), new MeshPhongMaterial({ color: "#ffffff" })));
         });
         return scene;
     }
@@ -192,16 +205,19 @@ export default class {
         scene.add(wireframeCube(this.voxelSize));
         scene.add(wireframeCube(this.gridSize));
     }
-    drawAxons(scene, mode) {
+    drawAxons(scene, mode, resolution) {
         switch (mode) {
             case "skeleton":
                 this.axons.forEach(axon => axon.generateSkeleton(scene));
                 break;
             case "pipes":
-                this.generatePipes(scene);
+                this.generatePipes(scene, resolution);
                 break;
             case "ellipsoids": {
-                const ellipsoidMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
+                const ellipsoidMesh = new Mesh(
+                    new SphereGeometry(1, 16, 16),
+                    new MeshPhongMaterial({ color: "#ffffff" })
+                );
                 this.axons.forEach(axon => axon.draw(scene, ellipsoidMesh));
                 break;
             }
@@ -214,12 +230,12 @@ export default class {
         const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#0000ff" }));
         this.cells.forEach(cell => cell.draw(scene, cellMesh));
     }
-    draw(voxelMode, axonMode, cellMode) {
+    draw(voxelMode, axonMode, resolution, cellMode) {
         const scene = new Scene();
         this.drawLight(scene);
         this.drawVoxels(scene, voxelMode);
         this.drawCells(scene, cellMode);
-        this.drawAxons(scene, axonMode);
+        this.drawAxons(scene, axonMode, resolution);
         return scene;
     }
 }

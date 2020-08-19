@@ -112,7 +112,7 @@ export default class {
             this.ellipsoids[i].pos.add(c);
         }
     }
-    generatePipe() {
+    generatePipe(resolution) {
         const addEllipsoid = (mc, pos, shape, min, max) => {
             for (let x = min.x; x < max.x; x++) {
                 for (let y = min.y; y < max.y; y++) {
@@ -128,7 +128,7 @@ export default class {
                 }
             }
         };
-        const mc = new MarchingCubes(64, new MeshPhongMaterial({ color: "#ffffff" }), true, false);
+        const mc = new MarchingCubes(resolution, new MeshPhongMaterial({ color: "#ffffff" }), true, false);
         mc.isolation = 1;
         this.ellipsoids.forEach(ellipsoid => {
             const bb = ellipsoid.boundingBox(0);
