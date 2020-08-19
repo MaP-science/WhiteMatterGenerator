@@ -51,7 +51,7 @@ export default props => {
     const [voxelSize, setVoxelSize] = useState(5);
     const [gridSize, setGridSize] = useState(6);
     const [axonCount, setAxonCount] = useState(80);
-    const [jointDensity, setJointDensity] = useState(10);
+    const [ellipsoidDensity, setEllipsoidDensity] = useState(10);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
     const [contractSpeed, setContractSpeed] = useState(0.01);
@@ -137,14 +137,14 @@ export default props => {
 
             setVoxelSize(data.voxelSizeInner);
             setGridSize(data.voxelSizeOuter);
-            setJointDensity(data.jointDensity);
+            setEllipsoidDensity(data.ellipsoidDensity);
             setGrowSpeed(data.grow);
             setContractSpeed(data.contract);
 
             const s = new Synthesizer(
                 data.voxelSizeInner,
                 data.voxelSizeOuter,
-                data.jointDensity,
+                data.ellipsoidDensity,
                 new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
                 new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
             );
@@ -200,12 +200,12 @@ export default props => {
                                     <ListItem>
                                         <TextField
                                             type="number"
-                                            label="Joint density of axons"
+                                            label="Ellipsoid density of axons"
                                             InputProps={{
                                                 endAdornment: <InputAdornment position="start">µm⁻¹</InputAdornment>
                                             }}
-                                            value={jointDensity}
-                                            onChange={e => setJointDensity(Number(e.target.value))}
+                                            value={ellipsoidDensity}
+                                            onChange={e => setEllipsoidDensity(Number(e.target.value))}
                                         />
                                         <TextField
                                             type="number"
@@ -221,7 +221,7 @@ export default props => {
                                                 const s = new Synthesizer(
                                                     voxelSize,
                                                     gridSize,
-                                                    jointDensity,
+                                                    ellipsoidDensity,
                                                     new Mapping([0, 0.4, 1], [0, 0.5, 1]),
                                                     new Mapping([0, 2], [0, 0.2])
                                                 );

@@ -23,54 +23,54 @@ export default class {
     containsPoint(p) {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
     }
-    collision(joint, minDist, maxOverlap) {
-        const d = joint.pos.clone().sub(this.pos);
+    collision(ellipsoid, minDist, maxOverlap) {
+        const d = ellipsoid.pos.clone().sub(this.pos);
         const dSqr = d.dot(d);
         if (dSqr < 0.00001) {
             const r = randomDirection().multiplyScalar(0.0001);
             this.pos.sub(r);
-            joint.pos.add(r);
+            ellipsoid.pos.add(r);
             return;
         }
         let [axisLength, axis] = collisionAxis(
             this.pos,
             this.shape,
-            joint.pos,
-            joint.shape,
-            this.axisCache[joint.id],
+            ellipsoid.pos,
+            ellipsoid.shape,
+            this.axisCache[ellipsoid.id],
             maxOverlap
         );
-        this.axisCache[joint.id] = axis;
+        this.axisCache[ellipsoid.id] = axis;
         axisLength += minDist;
         if (axisLength < 0) return;
         // Collision resolution
         // Update shape
         const c1 = extremum(this.shape, axis).dot(axis);
-        const c2 = extremum(joint.shape, axis).dot(axis);
+        const c2 = extremum(ellipsoid.shape, axis).dot(axis);
         const delta1 = this.deformation.map(c1 * 2) / (c1 * 2);
-        const delta2 = joint.deformation.map(c2 * 2) / (c2 * 2);
+        const delta2 = ellipsoid.deformation.map(c2 * 2) / (c2 * 2);
         const mu1 = this.minDiameter.map(this.radius * 2) / (c1 * 2);
-        const mu2 = joint.minDiameter.map(joint.radius * 2) / (c2 * 2);
+        const mu2 = ellipsoid.minDiameter.map(ellipsoid.radius * 2) / (c2 * 2);
         const s1 = Math.max(-axisLength * delta1, mu1 - 1);
         const s2 = Math.max(-axisLength * delta2, mu2 - 1);
         deform(this.shape, axis, s1);
-        deform(joint.shape, axis, s2);
+        deform(ellipsoid.shape, axis, s2);
         axisLength += s1 * c1 + s2 * c2;
         // Update position
-        const w = axisLength / (this.movement + joint.movement);
+        const w = axisLength / (this.movement + ellipsoid.movement);
         this.pos.sub(axis.clone().multiplyScalar(this.movement * w));
-        joint.pos.add(axis.clone().multiplyScalar(joint.movement * w));
+        ellipsoid.pos.add(axis.clone().multiplyScalar(ellipsoid.movement * w));
     }
-    getOverlap(joint, minDist, maxOverlap) {
+    getOverlap(ellipsoid, minDist, maxOverlap) {
         let [axisLength, axis] = collisionAxis(
             this.pos,
             this.shape,
-            joint.pos,
-            joint.shape,
-            this.axisCache[joint.id],
+            ellipsoid.pos,
+            ellipsoid.shape,
+            this.axisCache[ellipsoid.id],
             maxOverlap
         );
-        this.axisCache[joint.id] = axis;
+        this.axisCache[ellipsoid.id] = axis;
         return Math.max(axisLength + minDist, 0);
     }
     grow(amount) {

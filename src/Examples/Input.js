@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const inputExample = {
     voxelSizeInner: 9,
     voxelSizeOuter: 10,
-    jointDensity: 100,
+    ellipsoidDensity: 100,
     grow: 0.05,
     contract: 0.05,
     mapFromDiameterToDeformationFactor: {

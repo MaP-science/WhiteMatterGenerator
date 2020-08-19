@@ -11,8 +11,8 @@ export default props => (
             </li>
             <li>
                 <b>Contract speed</b> - This is how much the axons will contract per step, i.e. how "stiff" the axons
-                are. A value of 0 means that neighboring joints of an axon won't try to stay together. The maximum value
-                is 1.
+                are. A value of 0 means that neighboring ellipsoids of an axon won't try to stay together. The maximum
+                value is 1.
             </li>
             <li>
                 <b>Minimum distance</b> - This is the minimum allowed space between axons. If set to 0 the axons can

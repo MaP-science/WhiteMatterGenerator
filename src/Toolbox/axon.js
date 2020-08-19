@@ -1,18 +1,18 @@
 import { Vector3, Matrix3, MeshPhongMaterial, LineBasicMaterial, BufferGeometry, Line } from "three";
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
-import Joint from "./joint";
+import Ellipsoid from "./ellipsoid";
 import { min, max } from "./helperFunctions";
 
-const computeCollisionTree = (joints, minDist) => {
-    if (joints.length === 1)
+const computeCollisionTree = (ellipsoids, minDist) => {
+    if (ellipsoids.length === 1)
         return {
-            joint: joints[0],
-            aabb: joints[0].boundingBox(minDist),
-            containsPoint: p => joints[0].containsPoint(p)
+            ellipsoid: ellipsoids[0],
+            aabb: ellipsoids[0].boundingBox(minDist),
+            containsPoint: p => ellipsoids[0].containsPoint(p)
         };
-    const a = computeCollisionTree(joints.slice(0, Math.ceil(joints.length / 2)), minDist);
-    const b = computeCollisionTree(joints.slice(Math.ceil(joints.length / 2)), minDist);
+    const a = computeCollisionTree(ellipsoids.slice(0, Math.ceil(ellipsoids.length / 2)), minDist);
+    const b = computeCollisionTree(ellipsoids.slice(Math.ceil(ellipsoids.length / 2)), minDist);
     const aabb = a.aabb.clone().union(b.aabb);
     return {
         a: a,
@@ -27,8 +27,8 @@ const computeCollisionTree = (joints, minDist) => {
 
 const collision = (a, b, minDist, maxOverlap) => {
     if (!a.aabb.intersectsBox(b.aabb)) return;
-    if (b.joint) {
-        if (a.joint) return a.joint.collision(b.joint, minDist, maxOverlap);
+    if (b.ellipsoid) {
+        if (a.ellipsoid) return a.ellipsoid.collision(b.ellipsoid, minDist, maxOverlap);
         return collision(b, a, minDist, maxOverlap);
     }
     const f1 = () => collision(b.a, a, minDist, maxOverlap);
@@ -44,22 +44,22 @@ const collision = (a, b, minDist, maxOverlap) => {
 
 const getOverlap = (a, b, minDist, maxOverlap) => {
     if (!a.aabb.intersectsBox(b.aabb)) return 0;
-    if (b.joint) {
-        if (a.joint) return a.joint.getOverlap(b.joint, minDist, maxOverlap);
+    if (b.ellipsoid) {
+        if (a.ellipsoid) return a.ellipsoid.getOverlap(b.ellipsoid, minDist, maxOverlap);
         return getOverlap(b, a, minDist, maxOverlap);
     }
     return Math.max(getOverlap(b.a, a, minDist, maxOverlap), getOverlap(b.b, a, minDist, maxOverlap));
 };
 
 export default class {
-    constructor(start, end, radius, deformation, minDiameter, movement, jointDensity, voxelSize, gridSize) {
+    constructor(start, end, radius, deformation, minDiameter, movement, ellipsoidDensity, voxelSize, gridSize) {
         this.start = start.clone();
         this.end = end.clone();
         this.radius = radius;
-        const n = Math.max(Math.round(end.clone().sub(start.clone()).length() * jointDensity), 2);
-        this.joints = new Array(n).fill(true).map(
+        const n = Math.max(Math.round(end.clone().sub(start.clone()).length() * ellipsoidDensity), 2);
+        this.ellipsoids = new Array(n).fill(true).map(
             (_, i) =>
-                new Joint(
+                new Ellipsoid(
                     start
                         .clone()
                         .multiplyScalar(1 - i / (n - 1))
@@ -76,18 +76,18 @@ export default class {
     keepInVoxel() {
         const gridMin = new Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
         const gridMax = new Vector3(this.gridSize / 2, this.gridSize / 2, this.gridSize / 2);
-        this.joints.forEach(joint => (joint.pos = min(max(joint.pos, gridMin), gridMax)));
-        [this.joints[0], this.joints[this.joints.length - 1]].forEach(joint => {
-            const ax = Math.abs(joint.pos.x);
-            const ay = Math.abs(joint.pos.y);
-            const az = Math.abs(joint.pos.z);
-            if (ax > ay && ax > az) return (joint.pos.x *= this.gridSize / (2 * ax));
-            if (ay > az) return (joint.pos.y *= this.gridSize / (2 * ay));
-            joint.pos.z *= this.gridSize / (2 * az);
+        this.ellipsoids.forEach(ellipsoid => (ellipsoid.pos = min(max(ellipsoid.pos, gridMin), gridMax)));
+        [this.ellipsoids[0], this.ellipsoids[this.ellipsoids.length - 1]].forEach(ellipsoid => {
+            const ax = Math.abs(ellipsoid.pos.x);
+            const ay = Math.abs(ellipsoid.pos.y);
+            const az = Math.abs(ellipsoid.pos.z);
+            if (ax > ay && ax > az) return (ellipsoid.pos.x *= this.gridSize / (2 * ax));
+            if (ay > az) return (ellipsoid.pos.y *= this.gridSize / (2 * ay));
+            ellipsoid.pos.z *= this.gridSize / (2 * az);
         });
     }
     computeCollisionTree(minDist) {
-        this.collisionTree = computeCollisionTree(this.joints, minDist);
+        this.collisionTree = computeCollisionTree(this.ellipsoids, minDist);
     }
     collision(axon, minDist, maxOverlap) {
         return collision(this.collisionTree, axon.collisionTree, minDist, maxOverlap);
@@ -96,20 +96,20 @@ export default class {
         return getOverlap(this.collisionTree, axon.collisionTree, minDist, maxOverlap);
     }
     grow(amount) {
-        this.joints.forEach(joint => joint.grow(amount));
+        this.ellipsoids.forEach(ellipsoid => ellipsoid.grow(amount));
     }
     contract(amount) {
-        for (let i = 1; i + 1 < this.joints.length; ++i) {
-            const c = this.joints[i + 1].pos
+        for (let i = 1; i + 1 < this.ellipsoids.length; ++i) {
+            const c = this.ellipsoids[i + 1].pos
                 .clone()
-                .add(this.joints[i - 1].pos)
+                .add(this.ellipsoids[i - 1].pos)
                 .divideScalar(2);
-            const d = this.joints[i + 1].pos.clone().sub(this.joints[i - 1].pos);
+            const d = this.ellipsoids[i + 1].pos.clone().sub(this.ellipsoids[i - 1].pos);
             d.normalize();
-            c.sub(this.joints[i].pos);
-            this.joints[i].pos.add(d.multiplyScalar(c.dot(d)));
+            c.sub(this.ellipsoids[i].pos);
+            this.ellipsoids[i].pos.add(d.multiplyScalar(c.dot(d)));
             c.multiplyScalar(amount);
-            this.joints[i].pos.add(c);
+            this.ellipsoids[i].pos.add(c);
         }
     }
     generatePipe() {
@@ -130,12 +130,12 @@ export default class {
         };
         const mc = new MarchingCubes(64, new MeshPhongMaterial({ color: "#ffffff" }), true, false);
         mc.isolation = 1;
-        this.joints.forEach(joint => {
-            const bb = joint.boundingBox(0);
+        this.ellipsoids.forEach(ellipsoid => {
+            const bb = ellipsoid.boundingBox(0);
             addEllipsoid(
                 mc,
-                joint.pos.clone().divideScalar(this.voxelSize).add(new Vector3(0.5, 0.5, 0.5)),
-                joint.shape.clone().multiplyScalar(1 / this.voxelSize),
+                ellipsoid.pos.clone().divideScalar(this.voxelSize).add(new Vector3(0.5, 0.5, 0.5)),
+                ellipsoid.shape.clone().multiplyScalar(1 / this.voxelSize),
                 bb.min
                     .divideScalar(this.voxelSize)
                     .add(new Vector3(0.5, 0.5, 0.5))
@@ -155,7 +155,7 @@ export default class {
     generateSkeleton(scene) {
         scene.add(
             new Line(
-                new BufferGeometry().setFromPoints(this.joints.map(joint => joint.pos)),
+                new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)),
                 new LineBasicMaterial({
                     color: 0xffffff
                 })
@@ -163,6 +163,6 @@ export default class {
         );
     }
     draw(scene, mesh) {
-        this.joints.forEach(joint => joint.draw(scene, mesh));
+        this.ellipsoids.forEach(ellipsoid => ellipsoid.draw(scene, mesh));
     }
 }

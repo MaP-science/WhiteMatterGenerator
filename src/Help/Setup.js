@@ -15,10 +15,10 @@ export default props => (
             </li>
             <li>
                 <b>Number of axons</b> - This is the number of axons to be generated. Each axon is made up of ellipsoids
-                (here called joints).
+                (here called ellipsoids).
             </li>
             <li>
-                <b>Joint density of axons</b> - This is the number of ellipsoids per µm along axons. A higher number
+                <b>Ellipsoid density of axons</b> - This is the number of ellipsoids per µm along axons. A higher number
                 results in higher precision of the model but is also more computation heavy.
             </li>
             <li>
@@ -41,7 +41,7 @@ export default props => (
                 generating the axons.
             </li>
             <li>
-                <b>jointDensity</b> (number) - This is the number of joints per µm along axons.
+                <b>ellipsoidDensity</b> (number) - This is the number of ellipsoids per µm along axons.
             </li>
             <li>
                 <b>grow</b> (number) - How much the axons grow per step. 0 means no growth, 1 means that the axon will
@@ -52,9 +52,9 @@ export default props => (
                 number should be between 0 and 1.
             </li>
             <li>
-                <b>mapFromDiameterToDeformationFactor</b> (object) - This map determines how much joints should deform
-                as opposed to change position when a collision occurs. It maps from the current diameter of the joint to
-                the deformation factor, which is a number between 0 and 1.
+                <b>mapFromDiameterToDeformationFactor</b> (object) - This map determines how much ellipsoids should
+                deform as opposed to change position when a collision occurs. It maps from the current diameter of the
+                ellipsoid to the deformation factor, which is a number between 0 and 1.
                 <ul>
                     <li>
                         <b>from</b> (array of numbers)
@@ -65,8 +65,8 @@ export default props => (
                 </ul>
             </li>
             <li>
-                <b>mapFromMaxDiameterToMinDiameter</b> (object) - This map determines the minimum diameter a joint can
-                have given its target size (max diameter).
+                <b>mapFromMaxDiameterToMinDiameter</b> (object) - This map determines the minimum diameter a ellipsoid
+                can have given its target size (max diameter).
                 <ul>
                     <li>
                         <b>from</b> (array of numbers)

@@ -13,7 +13,7 @@ import {
 } from "three";
 
 import Axon from "./axon";
-import Joint from "./joint";
+import Ellipsoid from "./ellipsoid";
 import Mapping from "./mapping";
 
 import { randomPosition, projectOntoCube, shuffle } from "./helperFunctions";
@@ -25,8 +25,8 @@ const wireframeCube = size =>
     );
 
 export default class {
-    constructor(voxelSize, gridSize, jointDensity, deformation, minDiameter) {
-        this.jointDensity = jointDensity;
+    constructor(voxelSize, gridSize, ellipsoidDensity, deformation, minDiameter) {
+        this.ellipsoidDensity = ellipsoidDensity;
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
         this.deformation = deformation;
@@ -49,7 +49,7 @@ export default class {
         shuffle(pairs);
         pairs.forEach(pair => pair[0].collision(pair[1], minDist, maxOverlap));
         this.axons.forEach((a, i) =>
-            a.joints.forEach(joint => this.cells.forEach(c => joint.collision(c, minDist, maxOverlap)))
+            a.ellipsoids.forEach(ellipsoid => this.cells.forEach(c => ellipsoid.collision(c, minDist, maxOverlap)))
         );
     }
     getOverlap(minDist, maxOverlap) {
@@ -75,7 +75,7 @@ export default class {
         const a = projectOntoCube(pos, dir, this.gridSize);
         const b = projectOntoCube(pos, dir.clone().negate(), this.gridSize);
         this.axons.push(
-            new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.jointDensity, this.voxelSize, this.gridSize)
+            new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.ellipsoidDensity, this.voxelSize, this.gridSize)
         );
         return true;
     }
@@ -85,15 +85,15 @@ export default class {
                 const p = randomPosition().multiplyScalar(this.gridSize);
                 const r = 0.1 + Math.random() * 0.5;
                 let create = true;
-                [this.axons.map(axon => [axon.joints[0], axon.joints[axon.joints.length - 1]]).flat(), this.cells]
+                [this.axons.map(axon => [axon.ellipsoids[0], axon.ellipsoids[axon.ellipsoids.length - 1]]).flat(), this.cells]
                     .flat()
-                    .forEach(joint => {
-                        const dist = joint.pos.clone().sub(p);
-                        const d = joint.radius + r;
+                    .forEach(ellipsoid => {
+                        const dist = ellipsoid.pos.clone().sub(p);
+                        const d = ellipsoid.radius + r;
                         if (dist.length() < d) create = false;
                     });
                 if (!create) continue;
-                const cell = new Joint(p, r, new Mapping([0], [0]), new Mapping([0, 1], [0, 1]), 0);
+                const cell = new Ellipsoid(p, r, new Mapping([0], [0]), new Mapping([0, 1], [0, 1]), 0);
                 cell.grow(1);
                 this.cells.push(cell);
                 break;
@@ -101,7 +101,7 @@ export default class {
         console.log("Total number of cells: " + this.cells.length);
     }
     addCell(pos, shape) {
-        const cell = new Joint(pos, 0, new Mapping([0], [0]), new Mapping([0], [0]), 0);
+        const cell = new Ellipsoid(pos, 0, new Mapping([0], [0]), new Mapping([0], [0]), 0);
         cell.shape = shape.clone();
         this.cells.push(cell);
     }
@@ -201,8 +201,8 @@ export default class {
                 this.generatePipes(scene);
                 break;
             case "ellipsoids": {
-                const jointMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
-                this.axons.forEach(axon => axon.draw(scene, jointMesh));
+                const ellipsoidMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
+                this.axons.forEach(axon => axon.draw(scene, ellipsoidMesh));
                 break;
             }
             default:
