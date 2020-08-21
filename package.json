@@ -1,8 +1,7 @@
 {
-    "homepage": "https://peulicke.github.io/axon-generator-toolbox",
+    "homepage": "./",
     "name": "axon-generator-toolbox",
     "version": "0.1.0",
-    "homepage": "./",
     "private": true,
     "dependencies": {
         "@material-ui/core": "^4.11.0",
@@ -16,6 +15,7 @@
         "react-dom": "^16.13.1",
         "react-router-dom": "^5.2.0",
         "react-scripts": "3.4.1",
+        "save-file": "^2.3.1",
         "three": "^0.117.1",
         "three-orbit-controls": "^82.1.0",
         "uuid": "^8.2.0"

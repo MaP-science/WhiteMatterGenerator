@@ -21,6 +21,7 @@ import {
     Select,
     MenuItem
 } from "@material-ui/core";
+import { save } from "save-file";
 
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";
@@ -436,22 +437,14 @@ export default props => {
                                                 </FormControl>
                                                 <Button
                                                     variant="contained"
-                                                    onClick={() => {
-                                                        try {
-                                                            const link = document.createElement("a");
-                                                            link.setAttribute(
-                                                                "href",
-                                                                "data:text/obj;charset=utf-8," +
-                                                                    new PLYExporter().parse(scene)
-                                                            );
-                                                            link.setAttribute("download", "axons.ply");
-                                                            window.document.body.appendChild(link);
-                                                            link.click();
-                                                            window.document.body.removeChild(link);
-                                                        } catch (err) {
-                                                            console.log(err);
-                                                        }
-                                                    }}>
+                                                    onClick={() =>
+                                                        save(
+                                                            new PLYExporter().parse(scene, null, {
+                                                                binary: true
+                                                            }),
+                                                            "axons.ply"
+                                                        )
+                                                    }>
                                                     Export
                                                 </Button>
                                             </ListItem>
