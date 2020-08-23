@@ -90,28 +90,37 @@ export default class {
         return true;
     }
     addCellsRandomly(cellCount) {
-        for (let i = 0; i < cellCount; ++i)
-            for (let j = 0; j < 100; ++j) {
-                const p = randomPosition().multiplyScalar(this.gridSize);
-                const r = 0.1 + Math.random() * 0.5;
-                let create = true;
-                [
-                    this.axons.map(axon => [axon.ellipsoids[0], axon.ellipsoids[axon.ellipsoids.length - 1]]).flat(),
-                    this.cells
-                ]
-                    .flat()
-                    .forEach(ellipsoid => {
-                        const dist = ellipsoid.pos.clone().sub(p);
-                        const d = ellipsoid.radius + r;
-                        if (dist.length() < d) create = false;
+        for (let i = 0; i < cellCount; ++i) {
+            const p = randomPosition().multiplyScalar(this.gridSize);
+            const r = 0.1 + Math.random() * 0.5;
+            this.cells.push(new Ellipsoid(p, r, new Mapping([0, 1], [0, 1]), new Mapping([0, 1], [0, 0.01]), 1));
+        }
+        const iterations = 100;
+        const maxOverlap = 0.0001;
+        for (let j = 0; j < iterations; ++j) {
+            this.cells.forEach((a, i) => a.grow(0.05));
+            for (let mo = 1; mo > maxOverlap; ) {
+                this.cells.forEach((a, i) => {
+                    this.cells.forEach((b, j) => {
+                        if (i >= j) return;
+                        a.collision(b, maxOverlap, maxOverlap);
                     });
-                if (!create) continue;
-                const cell = new Ellipsoid(p, r, new Mapping([0], [0]), new Mapping([0, 1], [0, 1]), 0);
-                cell.grow(1);
-                this.cells.push(cell);
-                break;
+                });
+                mo = 0;
+                this.cells.forEach((a, i) => a.keepInVoxel(this.gridSize));
+                this.cells.forEach((a, i) => {
+                    this.cells.forEach((b, j) => {
+                        if (i >= j) return;
+                        mo = Math.max(mo, a.getOverlap(b, maxOverlap, mo));
+                    });
+                });
             }
-        console.log("Total number of cells: " + this.cells.length);
+            console.log(`Generating cells: ${((j + 1) * 100) / iterations}%`);
+        }
+        this.cells.forEach((a, i) => {
+            a.deformation = new Mapping([0], [0]);
+            a.movement = 0;
+        });
     }
     addCell(pos, shape) {
         const cell = new Ellipsoid(pos, 0, new Mapping([0], [0]), new Mapping([0], [0]), 0);
@@ -223,7 +232,7 @@ export default class {
     }
     drawCells(scene, mode) {
         if (mode === "none") return;
-        const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#0000ff" }));
+        const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
         this.cells.forEach(cell => cell.draw(scene, cellMesh));
     }
     draw(voxelMode, axonMode, resolution, cellMode) {

@@ -1,6 +1,6 @@
 import { Vector3, Matrix3, Box3 } from "three";
 import { v4 } from "uuid";
-import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum } from "./helperFunctions";
+import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum, min, max } from "./helperFunctions";
 
 export default class {
     constructor(pos, radius, deformation, minDiameter, movement) {
@@ -22,6 +22,11 @@ export default class {
     }
     containsPoint(p) {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
+    }
+    keepInVoxel(gridSize) {
+        const gridMin = new Vector3(-gridSize / 2, -gridSize / 2, -gridSize / 2);
+        const gridMax = new Vector3(gridSize / 2, gridSize / 2, gridSize / 2);
+        this.pos = min(max(this.pos, gridMin), gridMax);
     }
     collision(ellipsoid, minDist, maxOverlap) {
         const d = ellipsoid.pos.clone().sub(this.pos);

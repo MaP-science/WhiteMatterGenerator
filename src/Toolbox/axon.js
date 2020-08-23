@@ -13,7 +13,6 @@ import {
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Ellipsoid from "./ellipsoid";
-import { min, max } from "./helperFunctions";
 
 const computeCollisionTree = (ellipsoids, minDist) => {
     if (ellipsoids.length === 1)
@@ -105,9 +104,7 @@ export default class {
         this.color = "#" + Math.random().toString(16).substr(2, 6);
     }
     keepInVoxel() {
-        const gridMin = new Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
-        const gridMax = new Vector3(this.gridSize / 2, this.gridSize / 2, this.gridSize / 2);
-        this.ellipsoids.forEach(ellipsoid => (ellipsoid.pos = min(max(ellipsoid.pos, gridMin), gridMax)));
+        this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.gridSize));
         [this.ellipsoids[0], this.ellipsoids[this.ellipsoids.length - 1]].forEach(ellipsoid => {
             const ax = Math.abs(ellipsoid.pos.x);
             const ay = Math.abs(ellipsoid.pos.y);
