@@ -188,7 +188,10 @@ export default class {
     generateSkeleton(scene) {
         scene.add(
             new Line(
-                new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)),
+                applyColor(
+                    new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)),
+                    this.color
+                ),
                 new LineBasicMaterial({
                     vertexColors: VertexColors
                 })
