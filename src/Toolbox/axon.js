@@ -6,8 +6,9 @@ import {
     BufferGeometry,
     Line,
     Mesh,
-    SphereGeometry,
-    BufferAttribute
+    SphereBufferGeometry,
+    BufferAttribute,
+    VertexColors
 } from "three";
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
@@ -59,6 +60,25 @@ const getOverlap = (a, b, minDist, maxOverlap) => {
         return getOverlap(b, a, minDist, maxOverlap);
     }
     return Math.max(getOverlap(b.a, a, minDist, maxOverlap), getOverlap(b.b, a, minDist, maxOverlap));
+};
+
+const applyColor = (geometry, color) => {
+    if (!geometry?.attributes?.position?.count) return geometry;
+    return geometry.setAttribute(
+        "color",
+        new BufferAttribute(
+            new Float32Array(
+                Array(geometry.attributes.position.count)
+                    .fill([
+                        parseInt(color.substr(1, 6).substr(0, 2), 16) / 255,
+                        parseInt(color.substr(1, 6).substr(2, 2), 16) / 255,
+                        parseInt(color.substr(1, 6).substr(4, 2), 16) / 255
+                    ])
+                    .flat()
+            ),
+            3
+        )
+    );
 };
 
 export default class {
@@ -162,36 +182,24 @@ export default class {
             );
         });
         const geometry = mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2);
-        if (!geometry?.attributes?.position?.count) return;
-        geometry.setAttribute(
-            "color",
-            new BufferAttribute(
-                new Float32Array(
-                    Array(geometry.attributes.position.count)
-                        .fill([
-                            parseInt(this.color.substr(1, 6).substr(0, 2), 16) / 255,
-                            parseInt(this.color.substr(1, 6).substr(2, 2), 16) / 255,
-                            parseInt(this.color.substr(1, 6).substr(4, 2), 16) / 255
-                        ])
-                        .flat()
-                ),
-                3
-            )
-        );
-        scene.add(new Mesh(geometry, new MeshPhongMaterial({ color: this.color })));
+        applyColor(geometry, this.color);
+        scene.add(new Mesh(geometry, new MeshPhongMaterial({ vertexColors: VertexColors })));
     }
     generateSkeleton(scene) {
         scene.add(
             new Line(
                 new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)),
                 new LineBasicMaterial({
-                    color: this.color
+                    vertexColors: VertexColors
                 })
             )
         );
     }
     draw(scene) {
-        const mesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: this.color }));
+        const mesh = new Mesh(
+            applyColor(new SphereBufferGeometry(1, 16, 16), this.color),
+            new MeshPhongMaterial({ vertexColors: VertexColors })
+        );
         this.ellipsoids.forEach(ellipsoid => ellipsoid.draw(scene, mesh));
     }
 }
