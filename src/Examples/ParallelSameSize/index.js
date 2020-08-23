@@ -1,23 +1,5 @@
 import React from "react";
-import {
-    Typography,
-    Paper,
-    makeStyles,
-    TextField,
-    Button,
-    List,
-    ListItem,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableRow,
-    FormControl,
-    InputLabel,
-    InputAdornment,
-    Select,
-    MenuItem
-} from "@material-ui/core";
+import { Typography, makeStyles, Button } from "@material-ui/core";
 import { save } from "save-file";
 import config from "./config";
 import imgEllipsoids from "./ellipsoids.png";
@@ -45,11 +27,11 @@ export default props => {
             <Typography>
                 Using this file and setting the volume fraction target to 70%, the following result is obtained:
             </Typography>
-            <img src={imgEllipsoids} className={classes.img} />
+            <img src={imgEllipsoids} className={classes.img} alt="ellipsoids" />
             <Typography>Switching to the pipe display mode the result is:</Typography>
-            <img src={imgPipesSide} className={classes.img} />
+            <img src={imgPipesSide} className={classes.img} alt="pipes side" />
             <Typography>and</Typography>
-            <img src={imgPipesFront} className={classes.img} />
+            <img src={imgPipesFront} className={classes.img} alt="pipes front" />
         </>
     );
 };
