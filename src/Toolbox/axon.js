@@ -190,7 +190,7 @@ export default class {
         });
         const geometry = mc
             .generateBufferGeometry()
-            .scale(this.voxelSizeInner / 2, this.voxelSizeInner / 2, this.voxelSize / 2);
+            .scale(this.voxelSizeInner / 2, this.voxelSizeInner / 2, this.voxelSizeInner / 2);
         applyColor(geometry, this.color);
         scene.add(new Mesh(geometry, new MeshPhongMaterial({ vertexColors: VertexColors })));
     }
