@@ -3,6 +3,7 @@ import Examples from "./Examples";
 import GettingStarted from "./GettingStarted";
 import Input from "./Input";
 import ParallelSameSize from "./ParallelSameSize";
+import ParallelDifferentSize from "./ParallelDifferentSize";
 
 export default {
     title: "Examples",
@@ -23,6 +24,11 @@ export default {
             title: "Parallel axons of equal size",
             path: "/parallelSameSize",
             component: ParallelSameSize
+        },
+        {
+            title: "Parallel axons of different sizes",
+            path: "/parallelDifferentSize",
+            component: ParallelDifferentSize
         }
     ]
 };
