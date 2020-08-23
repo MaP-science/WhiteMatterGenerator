@@ -64,8 +64,8 @@ export default props => {
     const [growCount, setGrowCount] = useState(null);
     const [automaticGrowth, setAutomaticGrowth] = useState(false);
     const [mapFromDiameterToDeformationFactor, setMapFromDiameterToDeformationFactor] = useState({
-        from: [0, 0.4, 1],
-        to: [0, 0.5, 1]
+        from: [0, 2],
+        to: [0, 0.2]
     });
     const [mapFromMaxDiameterToMinDiameter, setMapFromMaxDiameterToMinDiameter] = useState({
         from: [0, 2],
@@ -160,6 +160,7 @@ export default props => {
                 new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
                 new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
             );
+            setAxonCount(data.axons.length);
             data.axons.forEach(axon =>
                 s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter / 2)
             );
