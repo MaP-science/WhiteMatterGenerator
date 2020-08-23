@@ -190,7 +190,7 @@ export default class {
     generatePipes(scene, resolution) {
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
-            scene.add(new Mesh(axon.generatePipe(resolution), new MeshPhongMaterial({ color: "#ffffff" })));
+            axon.generatePipe(scene, resolution);
         });
         return scene;
     }
@@ -214,11 +214,7 @@ export default class {
                 this.generatePipes(scene, resolution);
                 break;
             case "ellipsoids": {
-                const ellipsoidMesh = new Mesh(
-                    new SphereGeometry(1, 16, 16),
-                    new MeshPhongMaterial({ color: "#ffffff" })
-                );
-                this.axons.forEach(axon => axon.draw(scene, ellipsoidMesh));
+                this.axons.forEach(axon => axon.draw(scene));
                 break;
             }
             default:

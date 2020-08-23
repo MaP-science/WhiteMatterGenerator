@@ -1,4 +1,13 @@
-import { Vector3, Matrix3, MeshPhongMaterial, LineBasicMaterial, BufferGeometry, Line } from "three";
+import {
+    Vector3,
+    Matrix3,
+    MeshPhongMaterial,
+    LineBasicMaterial,
+    BufferGeometry,
+    Line,
+    Mesh,
+    SphereGeometry
+} from "three";
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Ellipsoid from "./ellipsoid";
@@ -72,6 +81,7 @@ export default class {
         );
         this.voxelSize = voxelSize;
         this.gridSize = gridSize;
+        this.color = "#" + Math.random().toString(16).substr(2, 6);
     }
     keepInVoxel() {
         const gridMin = new Vector3(-this.gridSize / 2, -this.gridSize / 2, -this.gridSize / 2);
@@ -112,7 +122,7 @@ export default class {
             this.ellipsoids[i].pos.add(c);
         }
     }
-    generatePipe(resolution) {
+    generatePipe(scene, resolution) {
         const addEllipsoid = (mc, pos, shape, min, max) => {
             for (let x = min.x; x < max.x; x++) {
                 for (let y = min.y; y < max.y; y++) {
@@ -128,7 +138,7 @@ export default class {
                 }
             }
         };
-        const mc = new MarchingCubes(resolution, new MeshPhongMaterial({ color: "#ffffff" }), true, false);
+        const mc = new MarchingCubes(resolution, {}, true, false);
         mc.isolation = 1;
         this.ellipsoids.forEach(ellipsoid => {
             const bb = ellipsoid.boundingBox(0);
@@ -150,19 +160,21 @@ export default class {
                     .min(new Vector3(mc.size, mc.size, mc.size))
             );
         });
-        return mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2);
+        const geometry = mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2);
+        scene.add(new Mesh(geometry, new MeshPhongMaterial({ color: this.color })));
     }
     generateSkeleton(scene) {
         scene.add(
             new Line(
                 new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)),
                 new LineBasicMaterial({
-                    color: 0xffffff
+                    color: this.color
                 })
             )
         );
     }
-    draw(scene, mesh) {
+    draw(scene) {
+        const mesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: this.color }));
         this.ellipsoids.forEach(ellipsoid => ellipsoid.draw(scene, mesh));
     }
 }
