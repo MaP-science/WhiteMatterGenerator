@@ -1,3 +1,3 @@
 # Axon Generator Toolbox
 
-Try the [demo](https://peulicke.github.io/axon-generator-toolbox).
+Try the [demo](https://axon-generator-toolbox.web.app).

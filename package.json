@@ -1,5 +1,4 @@
 {
-    "homepage": "./",
     "name": "axon-generator-toolbox",
     "version": "0.1.0",
     "private": true,
@@ -21,8 +20,8 @@
         "uuid": "^8.2.0"
     },
     "scripts": {
-        "predeploy": "PUBLIC_URL=/axon-generator-toolbox npm run build",
-        "deploy": "gh-pages -d build",
+        "predeploy": "npm run build",
+        "deploy": "firebase deploy",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "test": "react-scripts test",

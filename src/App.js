@@ -16,13 +16,9 @@ export default props => {
                         <Menu {...props}>
                             <Switch>
                                 {config.map((c, i) => (
-                                    <Route
-                                        key={i}
-                                        path={`${process.env.PUBLIC_URL}${c.path}`}
-                                        component={c.component}
-                                    />
+                                    <Route key={i} path={`${c.path}`} component={c.component} />
                                 ))}
-                                <Redirect exact from="*" to={`${process.env.PUBLIC_URL}${config[0].path}`} />
+                                <Redirect exact from="*" to={`${config[0].path}`} />
                             </Switch>
                         </Menu>
                     )}
