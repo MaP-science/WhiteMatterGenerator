@@ -25,10 +25,10 @@ const wireframeCube = size =>
     );
 
 export default class {
-    constructor(voxelSize, gridSize, ellipsoidDensity, deformation, minDiameter) {
+    constructor(voxelSizeInner, voxelSizeOuter, ellipsoidDensity, deformation, minDiameter) {
         this.ellipsoidDensity = ellipsoidDensity;
-        this.voxelSize = voxelSize;
-        this.gridSize = gridSize;
+        this.voxelSizeInner = voxelSizeInner;
+        this.voxelSizeOuter = voxelSizeOuter;
         this.deformation = deformation;
         this.minDiameter = minDiameter;
         this.axons = [];
@@ -66,14 +66,20 @@ export default class {
     addAxonsRandomly(axonCount) {
         for (let i = 0; i < axonCount; ++i)
             for (let j = 0; j < 100; ++j) {
-                if (this.addAxon(randomPosition().multiplyScalar(this.gridSize), randomPosition(), 0.5 + Math.random()))
+                if (
+                    this.addAxon(
+                        randomPosition().multiplyScalar(this.voxelSizeOuter),
+                        randomPosition(),
+                        0.5 + Math.random()
+                    )
+                )
                     break;
             }
         console.log("Total number of axons: " + this.axons.length);
     }
     addAxon(pos, dir, r) {
-        const a = projectOntoCube(pos, dir, this.gridSize);
-        const b = projectOntoCube(pos, dir.clone().negate(), this.gridSize);
+        const a = projectOntoCube(pos, dir, this.voxelSizeOuter);
+        const b = projectOntoCube(pos, dir.clone().negate(), this.voxelSizeOuter);
         this.axons.push(
             new Axon(
                 a,
@@ -83,15 +89,15 @@ export default class {
                 this.minDiameter,
                 1,
                 this.ellipsoidDensity,
-                this.voxelSize,
-                this.gridSize
+                this.voxelSizeInner,
+                this.voxelSizeOuter
             )
         );
         return true;
     }
     addCellsRandomly(cellCount) {
         for (let i = 0; i < cellCount; ++i) {
-            const p = randomPosition().multiplyScalar(this.gridSize);
+            const p = randomPosition().multiplyScalar(this.voxelSizeOuter);
             const r = 0.1 + Math.random() * 0.5;
             this.cells.push(new Ellipsoid(p, r, new Mapping([0, 1], [0, 1]), new Mapping([0, 1], [0, 0.01]), 1));
         }
@@ -107,7 +113,7 @@ export default class {
                     });
                 });
                 mo = 0;
-                this.cells.forEach((a, i) => a.keepInVoxel(this.gridSize));
+                this.cells.forEach((a, i) => a.keepInVoxel(this.voxelSizeOuter));
                 this.cells.forEach((a, i) => {
                     this.cells.forEach((b, j) => {
                         if (i >= j) return;
@@ -137,7 +143,7 @@ export default class {
                     const p = new Vector3(i + 0.5, j + 0.5, k + 0.5)
                         .divideScalar(n)
                         .sub(new Vector3(0.5, 0.5, 0.5))
-                        .multiplyScalar(this.voxelSize);
+                        .multiplyScalar(this.voxelSizeInner);
                     let inside = false;
                     this.axons.forEach(axon => {
                         if (axon.collisionTree.containsPoint(p)) inside = true;
@@ -211,8 +217,8 @@ export default class {
     }
     drawVoxels(scene, mode) {
         if (mode === "none") return;
-        scene.add(wireframeCube(this.voxelSize));
-        scene.add(wireframeCube(this.gridSize));
+        scene.add(wireframeCube(this.voxelSizeInner));
+        scene.add(wireframeCube(this.voxelSizeOuter));
     }
     drawAxons(scene, mode, resolution) {
         switch (mode) {

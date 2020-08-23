@@ -50,8 +50,8 @@ export default props => {
     const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
-    const [voxelSize, setVoxelSize] = useState(5);
-    const [gridSize, setGridSize] = useState(6);
+    const [voxelSizeInner, setVoxelSizeInner] = useState(5);
+    const [voxelSizeOuter, setVoxelSizeOuter] = useState(6);
     const [axonCount, setAxonCount] = useState(80);
     const [ellipsoidDensity, setEllipsoidDensity] = useState(10);
     const [cellCount, setCellCount] = useState(0);
@@ -138,8 +138,8 @@ export default props => {
         reader.onload = async event => {
             const data = JSON.parse(event.target.result);
 
-            setVoxelSize(data.voxelSizeInner);
-            setGridSize(data.voxelSizeOuter);
+            setVoxelSizeInner(data.voxelSizeInner);
+            setVoxelSizeOuter(data.voxelSizeOuter);
             setEllipsoidDensity(data.ellipsoidDensity);
             setGrowSpeed(data.grow);
             setContractSpeed(data.contract);
@@ -181,8 +181,8 @@ export default props => {
                                             InputProps={{
                                                 endAdornment: <InputAdornment position="start">µm</InputAdornment>
                                             }}
-                                            value={voxelSize}
-                                            onChange={e => setVoxelSize(Number(e.target.value))}
+                                            value={voxelSizeInner}
+                                            onChange={e => setVoxelSizeInner(Number(e.target.value))}
                                         />
                                         <TextField
                                             type="number"
@@ -190,8 +190,8 @@ export default props => {
                                             InputProps={{
                                                 endAdornment: <InputAdornment position="start">µm</InputAdornment>
                                             }}
-                                            value={gridSize}
-                                            onChange={e => setGridSize(Number(e.target.value))}
+                                            value={voxelSizeOuter}
+                                            onChange={e => setVoxelSizeOuter(Number(e.target.value))}
                                         />
                                         <TextField
                                             type="number"
@@ -222,8 +222,8 @@ export default props => {
                                             variant="contained"
                                             onClick={() => {
                                                 const s = new Synthesizer(
-                                                    voxelSize,
-                                                    gridSize,
+                                                    voxelSizeInner,
+                                                    voxelSizeOuter,
                                                     ellipsoidDensity,
                                                     new Mapping([0, 0.4, 1], [0, 0.5, 1]),
                                                     new Mapping([0, 2], [0, 0.2])

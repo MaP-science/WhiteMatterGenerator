@@ -81,7 +81,17 @@ const applyColor = (geometry, color) => {
 };
 
 export default class {
-    constructor(start, end, radius, deformation, minDiameter, movement, ellipsoidDensity, voxelSize, gridSize) {
+    constructor(
+        start,
+        end,
+        radius,
+        deformation,
+        minDiameter,
+        movement,
+        ellipsoidDensity,
+        voxelSizeInner,
+        voxelSizeOuter
+    ) {
         this.start = start.clone();
         this.end = end.clone();
         this.radius = radius;
@@ -99,19 +109,19 @@ export default class {
                     movement
                 )
         );
-        this.voxelSize = voxelSize;
-        this.gridSize = gridSize;
+        this.voxelSizeInner = voxelSizeInner;
+        this.voxelSizeOuter = voxelSizeOuter;
         this.color = "#" + Math.random().toString(16).substr(2, 6);
     }
     keepInVoxel() {
-        this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.gridSize));
+        this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSizeOuter));
         [this.ellipsoids[0], this.ellipsoids[this.ellipsoids.length - 1]].forEach(ellipsoid => {
             const ax = Math.abs(ellipsoid.pos.x);
             const ay = Math.abs(ellipsoid.pos.y);
             const az = Math.abs(ellipsoid.pos.z);
-            if (ax > ay && ax > az) return (ellipsoid.pos.x *= this.gridSize / (2 * ax));
-            if (ay > az) return (ellipsoid.pos.y *= this.gridSize / (2 * ay));
-            ellipsoid.pos.z *= this.gridSize / (2 * az);
+            if (ax > ay && ax > az) return (ellipsoid.pos.x *= this.voxelSizeOuter / (2 * ax));
+            if (ay > az) return (ellipsoid.pos.y *= this.voxelSizeOuter / (2 * ay));
+            ellipsoid.pos.z *= this.voxelSizeOuter / (2 * az);
         });
     }
     computeCollisionTree(minDist) {
@@ -162,23 +172,25 @@ export default class {
             const bb = ellipsoid.boundingBox(0);
             addEllipsoid(
                 mc,
-                ellipsoid.pos.clone().divideScalar(this.voxelSize).add(new Vector3(0.5, 0.5, 0.5)),
-                ellipsoid.shape.clone().multiplyScalar(1 / this.voxelSize),
+                ellipsoid.pos.clone().divideScalar(this.voxelSizeInner).add(new Vector3(0.5, 0.5, 0.5)),
+                ellipsoid.shape.clone().multiplyScalar(1 / this.voxelSizeInner),
                 bb.min
-                    .divideScalar(this.voxelSize)
+                    .divideScalar(this.voxelSizeInner)
                     .add(new Vector3(0.5, 0.5, 0.5))
                     .multiplyScalar(mc.size)
                     .floor()
                     .max(new Vector3(0, 0, 0)),
                 bb.max
-                    .divideScalar(this.voxelSize)
+                    .divideScalar(this.voxelSizeInner)
                     .add(new Vector3(0.5, 0.5, 0.5))
                     .multiplyScalar(mc.size)
                     .ceil()
                     .min(new Vector3(mc.size, mc.size, mc.size))
             );
         });
-        const geometry = mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2);
+        const geometry = mc
+            .generateBufferGeometry()
+            .scale(this.voxelSizeInner / 2, this.voxelSizeInner / 2, this.voxelSize / 2);
         applyColor(geometry, this.color);
         scene.add(new Mesh(geometry, new MeshPhongMaterial({ vertexColors: VertexColors })));
     }
