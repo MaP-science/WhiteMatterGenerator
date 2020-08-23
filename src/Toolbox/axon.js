@@ -8,7 +8,8 @@ import {
     Mesh,
     SphereBufferGeometry,
     BufferAttribute,
-    VertexColors
+    VertexColors,
+    DoubleSide
 } from "three";
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
@@ -192,7 +193,7 @@ export default class {
             .generateBufferGeometry()
             .scale(this.voxelSizeInner / 2, this.voxelSizeInner / 2, this.voxelSizeInner / 2);
         applyColor(geometry, this.color);
-        scene.add(new Mesh(geometry, new MeshPhongMaterial({ vertexColors: VertexColors })));
+        scene.add(new Mesh(geometry, new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })));
     }
     generateSkeleton(scene) {
         scene.add(
