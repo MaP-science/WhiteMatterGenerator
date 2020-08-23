@@ -6,7 +6,7 @@ const inputExample = {
     voxelSizeOuter: 10,
     ellipsoidDensity: 100,
     growSpeed: 0.05,
-    contract: 0.05,
+    contractSpeed: 0.05,
     mapFromDiameterToDeformationFactor: {
         from: [0, 0.8, 2],
         to: [0, 0.5, 1]

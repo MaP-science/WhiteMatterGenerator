@@ -48,7 +48,7 @@ export default props => (
                 will grow to 100% of its target size in 1 step.
             </li>
             <li>
-                <b>contract</b> (number) - How much the axons contract per step, i.e. how stiff the axons are. This
+                <b>contractSpeed</b> (number) - How much the axons contract per step, i.e. how stiff the axons are. This
                 number should be between 0 and 1.
             </li>
             <li>
