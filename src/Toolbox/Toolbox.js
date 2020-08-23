@@ -141,7 +141,7 @@ export default props => {
             setVoxelSizeInner(data.voxelSizeInner);
             setVoxelSizeOuter(data.voxelSizeOuter);
             setEllipsoidDensity(data.ellipsoidDensity);
-            setGrowSpeed(data.grow);
+            setGrowSpeed(data.growSpeed);
             setContractSpeed(data.contract);
 
             const s = new Synthesizer(

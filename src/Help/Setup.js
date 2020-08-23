@@ -44,8 +44,8 @@ export default props => (
                 <b>ellipsoidDensity</b> (number) - This is the number of ellipsoids per µm along axons.
             </li>
             <li>
-                <b>grow</b> (number) - How much the axons grow per step. 0 means no growth, 1 means that the axon will
-                grow to 100% of its target size in 1 step.
+                <b>growSpeed</b> (number) - How much the axons grow per step. 0 means no growth, 1 means that the axon
+                will grow to 100% of its target size in 1 step.
             </li>
             <li>
                 <b>contract</b> (number) - How much the axons contract per step, i.e. how stiff the axons are. This
