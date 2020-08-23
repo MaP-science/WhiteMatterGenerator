@@ -54,7 +54,7 @@ export default props => {
                 }}>
                 here
             </button>{" "}
-            to download the file). Click the "Upload input file" button and select the file. This should initialize 2
+            to download the file). Click the "upload config file" button and select the file. This should initialize 2
             axons and 1 cell in the specified positions.
             <br />
             <Link to="/help/setup">Click here to see a description of the input file format.</Link>

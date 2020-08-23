@@ -63,7 +63,14 @@ export default props => {
     const [updateState, setUpdateState] = useState({});
     const [growCount, setGrowCount] = useState(null);
     const [automaticGrowth, setAutomaticGrowth] = useState(false);
-
+    const [mapFromDiameterToDeformationFactor, setMapFromDiameterToDeformationFactor] = useState({
+        from: [0, 0.4, 1],
+        to: [0, 0.5, 1]
+    });
+    const [mapFromMaxDiameterToMinDiameter, setMapFromMaxDiameterToMinDiameter] = useState({
+        from: [0, 2],
+        to: [0, 0.2]
+    });
     useEffect(() => {
         if (!mount.current) return;
         const width = window.innerWidth * 0.55;
@@ -143,6 +150,8 @@ export default props => {
             setEllipsoidDensity(data.ellipsoidDensity);
             setGrowSpeed(data.growSpeed);
             setContractSpeed(data.contractSpeed);
+            setMapFromDiameterToDeformationFactor(data.mapFromDiameterToDeformationFactor);
+            setMapFromMaxDiameterToMinDiameter(data.mapFromMaxDiameterToMinDiameter);
 
             const s = new Synthesizer(
                 data.voxelSizeInner,
@@ -152,7 +161,7 @@ export default props => {
                 new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
             );
             data.axons.forEach(axon =>
-                s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter, 0)
+                s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter / 2)
             );
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);
@@ -218,30 +227,84 @@ export default props => {
                                         />
                                     </ListItem>
                                     <ListItem>
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => {
-                                                const s = new Synthesizer(
-                                                    voxelSizeInner,
-                                                    voxelSizeOuter,
-                                                    ellipsoidDensity,
-                                                    new Mapping([0, 0.4, 1], [0, 0.5, 1]),
-                                                    new Mapping([0, 2], [0, 0.2])
-                                                );
-                                                s.addAxonsRandomly(axonCount);
-                                                s.addCellsRandomly(cellCount);
-                                                setSynthesizer(s);
-                                                setScene(
-                                                    s.draw(viewModeVoxel, viewModeAxon, pipeResolution, viewModeCell)
-                                                );
-                                                setUpdateState(s.updateState);
-                                            }}>
-                                            Initialize
-                                        </Button>
+                                        {synthesizer ? (
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => {
+                                                    if (!window.confirm("Are you sure?")) return;
+                                                    window.location.reload();
+                                                }}>
+                                                Reset
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => {
+                                                    const s = new Synthesizer(
+                                                        voxelSizeInner,
+                                                        voxelSizeOuter,
+                                                        ellipsoidDensity,
+                                                        new Mapping(
+                                                            mapFromDiameterToDeformationFactor.from,
+                                                            mapFromDiameterToDeformationFactor.to
+                                                        ),
+                                                        new Mapping(
+                                                            mapFromMaxDiameterToMinDiameter.from,
+                                                            mapFromMaxDiameterToMinDiameter.to
+                                                        )
+                                                    );
+                                                    s.addAxonsRandomly(axonCount);
+                                                    s.addCellsRandomly(cellCount);
+                                                    setSynthesizer(s);
+                                                    setScene(
+                                                        s.draw(
+                                                            viewModeVoxel,
+                                                            viewModeAxon,
+                                                            pipeResolution,
+                                                            viewModeCell
+                                                        )
+                                                    );
+                                                    setUpdateState(s.updateState);
+                                                }}>
+                                                Initialize
+                                            </Button>
+                                        )}
                                         {" or "}
-                                        <Button variant="contained" onClick={() => inputFileRef.current.click()}>
-                                            upload input file
-                                        </Button>
+                                        {synthesizer ? (
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => {
+                                                    const config = {
+                                                        voxelSizeInner: voxelSizeInner,
+                                                        voxelSizeOuter: voxelSizeOuter,
+                                                        ellipsoidDensity: ellipsoidDensity,
+                                                        growSpeed: growSpeed,
+                                                        contractSpeed: contractSpeed,
+                                                        mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
+                                                        mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter,
+                                                        axons: synthesizer.axons.map(axon => ({
+                                                            position: [axon.start.x, axon.start.y, axon.start.z],
+                                                            direction: [
+                                                                axon.end.x - axon.start.x,
+                                                                axon.end.y - axon.start.y,
+                                                                axon.end.z - axon.start.z
+                                                            ],
+                                                            maxDiameter: axon.radius * 2
+                                                        })),
+                                                        cells: synthesizer.cells.map(cell => ({
+                                                            position: [cell.pos.x, cell.pos.y, cell.pos.z],
+                                                            shape: cell.shape.elements
+                                                        }))
+                                                    };
+                                                    save(JSON.stringify(config, null, 4), "config.json");
+                                                }}>
+                                                Download the current config file
+                                            </Button>
+                                        ) : (
+                                            <Button variant="contained" onClick={() => inputFileRef.current.click()}>
+                                                upload config file
+                                            </Button>
+                                        )}
                                     </ListItem>
                                     <input
                                         ref={inputFileRef}

@@ -28,7 +28,7 @@ export default props => (
         </ul>
         <p>
             When you are ready click the "Initialize" button. If you want more control of exactly how the axons and
-            cells are generated, you can instead provide a JSON file by clicking the "Upload input file" button. The
+            cells are generated, you can instead provide a JSON file by clicking the "upload config file" button. The
             file can specify the following values (the unit of length is µm):
         </p>
         <ul>
