@@ -6,7 +6,8 @@ import {
     BufferGeometry,
     Line,
     Mesh,
-    SphereGeometry
+    SphereGeometry,
+    BufferAttribute
 } from "three";
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
@@ -161,6 +162,22 @@ export default class {
             );
         });
         const geometry = mc.generateBufferGeometry().scale(this.voxelSize / 2, this.voxelSize / 2, this.voxelSize / 2);
+        if (!geometry?.attributes?.position?.count) return;
+        geometry.setAttribute(
+            "color",
+            new BufferAttribute(
+                new Float32Array(
+                    Array(geometry.attributes.position.count)
+                        .fill([
+                            parseInt(this.color.substr(1, 6).substr(0, 2), 16) / 255,
+                            parseInt(this.color.substr(1, 6).substr(2, 2), 16) / 255,
+                            parseInt(this.color.substr(1, 6).substr(4, 2), 16) / 255
+                        ])
+                        .flat()
+                ),
+                3
+            )
+        );
         scene.add(new Mesh(geometry, new MeshPhongMaterial({ color: this.color })));
     }
     generateSkeleton(scene) {
