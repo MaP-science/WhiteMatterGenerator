@@ -65,16 +65,7 @@ export default class {
     }
     addAxonsRandomly(axonCount) {
         for (let i = 0; i < axonCount; ++i)
-            for (let j = 0; j < 100; ++j) {
-                if (
-                    this.addAxon(
-                        randomPosition().multiplyScalar(this.voxelSizeOuter),
-                        randomPosition(),
-                        0.5 + Math.random()
-                    )
-                )
-                    break;
-            }
+            this.addAxon(randomPosition().multiplyScalar(this.voxelSizeOuter), randomPosition(), 0.5 + Math.random());
         console.log("Total number of axons: " + this.axons.length);
     }
     addAxon(pos, dir, r) {
@@ -93,7 +84,6 @@ export default class {
                 this.voxelSizeOuter
             )
         );
-        return true;
     }
     addCellsRandomly(cellCount) {
         for (let i = 0; i < cellCount; ++i) {

@@ -107,9 +107,10 @@ export default props => {
         )
             return setAutomaticGrowth(false);
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
+        if (updateState.name === "getOverlap")
+            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, pipeResolution, viewModeCell));
         if (updateState.name === "ready" && volumeFraction !== updateState.volumeFraction) {
             setVolumeFraction(updateState.volumeFraction);
-            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, pipeResolution, viewModeCell));
             setGrowCount(growCount === null ? 0 : growCount + 1);
         }
         if (updateState.name !== "ready" || automaticGrowth) {

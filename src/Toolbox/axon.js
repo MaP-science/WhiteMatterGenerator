@@ -146,9 +146,10 @@ export default class {
             const d = this.ellipsoids[i + 1].pos.clone().sub(this.ellipsoids[i - 1].pos);
             d.normalize();
             c.sub(this.ellipsoids[i].pos);
-            this.ellipsoids[i].pos.add(d.multiplyScalar(c.dot(d)));
-            c.multiplyScalar(amount);
-            this.ellipsoids[i].pos.add(c);
+            d.multiplyScalar(c.dot(d));
+            c.sub(d);
+            this.ellipsoids[i].pos.add(d);
+            this.ellipsoids[i].pos.add(c.multiplyScalar(amount));
         }
     }
     generatePipe(scene, resolution) {
