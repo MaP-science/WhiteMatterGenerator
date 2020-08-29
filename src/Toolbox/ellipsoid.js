@@ -78,6 +78,17 @@ export default class {
         this.axisCache[ellipsoid.id] = axis;
         return Math.max(axisLength + minDist, 0);
     }
+    getSurfacePoint(pos, dir) {
+        const inv = new Matrix3().getInverse(this.shape);
+        const p = pos.clone().sub(this.pos).applyMatrix3(inv);
+        const d = dir.clone().applyMatrix3(inv);
+        d.normalize();
+        const r = p.clone().sub(d.clone().multiplyScalar(d.dot(p)));
+        const rLen = r.length();
+        if (rLen > 1) return undefined;
+        const x = d.multiplyScalar(Math.sqrt(1 - rLen ** 2));
+        return r.clone().add(x).applyMatrix3(this.shape).add(this.pos);
+    }
     grow(amount) {
         const s = this.shape.clone().transpose().multiply(this.shape);
         const sx = Math.sqrt(s.elements[0]);

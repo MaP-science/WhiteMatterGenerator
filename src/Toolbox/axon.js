@@ -5,11 +5,14 @@ import {
     LineBasicMaterial,
     BufferGeometry,
     Line,
+    LineLoop,
     Mesh,
     SphereBufferGeometry,
     BufferAttribute,
     VertexColors,
-    DoubleSide
+    DoubleSide,
+    Geometry,
+    Face3
 } from "three";
 
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
@@ -152,49 +155,62 @@ export default class {
             this.ellipsoids[i].pos.add(c.multiplyScalar(amount));
         }
     }
-    generatePipe(scene, resolution) {
-        const addEllipsoid = (mc, pos, shape, min, max) => {
-            for (let x = min.x; x < max.x; x++) {
-                for (let y = min.y; y < max.y; y++) {
-                    for (let z = min.z; z < max.z; z++) {
-                        if (x < 0 || x >= mc.size) continue;
-                        if (y < 0 || y >= mc.size) continue;
-                        if (z < 0 || z >= mc.size) continue;
-                        const p = new Vector3(x, y, z).divideScalar(mc.size).sub(pos);
-                        p.applyMatrix3(new Matrix3().getInverse(shape));
-                        const val = 1.000001 / (0.000001 + Math.pow(p.dot(p), 3)) - 1;
-                        if (val > 0) mc.field[mc.size2 * z + mc.size * y + x] += val;
-                    }
-                }
+    getSurfacePoint(pos, dir) {
+        return this.ellipsoids.reduce((pMax, ellipsoid) => {
+            const distMax = pMax.clone().sub(pos).dot(dir);
+            const p = ellipsoid.getSurfacePoint(pos, dir);
+            if (!p) return pMax;
+            const dist = p.clone().sub(pos).dot(dir);
+            return dist > distMax ? p : pMax;
+        }, pos);
+    }
+    generatePipe(scene) {
+        const num = 32;
+        const d = this.ellipsoids[this.ellipsoids.length - 1].pos.clone().sub(this.ellipsoids[0].pos);
+        d.normalize();
+        const x = new Vector3(1, 0, 0);
+        const y = new Vector3(0, 1, 0);
+        const cx = d.clone().cross(x);
+        const cy = d.clone().cross(y);
+        const a = cx.length() > cy.length() ? cx : cy;
+        a.normalize();
+        const b = d.clone().cross(a).normalize();
+        const geom = new Geometry();
+        for (let i = 0; i < this.ellipsoids.length - 1; ++i) {
+            const p1 = this.ellipsoids[i].pos;
+            const p2 = this.ellipsoids[i + 1].pos;
+            const points = [];
+            for (let j = 0; j < num; ++j) {
+                const angle1 = (2 * Math.PI * j) / num;
+                const angle2 = (2 * Math.PI * (j + 1)) / num;
+                const angleAvg = (2 * Math.PI * (j + 0.5)) / num;
+                const dir1 = a
+                    .clone()
+                    .multiplyScalar(Math.cos(angle1))
+                    .add(b.clone().multiplyScalar(Math.sin(angle1)));
+                const dir2 = a
+                    .clone()
+                    .multiplyScalar(Math.cos(angle2))
+                    .add(b.clone().multiplyScalar(Math.sin(angle2)));
+                const dirAvg = a
+                    .clone()
+                    .multiplyScalar(Math.cos(angleAvg))
+                    .add(b.clone().multiplyScalar(Math.sin(angleAvg)));
+                const len = geom.vertices.length;
+                geom.vertices.push(this.getSurfacePoint(p1, dir1));
+                geom.vertices.push(this.getSurfacePoint(p2, dir1));
+                geom.vertices.push(this.getSurfacePoint(p1, dir2));
+                geom.vertices.push(this.getSurfacePoint(p2, dir2));
+                geom.faces.push(new Face3(len, len + 2, len + 1, dirAvg));
+                geom.faces.push(new Face3(len + 1, len + 2, len + 3, dirAvg));
             }
-        };
-        const mc = new MarchingCubes(resolution, {}, true, false);
-        mc.isolation = 1;
-        this.ellipsoids.forEach(ellipsoid => {
-            const bb = ellipsoid.boundingBox(0);
-            addEllipsoid(
-                mc,
-                ellipsoid.pos.clone().divideScalar(this.voxelSizeInner).add(new Vector3(0.5, 0.5, 0.5)),
-                ellipsoid.shape.clone().multiplyScalar(1 / this.voxelSizeInner),
-                bb.min
-                    .divideScalar(this.voxelSizeInner)
-                    .add(new Vector3(0.5, 0.5, 0.5))
-                    .multiplyScalar(mc.size)
-                    .floor()
-                    .max(new Vector3(0, 0, 0)),
-                bb.max
-                    .divideScalar(this.voxelSizeInner)
-                    .add(new Vector3(0.5, 0.5, 0.5))
-                    .multiplyScalar(mc.size)
-                    .ceil()
-                    .min(new Vector3(mc.size, mc.size, mc.size))
+            scene.add(
+                new Mesh(
+                    applyColor(new BufferGeometry().fromGeometry(geom), this.color),
+                    new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
+                )
             );
-        });
-        const geometry = mc
-            .generateBufferGeometry()
-            .scale(this.voxelSizeInner / 2, this.voxelSizeInner / 2, this.voxelSizeInner / 2);
-        applyColor(geometry, this.color);
-        scene.add(new Mesh(geometry, new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })));
+        }
     }
     generateSkeleton(scene) {
         scene.add(
@@ -203,9 +219,7 @@ export default class {
                     new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)),
                     this.color
                 ),
-                new LineBasicMaterial({
-                    vertexColors: VertexColors
-                })
+                new LineBasicMaterial({ vertexColors: VertexColors })
             )
         );
     }
