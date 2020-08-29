@@ -23,9 +23,9 @@ export default class {
     containsPoint(p) {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
     }
-    keepInVoxel(voxelSizeOuter) {
-        const gridMin = new Vector3(-voxelSizeOuter / 2, -voxelSizeOuter / 2, -voxelSizeOuter / 2);
-        const gridMax = new Vector3(voxelSizeOuter / 2, voxelSizeOuter / 2, voxelSizeOuter / 2);
+    keepInVoxel(voxelSize) {
+        const gridMin = new Vector3(-voxelSize / 2, -voxelSize / 2, -voxelSize / 2);
+        const gridMax = new Vector3(voxelSize / 2, voxelSize / 2, voxelSize / 2);
         this.pos = min(max(this.pos, gridMin), gridMax);
     }
     collision(ellipsoid, minDist, maxOverlap) {

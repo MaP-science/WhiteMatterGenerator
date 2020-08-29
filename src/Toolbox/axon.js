@@ -82,17 +82,7 @@ const applyColor = (geometry, color) => {
 };
 
 export default class {
-    constructor(
-        start,
-        end,
-        radius,
-        deformation,
-        minDiameter,
-        movement,
-        ellipsoidDensity,
-        voxelSizeInner,
-        voxelSizeOuter
-    ) {
+    constructor(start, end, radius, deformation, minDiameter, movement, ellipsoidDensity, voxelSize) {
         this.start = start.clone();
         this.end = end.clone();
         this.radius = radius;
@@ -110,19 +100,18 @@ export default class {
                     movement
                 )
         );
-        this.voxelSizeInner = voxelSizeInner;
-        this.voxelSizeOuter = voxelSizeOuter;
+        this.voxelSize = voxelSize;
         this.color = "#" + Math.random().toString(16).substr(2, 6);
     }
     keepInVoxel() {
-        this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSizeOuter));
+        this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));
         [this.ellipsoids[0], this.ellipsoids[this.ellipsoids.length - 1]].forEach(ellipsoid => {
             const ax = Math.abs(ellipsoid.pos.x);
             const ay = Math.abs(ellipsoid.pos.y);
             const az = Math.abs(ellipsoid.pos.z);
-            if (ax > ay && ax > az) return (ellipsoid.pos.x *= this.voxelSizeOuter / (2 * ax));
-            if (ay > az) return (ellipsoid.pos.y *= this.voxelSizeOuter / (2 * ay));
-            ellipsoid.pos.z *= this.voxelSizeOuter / (2 * az);
+            if (ax > ay && ax > az) return (ellipsoid.pos.x *= this.voxelSize / (2 * ax));
+            if (ay > az) return (ellipsoid.pos.y *= this.voxelSize / (2 * ay));
+            ellipsoid.pos.z *= this.voxelSize / (2 * az);
         });
     }
     computeCollisionTree(minDist) {

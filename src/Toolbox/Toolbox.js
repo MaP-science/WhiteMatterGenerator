@@ -49,8 +49,7 @@ export default props => {
     const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
-    const [voxelSizeInner, setVoxelSizeInner] = useState(5);
-    const [voxelSizeOuter, setVoxelSizeOuter] = useState(6);
+    const [voxelSize, setVoxelSize] = useState(5);
     const [axonCount, setAxonCount] = useState(80);
     const [ellipsoidDensity, setEllipsoidDensity] = useState(10);
     const [cellCount, setCellCount] = useState(0);
@@ -143,8 +142,7 @@ export default props => {
         reader.onload = async event => {
             const data = JSON.parse(event.target.result);
 
-            setVoxelSizeInner(data.voxelSizeInner);
-            setVoxelSizeOuter(data.voxelSizeOuter);
+            setVoxelSize(data.voxelSize);
             setEllipsoidDensity(data.ellipsoidDensity);
             setGrowSpeed(data.growSpeed);
             setContractSpeed(data.contractSpeed);
@@ -152,8 +150,7 @@ export default props => {
             setMapFromMaxDiameterToMinDiameter(data.mapFromMaxDiameterToMinDiameter);
 
             const s = new Synthesizer(
-                data.voxelSizeInner,
-                data.voxelSizeOuter,
+                data.voxelSize,
                 data.ellipsoidDensity,
                 new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
                 new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
@@ -185,21 +182,12 @@ export default props => {
                                     <ListItem>
                                         <TextField
                                             type="number"
-                                            label="Inner voxel side length"
+                                            label="Voxel side length"
                                             InputProps={{
                                                 endAdornment: <InputAdornment position="start">µm</InputAdornment>
                                             }}
-                                            value={voxelSizeInner}
-                                            onChange={e => setVoxelSizeInner(Number(e.target.value))}
-                                        />
-                                        <TextField
-                                            type="number"
-                                            label="Outer voxel side length"
-                                            InputProps={{
-                                                endAdornment: <InputAdornment position="start">µm</InputAdornment>
-                                            }}
-                                            value={voxelSizeOuter}
-                                            onChange={e => setVoxelSizeOuter(Number(e.target.value))}
+                                            value={voxelSize}
+                                            onChange={e => setVoxelSize(Number(e.target.value))}
                                         />
                                         <TextField
                                             type="number"
@@ -240,8 +228,7 @@ export default props => {
                                                 variant="contained"
                                                 onClick={() => {
                                                     const s = new Synthesizer(
-                                                        voxelSizeInner,
-                                                        voxelSizeOuter,
+                                                        voxelSize,
                                                         ellipsoidDensity,
                                                         new Mapping(
                                                             mapFromDiameterToDeformationFactor.from,
@@ -267,8 +254,7 @@ export default props => {
                                                 variant="contained"
                                                 onClick={() => {
                                                     const config = {
-                                                        voxelSizeInner: voxelSizeInner,
-                                                        voxelSizeOuter: voxelSizeOuter,
+                                                        voxelSize: voxelSize,
                                                         ellipsoidDensity: ellipsoidDensity,
                                                         growSpeed: growSpeed,
                                                         contractSpeed: contractSpeed,
@@ -384,7 +370,7 @@ export default props => {
                                                     </Button>
                                                 )}
                                             </ListItem>
-                                            <Grid item>Volume fraction of inner voxel:</Grid>
+                                            <Grid item>Volume fraction:</Grid>
                                             <TableContainer component={Paper}>
                                                 <Table className={classes.table} aria-label="simple table">
                                                     <TableBody>

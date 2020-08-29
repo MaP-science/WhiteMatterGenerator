@@ -2,8 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const inputExample = {
-    voxelSizeInner: 9,
-    voxelSizeOuter: 10,
+    voxelSize: 10,
     ellipsoidDensity: 100,
     growSpeed: 0.05,
     contractSpeed: 0.05,

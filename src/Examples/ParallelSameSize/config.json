@@ -1,6 +1,5 @@
 {
-    "voxelSizeInner": 5,
-    "voxelSizeOuter": 6,
+    "voxelSize": 5,
     "ellipsoidDensity": 5,
     "growSpeed": 0.05,
     "contractSpeed": 0.01,

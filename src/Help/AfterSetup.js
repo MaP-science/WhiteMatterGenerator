@@ -27,7 +27,7 @@ export default props => (
         <p>
             Below the two buttons the estimated volume fractions will be displayed. These fractions are estimated by
             counting the number of points in a lattice that fall within either an axon or a cell and dividing by the
-            volume of the inner voxel.
+            volume of the voxel.
         </p>
         <p>
             In the bottom of the pane you can see which part of a grow step is currently being executed. You can also

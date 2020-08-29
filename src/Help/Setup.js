@@ -6,12 +6,7 @@ export default props => (
         <p>The first phase is the setup phase. Here you can specify:</p>
         <ul>
             <li>
-                <b>Inner voxel side length</b> - This is the side length of the inner voxel which is used when computing
-                the volume fraction.
-            </li>
-            <li>
-                <b>Outer voxel side length</b> - This is the side length of the outer voxel which is used when
-                generating the axons and cells.
+                <b>Voxel side length</b> - This is the side length of the voxel.
             </li>
             <li>
                 <b>Number of axons</b> - This is the number of axons to be generated. Each axon is made up of ellipsoids
@@ -33,12 +28,7 @@ export default props => (
         </p>
         <ul>
             <li>
-                <b>voxelSizeInner</b> (number) - This is the side length of the inner voxel which is used when computing
-                the volume fraction.
-            </li>
-            <li>
-                <b>voxelSizeOuter</b> (number) - This is the side length of the outer voxel which is used when
-                generating the axons.
+                <b>voxelSize</b> (number) - This is the side length of the voxel.
             </li>
             <li>
                 <b>ellipsoidDensity</b> (number) - This is the number of ellipsoids per µm along axons.
