@@ -1,11 +1,9 @@
 import {
     Vector3,
-    Matrix3,
     MeshPhongMaterial,
     LineBasicMaterial,
     BufferGeometry,
     Line,
-    LineLoop,
     Mesh,
     SphereBufferGeometry,
     BufferAttribute,
@@ -15,7 +13,6 @@ import {
     Face3
 } from "three";
 
-import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Ellipsoid from "./ellipsoid";
 
 const computeCollisionTree = (ellipsoids, minDist) => {
@@ -179,7 +176,6 @@ export default class {
         for (let i = 0; i < this.ellipsoids.length - 1; ++i) {
             const p1 = this.ellipsoids[i].pos;
             const p2 = this.ellipsoids[i + 1].pos;
-            const points = [];
             for (let j = 0; j < num; ++j) {
                 const angle1 = (2 * Math.PI * j) / num;
                 const angle2 = (2 * Math.PI * (j + 1)) / num;
