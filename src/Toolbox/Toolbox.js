@@ -157,7 +157,12 @@ export default props => {
             );
             setAxonCount(data.axons.length);
             data.axons.forEach(axon =>
-                s.addAxon(new Vector3(...axon.position), new Vector3(...axon.direction), axon.maxDiameter / 2)
+                s.addAxon(
+                    new Vector3(...axon.position),
+                    new Vector3(...axon.direction),
+                    axon.maxDiameter / 2,
+                    axon.color
+                )
             );
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);
@@ -267,7 +272,8 @@ export default props => {
                                                                 axon.end.y - axon.start.y,
                                                                 axon.end.z - axon.start.z
                                                             ],
-                                                            maxDiameter: axon.radius * 2
+                                                            maxDiameter: axon.radius * 2,
+                                                            color: axon.color
                                                         })),
                                                         cells: synthesizer.cells.map(cell => ({
                                                             position: [cell.pos.x, cell.pos.y, cell.pos.z],

@@ -82,7 +82,7 @@ const applyColor = (geometry, color) => {
 };
 
 export default class {
-    constructor(start, end, radius, deformation, minDiameter, movement, ellipsoidDensity, voxelSize) {
+    constructor(start, end, radius, deformation, minDiameter, movement, ellipsoidDensity, voxelSize, color) {
         this.start = start.clone();
         this.end = end.clone();
         this.radius = radius;
@@ -101,7 +101,7 @@ export default class {
                 )
         );
         this.voxelSize = voxelSize;
-        this.color = "#" + Math.random().toString(16).substr(2, 6);
+        this.color = color;
     }
     keepInVoxel() {
         this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));

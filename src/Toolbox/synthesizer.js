@@ -67,11 +67,21 @@ export default class {
             this.addAxon(randomPosition().multiplyScalar(this.voxelSize), randomPosition(), 0.5 + Math.random());
         console.log("Total number of axons: " + this.axons.length);
     }
-    addAxon(pos, dir, r) {
+    addAxon(pos, dir, r, color) {
         const a = projectOntoCube(pos, dir, this.voxelSize);
         const b = projectOntoCube(pos, dir.clone().negate(), this.voxelSize);
         this.axons.push(
-            new Axon(a, b, r, this.deformation, this.minDiameter, 1, this.ellipsoidDensity, this.voxelSize)
+            new Axon(
+                a,
+                b,
+                r,
+                this.deformation,
+                this.minDiameter,
+                1,
+                this.ellipsoidDensity,
+                this.voxelSize,
+                color || "#" + Math.random().toString(16).substr(2, 6)
+            )
         );
     }
     addCellsRandomly(cellCount) {
