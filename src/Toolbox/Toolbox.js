@@ -176,7 +176,10 @@ export default props => {
     return (
         <>
             <Grid container item xs={11}>
-                <Grid item xs={4}>
+                <Grid
+                    item
+                    xs={4}
+                    style={{ height: window.innerHeight * 0.9, overflowX: "hidden", overflowY: "scroll" }}>
                     <Grid container direction="column">
                         <Grid item className={classes.gridItem}>
                             <Paper>
@@ -192,13 +195,13 @@ export default props => {
                                                 endAdornment: <InputAdornment position="start">µm</InputAdornment>
                                             }}
                                             value={voxelSize}
-                                            onChange={e => setVoxelSize(Number(e.target.value))}
+                                            onChange={e => setVoxelSize(e.target.value)}
                                         />
                                         <TextField
                                             type="number"
                                             label="Number of axons"
                                             value={axonCount}
-                                            onChange={e => setAxonCount(Number(e.target.value))}
+                                            onChange={e => setAxonCount(e.target.value)}
                                         />
                                     </ListItem>
                                     <ListItem>
@@ -209,58 +212,49 @@ export default props => {
                                                 endAdornment: <InputAdornment position="start">µm⁻¹</InputAdornment>
                                             }}
                                             value={ellipsoidDensity}
-                                            onChange={e => setEllipsoidDensity(Number(e.target.value))}
+                                            onChange={e => setEllipsoidDensity(e.target.value)}
                                         />
                                         <TextField
                                             type="number"
                                             label="Number of cells"
                                             value={cellCount}
-                                            onChange={e => setCellCount(Number(e.target.value))}
+                                            onChange={e => setCellCount(e.target.value)}
                                         />
                                     </ListItem>
                                     <ListItem>
-                                        {synthesizer ? (
-                                            <Button
-                                                variant="contained"
-                                                onClick={() => {
-                                                    if (!window.confirm("Are you sure?")) return;
-                                                    window.location.reload();
-                                                }}>
-                                                Reset
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                variant="contained"
-                                                onClick={() => {
-                                                    const s = new Synthesizer(
-                                                        voxelSize,
-                                                        ellipsoidDensity,
-                                                        new Mapping(
-                                                            mapFromDiameterToDeformationFactor.from,
-                                                            mapFromDiameterToDeformationFactor.to
-                                                        ),
-                                                        new Mapping(
-                                                            mapFromMaxDiameterToMinDiameter.from,
-                                                            mapFromMaxDiameterToMinDiameter.to
-                                                        )
-                                                    );
-                                                    s.addAxonsRandomly(axonCount);
-                                                    s.addCellsRandomly(cellCount);
-                                                    setSynthesizer(s);
-                                                    setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
-                                                    setUpdateState(s.updateState);
-                                                }}>
-                                                Initialize
-                                            </Button>
-                                        )}
-                                        {" or "}
-                                        {synthesizer ? (
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => {
+                                                const s = new Synthesizer(
+                                                    Number(voxelSize),
+                                                    Number(ellipsoidDensity),
+                                                    new Mapping(
+                                                        mapFromDiameterToDeformationFactor.from,
+                                                        mapFromDiameterToDeformationFactor.to
+                                                    ),
+                                                    new Mapping(
+                                                        mapFromMaxDiameterToMinDiameter.from,
+                                                        mapFromMaxDiameterToMinDiameter.to
+                                                    )
+                                                );
+                                                s.addAxonsRandomly(Number(axonCount));
+                                                s.addCellsRandomly(Number(cellCount));
+                                                setSynthesizer(s);
+                                                setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell));
+                                                setUpdateState(s.updateState);
+                                            }}>
+                                            Initialize
+                                        </Button>
+                                        <Button variant="contained" onClick={() => inputFileRef.current.click()}>
+                                            upload config file
+                                        </Button>
+                                        {synthesizer && (
                                             <Button
                                                 variant="contained"
                                                 onClick={() => {
                                                     const config = {
-                                                        voxelSize: voxelSize,
-                                                        ellipsoidDensity: ellipsoidDensity,
+                                                        voxelSize: Number(voxelSize),
+                                                        ellipsoidDensity: Number(ellipsoidDensity),
                                                         growSpeed: growSpeed,
                                                         contractSpeed: contractSpeed,
                                                         mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
@@ -282,11 +276,7 @@ export default props => {
                                                     };
                                                     save(JSON.stringify(config, null, 4), "config.json");
                                                 }}>
-                                                Download the current config file
-                                            </Button>
-                                        ) : (
-                                            <Button variant="contained" onClick={() => inputFileRef.current.click()}>
-                                                upload config file
+                                                Download config file
                                             </Button>
                                         )}
                                     </ListItem>
