@@ -94,7 +94,6 @@ export default class {
             const r = 2.5 + Math.random() * 7;
             this.cells.push(new Ellipsoid(p, r, new Mapping([0, 1], [0, 0]), new Mapping([0, 1], [0, 0.01]), 1));
         }
-        const iterations = 100;
         const maxOverlap = 0.0001;
         this.cells.forEach((a, i) => a.grow(1));
         for (let mo = 1; mo > maxOverlap; ) {

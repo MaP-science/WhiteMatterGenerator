@@ -34,9 +34,10 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
+const width = window.innerWidth * 0.55;
+const height = window.innerHeight * 0.9;
+
 export default props => {
-    const width = window.innerWidth * 0.55;
-    const height = window.innerHeight * 0.9;
     const fov = 75;
     const classes = useStyles();
     const mount = useRef();
@@ -117,7 +118,9 @@ export default props => {
         const click = e => {
             if (!selectedAxon) return;
             const s = new Scene();
-            selectedAxon.meshes.forEach(m => s.add(m.clone()));
+            viewModeAxon === "ellipsoids"
+                ? s.add(selectedAxon.getStaticGeometry())
+                : selectedAxon.meshes.map(m => s.add(m));
             synthesizer.focusedAxon = null;
             synthesizer.deselectAll();
             setSelectedAxon(null);
@@ -135,7 +138,7 @@ export default props => {
             renderer.domElement.removeEventListener("mousemove", mousemove);
             renderer.domElement.removeEventListener("click", click);
         };
-    }, [synthesizer, renderer, camera, viewModeAxon, selectAxon, selectedAxon]);
+    }, [synthesizer, renderer, camera, viewModeAxon, selectAxon, selectedAxon, resolution]);
 
     useEffect(() => {
         if (controls) controls.update();

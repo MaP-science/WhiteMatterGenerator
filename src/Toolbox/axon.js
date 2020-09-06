@@ -10,8 +10,11 @@ import {
     VertexColors,
     DoubleSide,
     Geometry,
-    Face3
+    Face3,
+    InstancedMesh
 } from "three";
+
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import Ellipsoid from "./ellipsoid";
 
@@ -193,8 +196,8 @@ export default class {
                 applyColor(new BufferGeometry().fromGeometry(geom), this.color),
                 new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
             );
-            this.meshes = [mesh];
             scene.add(mesh);
+            this.meshes = [mesh];
         }
     }
     generateSkeleton(scene) {
@@ -206,10 +209,21 @@ export default class {
         scene.add(mesh);
     }
     draw(scene) {
-        const mesh = new Mesh(
-            applyColor(new SphereBufferGeometry(1, 16, 16), this.color),
-            new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
+        const geom = applyColor(new SphereBufferGeometry(1, 16, 16), this.color);
+        const material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide });
+        const mesh = new InstancedMesh(geom, material, this.ellipsoids.length);
+        this.ellipsoids.forEach((ellipsoid, i) => {
+            mesh.setMatrixAt(i, ellipsoid.getMatrix4());
+        });
+        scene.add(mesh);
+        this.meshes = [mesh];
+    }
+    getStaticGeometry() {
+        const geom = applyColor(
+            BufferGeometryUtils.mergeBufferGeometries(this.ellipsoids.map(ellipsoid => ellipsoid.getGeometry())),
+            this.color
         );
-        this.meshes = this.ellipsoids.map(ellipsoid => ellipsoid.draw(scene, mesh));
+        const material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide });
+        return new Mesh(geom, material);
     }
 }

@@ -1,4 +1,4 @@
-import { Vector3, Matrix3, Box3 } from "three";
+import { Vector3, Matrix3, Box3, SphereBufferGeometry } from "three";
 import { v4 } from "uuid";
 import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum, min, max } from "./helperFunctions";
 
@@ -111,8 +111,15 @@ export default class {
     draw(scene, mesh) {
         const m = mesh.clone();
         m.matrixAutoUpdate = false;
-        m.matrix = mat3ToMat4(this.shape).setPosition(this.pos);
+        m.matrix = this.getMatrix4();
+        m.updateMatrix();
         scene.add(m);
         return m;
+    }
+    getMatrix4() {
+        return mat3ToMat4(this.shape).setPosition(this.pos);
+    }
+    getGeometry() {
+        return new SphereBufferGeometry(1, 16, 16).applyMatrix4(this.getMatrix4());
     }
 }
