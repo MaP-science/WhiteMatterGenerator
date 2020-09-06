@@ -150,8 +150,7 @@ export default class {
             return dist > distMax ? p : pMax;
         }, pos);
     }
-    generatePipe(scene) {
-        const num = 32;
+    generatePipe(scene, resolution) {
         const d = this.ellipsoids[this.ellipsoids.length - 1].pos.clone().sub(this.ellipsoids[0].pos);
         d.normalize();
         const x = new Vector3(1, 0, 0);
@@ -165,10 +164,10 @@ export default class {
         for (let i = 0; i < this.ellipsoids.length - 1; ++i) {
             const p1 = this.ellipsoids[i].pos;
             const p2 = this.ellipsoids[i + 1].pos;
-            for (let j = 0; j < num; ++j) {
-                const angle1 = (2 * Math.PI * j) / num;
-                const angle2 = (2 * Math.PI * (j + 1)) / num;
-                const angleAvg = (2 * Math.PI * (j + 0.5)) / num;
+            for (let j = 0; j < resolution; ++j) {
+                const angle1 = (2 * Math.PI * j) / resolution;
+                const angle2 = (2 * Math.PI * (j + 1)) / resolution;
+                const angleAvg = (2 * Math.PI * (j + 0.5)) / resolution;
                 const dir1 = a
                     .clone()
                     .multiplyScalar(Math.cos(angle1))

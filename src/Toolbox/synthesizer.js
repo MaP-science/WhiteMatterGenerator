@@ -191,10 +191,10 @@ export default class {
         }
         return this.updateState;
     }
-    generatePipes(scene) {
+    generatePipes(scene, resolution) {
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
-            axon.generatePipe(scene);
+            axon.generatePipe(scene, resolution);
         });
         return scene;
     }
@@ -208,13 +208,13 @@ export default class {
         if (mode === "none") return;
         scene.add(wireframeCube(this.voxelSize));
     }
-    drawAxons(scene, mode) {
+    drawAxons(scene, mode, resolution) {
         switch (mode) {
             case "skeleton":
                 this.axons.forEach(axon => axon.generateSkeleton(scene));
                 break;
             case "pipes":
-                this.generatePipes(scene);
+                this.generatePipes(scene, resolution);
                 break;
             case "ellipsoids": {
                 this.axons.forEach(axon => axon.draw(scene));
@@ -229,12 +229,12 @@ export default class {
         const cellMesh = new Mesh(new SphereGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
         this.cells.forEach(cell => cell.draw(scene, cellMesh));
     }
-    draw(voxelMode, axonMode, cellMode) {
+    draw(voxelMode, axonMode, cellMode, resolution) {
         const scene = new Scene();
         this.drawLight(scene);
         this.drawVoxels(scene, voxelMode);
         this.drawCells(scene, cellMode);
-        this.drawAxons(scene, axonMode);
+        this.drawAxons(scene, axonMode, resolution);
         return scene;
     }
 }
