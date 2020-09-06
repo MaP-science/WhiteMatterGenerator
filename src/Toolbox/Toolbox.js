@@ -73,6 +73,7 @@ export default props => {
         from: [0, 2],
         to: [0, 0.2]
     });
+    const [selectAxon, setSelectAxon] = useState(false);
     useEffect(() => {
         if (!mount.current) return;
         // Camera
@@ -96,6 +97,7 @@ export default props => {
     }, [mount]);
 
     useEffect(() => {
+        if (!selectAxon) return;
         if (!synthesizer) return;
         if (!renderer) return;
         if (!camera) return;
