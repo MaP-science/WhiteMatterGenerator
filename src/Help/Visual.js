@@ -46,6 +46,7 @@ export default props => (
                 </ul>
             </li>
         </ul>
-        Clicking the "Export" button will export the currently displayed scene in PLY format.
+        Clicking the "Export" button will export the currently displayed scene in PLY format. Clicking the "Export
+        single axon" button and then clicking on an axon will export that axon in PLY format.
     </>
 );
