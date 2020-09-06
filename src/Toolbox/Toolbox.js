@@ -210,10 +210,11 @@ export default props => {
                     axon.color
                 );
                 const a = s.axons[s.axons.length - 1];
-                axon.ellipsoids.forEach((ellipsoid, i) => {
-                    a.ellipsoids[i].pos = new Vector3(...ellipsoid.position);
-                    a.ellipsoids[i].shape = new Matrix3().set(...ellipsoid.shape);
-                });
+                if (axon.ellipsoids)
+                    axon.ellipsoids.forEach((ellipsoid, i) => {
+                        a.ellipsoids[i].pos = new Vector3(...ellipsoid.position);
+                        a.ellipsoids[i].shape = new Matrix3().set(...ellipsoid.shape);
+                    });
             });
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);

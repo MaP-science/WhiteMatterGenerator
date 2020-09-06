@@ -91,7 +91,7 @@ export default class {
     addCellsRandomly(cellCount) {
         for (let i = 0; i < cellCount; ++i) {
             const p = randomPosition().multiplyScalar(this.voxelSize);
-            const r = 5 + Math.random() * 5;
+            const r = 2.5 + Math.random() * 7;
             this.cells.push(new Ellipsoid(p, r, new Mapping([0, 1], [0, 0]), new Mapping([0, 1], [0, 0.01]), 1));
         }
         const iterations = 100;
