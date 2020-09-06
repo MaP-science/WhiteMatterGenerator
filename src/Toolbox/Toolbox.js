@@ -159,14 +159,19 @@ export default props => {
                 new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
             );
             setAxonCount(data.axons.length);
-            data.axons.forEach(axon =>
+            data.axons.forEach(axon => {
                 s.addAxon(
                     new Vector3(...axon.position),
                     new Vector3(...axon.direction),
                     axon.maxDiameter / 2,
                     axon.color
-                )
-            );
+                );
+                const a = s.axons[s.axons.length - 1];
+                axon.ellipsoids.forEach((ellipsoid, i) => {
+                    a.ellipsoids[i].pos = new Vector3(...ellipsoid.position);
+                    a.ellipsoids[i].shape = new Matrix3().set(...ellipsoid.shape);
+                });
+            });
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);
             setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution));
@@ -249,7 +254,7 @@ export default props => {
                                             Initialize
                                         </Button>
                                         <Button variant="contained" onClick={() => inputFileRef.current.click()}>
-                                            upload config file
+                                            upload
                                         </Button>
                                         {synthesizer && (
                                             <Button
@@ -270,7 +275,15 @@ export default props => {
                                                                 axon.end.z - axon.start.z
                                                             ],
                                                             maxDiameter: axon.radius * 2,
-                                                            color: axon.color
+                                                            color: axon.color,
+                                                            ellipsoids: axon.ellipsoids.map(ellipsoid => ({
+                                                                position: [
+                                                                    ellipsoid.pos.x,
+                                                                    ellipsoid.pos.y,
+                                                                    ellipsoid.pos.z
+                                                                ],
+                                                                shape: ellipsoid.shape.elements
+                                                            }))
                                                         })),
                                                         cells: synthesizer.cells.map(cell => ({
                                                             position: [cell.pos.x, cell.pos.y, cell.pos.z],
@@ -279,7 +292,7 @@ export default props => {
                                                     };
                                                     save(JSON.stringify(config, null, 4), "config.json");
                                                 }}>
-                                                Download config file
+                                                Download
                                             </Button>
                                         )}
                                     </ListItem>
