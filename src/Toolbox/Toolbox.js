@@ -53,9 +53,9 @@ export default props => {
     const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
-    const [voxelSize, setVoxelSize] = useState(5);
-    const [axonCount, setAxonCount] = useState(80);
-    const [ellipsoidDensity, setEllipsoidDensity] = useState(10);
+    const [voxelSize, setVoxelSize] = useState(100);
+    const [axonCount, setAxonCount] = useState(50);
+    const [ellipsoidDensity, setEllipsoidDensity] = useState(0.5);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
     const [contractSpeed, setContractSpeed] = useState(0.01);
@@ -79,7 +79,7 @@ export default props => {
         if (!mount.current) return;
         // Camera
         const cam = new PerspectiveCamera(fov, width / height, 0.1, 1000);
-        cam.position.set(5, 5, 5);
+        cam.position.set(50, 50, 50);
         cam.lookAt(0, 0, 0);
         setCamera(cam);
         // Renderer
@@ -502,11 +502,12 @@ export default props => {
                                                         value={viewModeAxon}
                                                         onChange={event => {
                                                             const vm = event.target.value;
-                                                            setViewModeAxon(vm);
                                                             const res =
                                                                 vm === "pipes"
                                                                     ? window.prompt("Resolution", resolution)
                                                                     : resolution;
+                                                            if (!res) return;
+                                                            setViewModeAxon(vm);
                                                             setResolution(res);
                                                             setScene(
                                                                 synthesizer.draw(viewModeVoxel, vm, viewModeCell, res)

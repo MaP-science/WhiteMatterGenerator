@@ -68,7 +68,7 @@ export default class {
     }
     addAxonsRandomly(axonCount) {
         for (let i = 0; i < axonCount; ++i)
-            this.addAxon(randomPosition().multiplyScalar(this.voxelSize), randomPosition(), 0.5 + Math.random());
+            this.addAxon(randomPosition().multiplyScalar(this.voxelSize), randomPosition(), 0.1 + Math.random() * 10);
         console.log("Total number of axons: " + this.axons.length);
     }
     addAxon(pos, dir, r, color) {
@@ -91,30 +91,28 @@ export default class {
     addCellsRandomly(cellCount) {
         for (let i = 0; i < cellCount; ++i) {
             const p = randomPosition().multiplyScalar(this.voxelSize);
-            const r = 0.1 + Math.random() * 0.5;
-            this.cells.push(new Ellipsoid(p, r, new Mapping([0, 1], [0, 1]), new Mapping([0, 1], [0, 0.01]), 1));
+            const r = 5 + Math.random() * 5;
+            this.cells.push(new Ellipsoid(p, r, new Mapping([0, 1], [0, 0]), new Mapping([0, 1], [0, 0.01]), 1));
         }
         const iterations = 100;
         const maxOverlap = 0.0001;
-        for (let j = 0; j < iterations; ++j) {
-            this.cells.forEach((a, i) => a.grow(0.05));
-            for (let mo = 1; mo > maxOverlap; ) {
-                this.cells.forEach((a, i) => {
-                    this.cells.forEach((b, j) => {
-                        if (i >= j) return;
-                        a.collision(b, maxOverlap, maxOverlap);
-                    });
+        this.cells.forEach((a, i) => a.grow(1));
+        for (let mo = 1; mo > maxOverlap; ) {
+            this.cells.forEach((a, i) => {
+                this.cells.forEach((b, j) => {
+                    if (i >= j) return;
+                    a.collision(b, maxOverlap, maxOverlap);
                 });
-                mo = 0;
-                this.cells.forEach((a, i) => a.keepInVoxel(this.voxelSize));
-                this.cells.forEach((a, i) => {
-                    this.cells.forEach((b, j) => {
-                        if (i >= j) return;
-                        mo = Math.max(mo, a.getOverlap(b, maxOverlap, mo));
-                    });
+            });
+            mo = 0;
+            this.cells.forEach((a, i) => a.keepInVoxel(this.voxelSize));
+            this.cells.forEach((a, i) => {
+                this.cells.forEach((b, j) => {
+                    if (i >= j) return;
+                    mo = Math.max(mo, a.getOverlap(b, 0, mo));
                 });
-            }
-            console.log(`Generating cells: ${((j + 1) * 100) / iterations}%`);
+            });
+            this.cells.forEach((a, i) => a.grow(-0.05));
         }
         this.cells.forEach((a, i) => {
             a.deformation = new Mapping([0], [0]);
