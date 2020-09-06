@@ -102,6 +102,7 @@ export default class {
         );
         this.voxelSize = voxelSize;
         this.color = color;
+        this.meshes = [];
     }
     keepInVoxel() {
         this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));
@@ -188,30 +189,27 @@ export default class {
                 geom.faces.push(new Face3(len, len + 2, len + 1, dirAvg));
                 geom.faces.push(new Face3(len + 1, len + 2, len + 3, dirAvg));
             }
-            scene.add(
-                new Mesh(
-                    applyColor(new BufferGeometry().fromGeometry(geom), this.color),
-                    new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
-                )
+            const mesh = new Mesh(
+                applyColor(new BufferGeometry().fromGeometry(geom), this.color),
+                new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
             );
+            this.meshes = [mesh];
+            scene.add(mesh);
         }
     }
     generateSkeleton(scene) {
-        scene.add(
-            new Line(
-                applyColor(
-                    new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)),
-                    this.color
-                ),
-                new LineBasicMaterial({ vertexColors: VertexColors })
-            )
+        const mesh = new Line(
+            applyColor(new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)), this.color),
+            new LineBasicMaterial({ vertexColors: VertexColors, side: DoubleSide })
         );
+        this.meshes = [mesh];
+        scene.add(mesh);
     }
     draw(scene) {
         const mesh = new Mesh(
             applyColor(new SphereBufferGeometry(1, 16, 16), this.color),
-            new MeshPhongMaterial({ vertexColors: VertexColors })
+            new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
         );
-        this.ellipsoids.forEach(ellipsoid => ellipsoid.draw(scene, mesh));
+        this.meshes = this.ellipsoids.map(ellipsoid => ellipsoid.draw(scene, mesh));
     }
 }

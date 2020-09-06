@@ -35,6 +35,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default props => {
+    const width = window.innerWidth * 0.55;
+    const height = window.innerHeight * 0.9;
+    const fov = 75;
     const classes = useStyles();
     const mount = useRef();
     const maxOverlap = 0.0001;
@@ -72,10 +75,8 @@ export default props => {
     });
     useEffect(() => {
         if (!mount.current) return;
-        const width = window.innerWidth * 0.55;
-        const height = window.innerHeight * 0.9;
         // Camera
-        const cam = new PerspectiveCamera(75, width / height, 0.1, 1000);
+        const cam = new PerspectiveCamera(fov, width / height, 0.1, 1000);
         cam.position.set(5, 5, 5);
         cam.lookAt(0, 0, 0);
         setCamera(cam);
@@ -93,6 +94,26 @@ export default props => {
         // Animate
         window.setInterval(() => setFrame(frame => frame + 1), 1000 / 30);
     }, [mount]);
+
+    useEffect(() => {
+        if (!synthesizer) return;
+        if (!renderer) return;
+        if (!camera) return;
+        if (!["ellipsoids", "pipes"].includes(viewModeAxon)) return;
+        const func = e => {
+            const x = (e.offsetX / width - 0.5) * 2 * Math.tan((fov * (width / height) * (Math.PI / 180)) / 2);
+            const y = -(e.offsetY / height - 0.5) * 2 * Math.tan((fov * (Math.PI / 180)) / 2);
+            const center = new Vector3(0, 0, 0);
+            const forward = center.clone().sub(camera.position).normalize();
+            const right = forward.clone().cross(new Vector3(0, 1, 0)).normalize();
+            const up = right.clone().cross(forward).normalize();
+            right.multiplyScalar(x);
+            up.multiplyScalar(y);
+            synthesizer.point(camera.position, forward.clone().add(right).add(up));
+        };
+        renderer.domElement.addEventListener("mousemove", func);
+        return () => renderer.domElement.removeEventListener("mousemove", func);
+    }, [synthesizer, renderer, camera, viewModeAxon]);
 
     useEffect(() => {
         if (controls) controls.update();

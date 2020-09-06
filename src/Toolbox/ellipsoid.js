@@ -113,5 +113,6 @@ export default class {
         m.matrixAutoUpdate = false;
         m.matrix = mat3ToMat4(this.shape).setPosition(this.pos);
         scene.add(m);
+        return m;
     }
 }

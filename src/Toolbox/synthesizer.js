@@ -9,7 +9,10 @@ import {
     AmbientLight,
     DirectionalLight,
     SphereGeometry,
-    MeshPhongMaterial
+    MeshPhongMaterial,
+    VertexColors,
+    Color,
+    DoubleSide
 } from "three";
 
 import Axon from "./axon";
@@ -33,6 +36,7 @@ export default class {
         this.axons = [];
         this.cells = [];
         this.updateState = { name: "ready" };
+        this.focusedAxon = null;
     }
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
@@ -236,5 +240,32 @@ export default class {
         this.drawCells(scene, cellMode);
         this.drawAxons(scene, axonMode, resolution);
         return scene;
+    }
+    point(camPos, cursorDir) {
+        let minAxon = null;
+        let minDist = 10000000;
+        this.axons.forEach(axon => {
+            const sp = axon.getSurfacePoint(
+                camPos.clone().add(cursorDir.clone().multiplyScalar(1000000)),
+                cursorDir.clone().negate()
+            );
+            const dist = cursorDir.dot(sp.clone().sub(camPos));
+            if (dist > minDist) return;
+            minDist = dist;
+            minAxon = axon;
+        });
+        if (minDist < 100000 && this.focusedAxon === minAxon) return;
+        if (minDist < 100000)
+            minAxon.meshes.forEach(
+                m => (m.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide }))
+            );
+        else minAxon = null;
+        this.focusedAxon = minAxon;
+        this.axons.forEach(axon => {
+            if (axon === minAxon) return;
+            axon.meshes.forEach(
+                m => (m.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }))
+            );
+        });
     }
 }
