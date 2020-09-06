@@ -192,13 +192,13 @@ export default class {
                 geom.faces.push(new Face3(len, len + 2, len + 1, dirAvg));
                 geom.faces.push(new Face3(len + 1, len + 2, len + 3, dirAvg));
             }
-            const mesh = new Mesh(
-                applyColor(new BufferGeometry().fromGeometry(geom), this.color),
-                new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
-            );
-            scene.add(mesh);
-            this.meshes = [mesh];
         }
+        const mesh = new Mesh(
+            applyColor(new BufferGeometry().fromGeometry(geom), this.color),
+            new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
+        );
+        scene.add(mesh);
+        this.meshes = [mesh];
     }
     generateSkeleton(scene) {
         const mesh = new Line(
