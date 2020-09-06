@@ -42,42 +42,51 @@ export default props => (
                 number should be between 0 and 1.
             </li>
             <li>
-                <b>mapFromDiameterToDeformationFactor</b> (object) - This map determines how much ellipsoids should
-                deform as opposed to change position when a collision occurs. It maps from the current diameter of the
-                ellipsoid to the deformation factor, which is a number between 0 and 1.
+                <b>mapFromDiameterToDeformationFactor</b> (object) - This map determines how much the axons' ellipsoids
+                should deform as opposed to change position when a collision occurs. It maps from the current diameter
+                of the ellipsoid to the deformation factor, which is a number between 0 and 1. A deformation factor of 0
+                means that the ellipsoid can't be deformed at all and will always be a perfect sphere. A deformation
+                factor of 1 means that the ellipsoid will deform as much as possible rather than change the position of
+                its center. The values defining the map will be linearly interpolated.
                 <ul>
                     <li>
-                        <b>from</b> (array of numbers)
+                        <b>from</b> (array of numbers) - The input values of the map, i.e. diameters. This array should
+                        be given in increasing order.
                     </li>
                     <li>
-                        <b>to</b> (array of numbers)
+                        <b>to</b> (array of numbers) - The output values of the map, i.e. deformation factors.
                     </li>
                 </ul>
             </li>
             <li>
-                <b>mapFromMaxDiameterToMinDiameter</b> (object) - This map determines the minimum diameter a ellipsoid
-                can have given its target size (max diameter).
+                <b>mapFromMaxDiameterToMinDiameter</b> (object) - This map determines the minimum diameter an ellipsoid
+                can have given its target size (max diameter). The values defining the map will be linearly
+                interpolated.
                 <ul>
                     <li>
-                        <b>from</b> (array of numbers)
+                        <b>from</b> (array of numbers) - The input values of the map, i.e. maximum diameters. This array
+                        should be given in increasing order.
                     </li>
                     <li>
-                        <b>to</b> (array of numbers)
+                        <b>to</b> (array of numbers) - The output values of the map, i.e. minimum diameters.
                     </li>
                 </ul>
             </li>
             <li>
-                <b>axons</b> (array of objects) - The axons to be generated. Initially each axon will pass through its
-                position vector and be aligned with its direction vector.
+                <b>axons</b> (array of objects) - The axons to be generated. Initially each axon will consist of a
+                straight chain of spheres passing through its <b>position</b> vector and be aligned with its{" "}
+                <b>direction</b> vector.
                 <ul>
                     <li>
-                        <b>position</b> (array of 3 numbers)
+                        <b>position</b> (array of 3 numbers) - When the axon is initialized it will pass through this
+                        point.
                     </li>
                     <li>
-                        <b>direction</b> (array of 3 numbers)
+                        <b>direction</b> (array of 3 numbers) - When the axon is initialized it's direction will be
+                        aligned with this vector.
                     </li>
                     <li>
-                        <b>maxDiameter</b> (number)
+                        <b>maxDiameter</b> (number) - The maximum attainable diameter of the axon.
                     </li>
                 </ul>
             </li>
@@ -87,11 +96,11 @@ export default props => (
                 them.
                 <ul>
                     <li>
-                        <b>position</b> (array of 3 numbers)
+                        <b>position</b> (array of 3 numbers) - The center of the cell.
                     </li>
                     <li>
-                        <b>shape</b> (array of 9 numbers specifying the 3x3 transformation matrix of a sphere into an
-                        ellipsoid)
+                        <b>shape</b> (array of 9 numbers) - Specifies the 3x3 transformation matrix used when going from
+                        a unit sphere to an ellipsoid. This ellipsoid will be the shape of the cell.
                     </li>
                 </ul>
             </li>
