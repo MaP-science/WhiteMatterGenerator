@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer } from "three";
+import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer, Scene } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { PLYExporter } from "three/examples/jsm/exporters/PLYExporter";
 import {
@@ -74,6 +74,7 @@ export default props => {
         to: [0, 0.2]
     });
     const [selectAxon, setSelectAxon] = useState(false);
+    const [selectedAxon, setSelectedAxon] = useState(null);
     useEffect(() => {
         if (!mount.current) return;
         // Camera
@@ -102,7 +103,7 @@ export default props => {
         if (!renderer) return;
         if (!camera) return;
         if (!["ellipsoids", "pipes"].includes(viewModeAxon)) return;
-        const func = e => {
+        const mousemove = e => {
             const x = (e.offsetX / width - 0.5) * 2 * Math.tan((fov * (width / height) * (Math.PI / 180)) / 2);
             const y = -(e.offsetY / height - 0.5) * 2 * Math.tan((fov * (Math.PI / 180)) / 2);
             const center = new Vector3(0, 0, 0);
@@ -111,11 +112,30 @@ export default props => {
             const up = right.clone().cross(forward).normalize();
             right.multiplyScalar(x);
             up.multiplyScalar(y);
-            synthesizer.point(camera.position, forward.clone().add(right).add(up));
+            setSelectedAxon(synthesizer.point(camera.position, forward.clone().add(right).add(up)));
         };
-        renderer.domElement.addEventListener("mousemove", func);
-        return () => renderer.domElement.removeEventListener("mousemove", func);
-    }, [synthesizer, renderer, camera, viewModeAxon]);
+        const click = e => {
+            if (!selectedAxon) return;
+            const s = new Scene();
+            selectedAxon.meshes.forEach(m => s.add(m.clone()));
+            synthesizer.focusedAxon = null;
+            synthesizer.deselectAll();
+            setSelectedAxon(null);
+            setSelectAxon(false);
+            save(
+                new PLYExporter().parse(s, null, {
+                    binary: true
+                }),
+                "axon.ply"
+            );
+        };
+        renderer.domElement.addEventListener("mousemove", mousemove);
+        renderer.domElement.addEventListener("click", click);
+        return () => {
+            renderer.domElement.removeEventListener("mousemove", mousemove);
+            renderer.domElement.removeEventListener("click", click);
+        };
+    }, [synthesizer, renderer, camera, viewModeAxon, selectAxon, selectedAxon]);
 
     useEffect(() => {
         if (controls) controls.update();
@@ -518,6 +538,8 @@ export default props => {
                                                         <MenuItem value="all">show</MenuItem>
                                                     </Select>
                                                 </FormControl>
+                                            </ListItem>
+                                            <ListItem>
                                                 <Button
                                                     variant="contained"
                                                     onClick={() =>
@@ -529,6 +551,9 @@ export default props => {
                                                         )
                                                     }>
                                                     Export
+                                                </Button>
+                                                <Button variant="contained" onClick={() => setSelectAxon(!selectAxon)}>
+                                                    {selectAxon ? "Select an axon" : "Export single axon"}
                                                 </Button>
                                             </ListItem>
                                         </List>

@@ -254,15 +254,19 @@ export default class {
             minDist = dist;
             minAxon = axon;
         });
-        if (minDist < 100000 && this.focusedAxon === minAxon) return;
+        if (minDist < 100000 && this.focusedAxon === minAxon) return minAxon;
         if (minDist < 100000)
             minAxon.meshes.forEach(
                 m => (m.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide }))
             );
         else minAxon = null;
         this.focusedAxon = minAxon;
+        this.deselectAll();
+        return minAxon;
+    }
+    deselectAll() {
         this.axons.forEach(axon => {
-            if (axon === minAxon) return;
+            if (axon === this.focusedAxon) return;
             axon.meshes.forEach(
                 m => (m.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }))
             );
