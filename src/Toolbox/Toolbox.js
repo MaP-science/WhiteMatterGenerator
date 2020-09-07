@@ -19,7 +19,9 @@ import {
     InputLabel,
     InputAdornment,
     Select,
-    MenuItem
+    MenuItem,
+    FormControlLabel,
+    Switch
 } from "@material-ui/core";
 import { save } from "save-file";
 import download from "in-browser-download";
@@ -77,6 +79,7 @@ export default props => {
     });
     const [selectAxon, setSelectAxon] = useState(false);
     const [selectedAxon, setSelectedAxon] = useState(null);
+    const [exportBinary, setExportBinary] = useState(true);
     useEffect(() => {
         if (!mount.current) return;
         // Camera
@@ -130,7 +133,7 @@ export default props => {
             if (!name) return;
             save(
                 new PLYExporter().parse(s, null, {
-                    binary: true
+                    binary: exportBinary
                 }),
                 name
             );
@@ -547,7 +550,16 @@ export default props => {
                                                     </Select>
                                                 </FormControl>
                                             </ListItem>
-                                            {viewModeAxon === "pipes" && (
+                                        </List>
+                                    </Paper>
+                                </Grid>
+                                {viewModeAxon === "pipes" && (
+                                    <Grid item className={classes.gridItem}>
+                                        <Paper>
+                                            <List>
+                                                <ListItem>
+                                                    <b>Export</b>
+                                                </ListItem>
                                                 <ListItem>
                                                     <Button
                                                         variant="contained"
@@ -556,18 +568,15 @@ export default props => {
                                                             if (!name) return;
                                                             save(
                                                                 new PLYExporter().parse(scene, null, {
-                                                                    binary: true
+                                                                    binary: exportBinary
                                                                 }),
                                                                 name
                                                             );
                                                         }}>
-                                                        Export
+                                                        Export as single file
                                                     </Button>
-                                                    <Button
-                                                        variant="contained"
-                                                        onClick={() => setSelectAxon(!selectAxon)}>
-                                                        {selectAxon ? "Select an axon" : "Export single axon"}
-                                                    </Button>
+                                                </ListItem>
+                                                <ListItem>
                                                     <Button
                                                         variant="contained"
                                                         onClick={async () => {
@@ -584,7 +593,7 @@ export default props => {
                                                                     : axon.meshes.forEach(m => s.add(m.clone()));
                                                                 await download(
                                                                     new PLYExporter().parse(s, null, {
-                                                                        binary: true
+                                                                        binary: exportBinary
                                                                     }),
                                                                     new Function(
                                                                         "index",
@@ -598,13 +607,32 @@ export default props => {
                                                                     ))(100);
                                                             }
                                                         }}>
-                                                        Batch Export
+                                                        Export as multiple files
                                                     </Button>
                                                 </ListItem>
-                                            )}
-                                        </List>
-                                    </Paper>
-                                </Grid>
+                                                <ListItem>
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={() => setSelectAxon(!selectAxon)}>
+                                                        {selectAxon ? "Select an axon" : "Export single axon"}
+                                                    </Button>
+                                                </ListItem>
+                                                <ListItem>
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                checked={exportBinary}
+                                                                onChange={() => setExportBinary(!exportBinary)}
+                                                                color="primary"
+                                                            />
+                                                        }
+                                                        label="Binary format"
+                                                    />
+                                                </ListItem>
+                                            </List>
+                                        </Paper>
+                                    </Grid>
+                                )}
                             </>
                         )}
                     </Grid>
