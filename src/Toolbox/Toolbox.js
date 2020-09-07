@@ -120,7 +120,7 @@ export default props => {
             const s = new Scene();
             viewModeAxon === "ellipsoids"
                 ? s.add(selectedAxon.getStaticGeometry())
-                : selectedAxon.meshes.map(m => s.add(m));
+                : selectedAxon.meshes.forEach(m => s.add(m.clone()));
             synthesizer.focusedAxon = null;
             synthesizer.deselectAll();
             setSelectedAxon(null);
