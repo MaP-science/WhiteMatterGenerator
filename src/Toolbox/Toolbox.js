@@ -125,11 +125,13 @@ export default props => {
             synthesizer.deselectAll();
             setSelectedAxon(null);
             setSelectAxon(false);
+            const name = window.prompt("File name", "axon.ply");
+            if (!name) return;
             save(
                 new PLYExporter().parse(s, null, {
                     binary: true
                 }),
-                "axon.ply"
+                name
             );
         };
         renderer.domElement.addEventListener("mousemove", mousemove);
@@ -547,14 +549,16 @@ export default props => {
                                             <ListItem>
                                                 <Button
                                                     variant="contained"
-                                                    onClick={() =>
+                                                    onClick={() => {
+                                                        const name = window.prompt("File name", "axons.ply");
+                                                        if (!name) return;
                                                         save(
                                                             new PLYExporter().parse(scene, null, {
                                                                 binary: true
                                                             }),
-                                                            "axons.ply"
-                                                        )
-                                                    }>
+                                                            name
+                                                        );
+                                                    }}>
                                                     Export
                                                 </Button>
                                                 <Button variant="contained" onClick={() => setSelectAxon(!selectAxon)}>
