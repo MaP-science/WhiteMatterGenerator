@@ -144,7 +144,7 @@ export default props => {
             renderer.domElement.removeEventListener("mousemove", mousemove);
             renderer.domElement.removeEventListener("click", click);
         };
-    }, [synthesizer, renderer, camera, viewModeAxon, selectAxon, selectedAxon, resolution]);
+    }, [synthesizer, renderer, camera, viewModeAxon, selectAxon, selectedAxon, resolution, exportBinary]);
 
     useEffect(() => {
         if (controls) controls.update();
@@ -582,7 +582,7 @@ export default props => {
                                                         onClick={async () => {
                                                             const name = window.prompt(
                                                                 "File name",
-                                                                "axon_${index}_${color}.ply"
+                                                                "axon_@index_@color.ply"
                                                             );
                                                             if (!name) return;
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
@@ -595,11 +595,9 @@ export default props => {
                                                                     new PLYExporter().parse(s, null, {
                                                                         binary: exportBinary
                                                                     }),
-                                                                    new Function(
-                                                                        "index",
-                                                                        "color",
-                                                                        `return \`${name}\`;`
-                                                                    )(i, axon.color)
+                                                                    name
+                                                                        .replace(/@index/g, i)
+                                                                        .replace(/@color/g, axon.color)
                                                                 );
                                                                 await (milliseconds =>
                                                                     new Promise(resolve =>
