@@ -22,6 +22,7 @@ import {
     MenuItem
 } from "@material-ui/core";
 import { save } from "save-file";
+import download from "in-browser-download";
 
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";
@@ -546,25 +547,61 @@ export default props => {
                                                     </Select>
                                                 </FormControl>
                                             </ListItem>
-                                            <ListItem>
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={() => {
-                                                        const name = window.prompt("File name", "axons.ply");
-                                                        if (!name) return;
-                                                        save(
-                                                            new PLYExporter().parse(scene, null, {
-                                                                binary: true
-                                                            }),
-                                                            name
-                                                        );
-                                                    }}>
-                                                    Export
-                                                </Button>
-                                                <Button variant="contained" onClick={() => setSelectAxon(!selectAxon)}>
-                                                    {selectAxon ? "Select an axon" : "Export single axon"}
-                                                </Button>
-                                            </ListItem>
+                                            {viewModeAxon === "pipes" && (
+                                                <ListItem>
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={() => {
+                                                            const name = window.prompt("File name", "axons.ply");
+                                                            if (!name) return;
+                                                            save(
+                                                                new PLYExporter().parse(scene, null, {
+                                                                    binary: true
+                                                                }),
+                                                                name
+                                                            );
+                                                        }}>
+                                                        Export
+                                                    </Button>
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={() => setSelectAxon(!selectAxon)}>
+                                                        {selectAxon ? "Select an axon" : "Export single axon"}
+                                                    </Button>
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={async () => {
+                                                            const name = window.prompt(
+                                                                "File name",
+                                                                "axon_${index}_${color}.ply"
+                                                            );
+                                                            if (!name) return;
+                                                            for (let i = 0; i < synthesizer.axons.length; ++i) {
+                                                                const axon = synthesizer.axons[i];
+                                                                const s = new Scene();
+                                                                viewModeAxon === "ellipsoids"
+                                                                    ? s.add(axon.getStaticGeometry())
+                                                                    : axon.meshes.forEach(m => s.add(m.clone()));
+                                                                await download(
+                                                                    new PLYExporter().parse(s, null, {
+                                                                        binary: true
+                                                                    }),
+                                                                    new Function(
+                                                                        "index",
+                                                                        "color",
+                                                                        `return \`${name}\`;`
+                                                                    )(i, axon.color)
+                                                                );
+                                                                await (milliseconds =>
+                                                                    new Promise(resolve =>
+                                                                        window.setTimeout(resolve, milliseconds)
+                                                                    ))(100);
+                                                            }
+                                                        }}>
+                                                        Batch Export
+                                                    </Button>
+                                                </ListItem>
+                                            )}
                                         </List>
                                     </Paper>
                                 </Grid>
