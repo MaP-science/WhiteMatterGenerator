@@ -8,7 +8,6 @@ import {
     Scene,
     AmbientLight,
     DirectionalLight,
-    SphereBufferGeometry,
     MeshPhongMaterial,
     VertexColors,
     Color,
@@ -227,8 +226,9 @@ export default class {
     }
     drawCells(scene, mode) {
         if (mode === "none") return;
-        const cellMesh = new Mesh(new SphereBufferGeometry(1, 16, 16), new MeshPhongMaterial({ color: "#ffffff" }));
-        this.cells.forEach(cell => cell.draw(scene, cellMesh));
+        this.cells.forEach(cell =>
+            cell.draw(scene, new Mesh(cell.getGeometry(), new MeshPhongMaterial({ color: "#ffffff" })))
+        );
     }
     draw(voxelMode, axonMode, cellMode, resolution) {
         const scene = new Scene();
