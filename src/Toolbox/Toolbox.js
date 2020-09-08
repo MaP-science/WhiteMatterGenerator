@@ -227,6 +227,7 @@ export default props => {
                         a.ellipsoids[i].shape = new Matrix3().set(...ellipsoid.shape);
                     });
             });
+            setCellCount(data.cells.length);
             data.cells.forEach(cell =>
                 s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape), cell.color)
             );
