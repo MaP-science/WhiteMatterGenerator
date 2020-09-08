@@ -6,7 +6,6 @@ import {
     Line,
     Mesh,
     SphereBufferGeometry,
-    BufferAttribute,
     VertexColors,
     DoubleSide,
     Geometry,
@@ -17,6 +16,8 @@ import {
 import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import Ellipsoid from "./ellipsoid";
+
+import { applyColor } from "./helperFunctions";
 
 const computeCollisionTree = (ellipsoids, minDist) => {
     if (ellipsoids.length === 1)
@@ -65,25 +66,6 @@ const getOverlap = (a, b, minDist, maxOverlap) => {
     return Math.max(getOverlap(b.a, a, minDist, maxOverlap), getOverlap(b.b, a, minDist, maxOverlap));
 };
 
-const applyColor = (geometry, color) => {
-    if (!geometry?.attributes?.position?.count) return geometry;
-    return geometry.setAttribute(
-        "color",
-        new BufferAttribute(
-            new Float32Array(
-                Array(geometry.attributes.position.count)
-                    .fill([
-                        parseInt(color.substr(1, 6).substr(0, 2), 16) / 255,
-                        parseInt(color.substr(1, 6).substr(2, 2), 16) / 255,
-                        parseInt(color.substr(1, 6).substr(4, 2), 16) / 255
-                    ])
-                    .flat()
-            ),
-            3
-        )
-    );
-};
-
 export default class {
     constructor(start, end, radius, deformation, minDiameter, movement, ellipsoidDensity, voxelSize, color) {
         this.start = start.clone();
@@ -100,7 +82,8 @@ export default class {
                     radius,
                     deformation,
                     minDiameter,
-                    movement
+                    movement,
+                    color
                 )
         );
         this.voxelSize = voxelSize;

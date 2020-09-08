@@ -1,9 +1,9 @@
 import { Vector3, Matrix3, Box3, SphereBufferGeometry } from "three";
 import { v4 } from "uuid";
-import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum, min, max } from "./helperFunctions";
+import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum, min, max, applyColor } from "./helperFunctions";
 
 export default class {
-    constructor(pos, radius, deformation, minDiameter, movement) {
+    constructor(pos, radius, deformation, minDiameter, movement, color) {
         this.pos = pos.clone();
         this.radius = radius;
         this.deformation = deformation;
@@ -11,6 +11,7 @@ export default class {
         this.movement = movement;
         this.shape = new Matrix3().multiplyScalar(this.minDiameter.map(this.radius * 2) / 2);
         this.id = v4();
+        this.color = color || "#ffffff";
         this.axisCache = {};
     }
     boundingBox(minDist) {
@@ -120,6 +121,6 @@ export default class {
         return mat3ToMat4(this.shape).setPosition(this.pos);
     }
     getGeometry() {
-        return new SphereBufferGeometry(1, 16, 16).applyMatrix4(this.getMatrix4());
+        return applyColor(new SphereBufferGeometry(1, 16, 16).applyMatrix4(this.getMatrix4()), this.color);
     }
 }

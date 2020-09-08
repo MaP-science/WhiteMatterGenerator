@@ -189,7 +189,8 @@ export default props => {
         volumeFraction,
         automaticGrowth,
         growCount,
-        volumeFractionTarget
+        volumeFractionTarget,
+        border
     ]);
 
     useEffect(() => {
@@ -226,14 +227,16 @@ export default props => {
                         a.ellipsoids[i].shape = new Matrix3().set(...ellipsoid.shape);
                     });
             });
-            data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
+            data.cells.forEach(cell =>
+                s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape), cell.color)
+            );
             setSynthesizer(s);
             setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution, Number(border)));
             setUpdateState(s.updateState);
         };
         reader.readAsText(inputFile);
         setInputFile(null);
-    }, [inputFile, viewModeVoxel, viewModeAxon, resolution, viewModeCell]);
+    }, [inputFile, viewModeVoxel, viewModeAxon, resolution, viewModeCell, border]);
 
     return (
         <>
@@ -349,7 +352,8 @@ export default props => {
                                                         })),
                                                         cells: synthesizer.cells.map(cell => ({
                                                             position: [cell.pos.x, cell.pos.y, cell.pos.z],
-                                                            shape: cell.shape.elements
+                                                            shape: cell.shape.elements,
+                                                            color: cell.color
                                                         }))
                                                     };
                                                     save(JSON.stringify(config, null, 4), "config.json");

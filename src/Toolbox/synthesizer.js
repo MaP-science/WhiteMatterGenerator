@@ -9,6 +9,7 @@ import {
     AmbientLight,
     DirectionalLight,
     MeshPhongMaterial,
+    MeshToonMaterial,
     VertexColors,
     Color,
     DoubleSide
@@ -18,7 +19,7 @@ import Axon from "./axon";
 import Ellipsoid from "./ellipsoid";
 import Mapping from "./mapping";
 
-import { randomPosition, projectOntoCube, shuffle } from "./helperFunctions";
+import { randomPosition, projectOntoCube, shuffle, randomHexColor } from "./helperFunctions";
 
 const wireframeCube = size =>
     new LineSegments(
@@ -83,7 +84,7 @@ export default class {
                 1,
                 this.ellipsoidDensity,
                 this.voxelSize,
-                color || "#" + Math.random().toString(16).substr(2, 6)
+                color || randomHexColor()
             )
         );
     }
@@ -91,7 +92,9 @@ export default class {
         for (let i = 0; i < cellCount; ++i) {
             const p = randomPosition().multiplyScalar(this.voxelSize);
             const r = 2.5 + Math.random() * 7;
-            this.cells.push(new Ellipsoid(p, r, new Mapping([0, 1], [0, 0]), new Mapping([0, 1], [0, 0.01]), 1));
+            this.cells.push(
+                new Ellipsoid(p, r, new Mapping([0, 1], [0, 0]), new Mapping([0, 1], [0, 0.01]), 1, randomHexColor())
+            );
         }
         const maxOverlap = 0.0001;
         this.cells.forEach((a, i) => a.grow(1));
@@ -117,8 +120,8 @@ export default class {
             a.movement = 0;
         });
     }
-    addCell(pos, shape) {
-        const cell = new Ellipsoid(pos, 0, new Mapping([0], [0]), new Mapping([0], [0]), 0);
+    addCell(pos, shape, color) {
+        const cell = new Ellipsoid(pos, 0, new Mapping([0], [0]), new Mapping([0], [0]), 0, color || randomHexColor());
         cell.shape = shape.clone();
         this.cells.push(cell);
     }
@@ -229,7 +232,7 @@ export default class {
     drawCells(scene, mode) {
         if (mode === "none") return;
         this.cells.forEach(cell =>
-            cell.draw(scene, new Mesh(cell.getGeometry(), new MeshPhongMaterial({ color: "#ffffff" })))
+            cell.draw(scene, new Mesh(cell.getGeometry(), new MeshToonMaterial({ color: cell.color })))
         );
     }
     draw(voxelMode, axonMode, cellMode, resolution, border) {
