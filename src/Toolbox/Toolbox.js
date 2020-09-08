@@ -80,6 +80,7 @@ export default props => {
     const [selectAxon, setSelectAxon] = useState(false);
     const [selectedAxon, setSelectedAxon] = useState(null);
     const [exportBinary, setExportBinary] = useState(true);
+    const [border, setBorder] = useState(0);
     useEffect(() => {
         if (!mount.current) return;
         // Camera
@@ -159,13 +160,13 @@ export default props => {
             return setAutomaticGrowth(false);
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "getOverlap")
-            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution));
+            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution, Number(border)));
         if (updateState.name === "ready" && volumeFraction !== updateState.volumeFraction) {
             setVolumeFraction(updateState.volumeFraction);
             setGrowCount(growCount === null ? 0 : growCount + 1);
         }
         if (updateState.name !== "ready" || automaticGrowth) {
-            const us = { ...synthesizer.update(growSpeed, contractSpeed, minDist, maxOverlap) };
+            const us = { ...synthesizer.update(growSpeed, contractSpeed, minDist, maxOverlap, Number(border)) };
             window.setTimeout(() => setUpdateState(us), 0);
             return;
         }
@@ -227,7 +228,7 @@ export default props => {
             });
             data.cells.forEach(cell => s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape)));
             setSynthesizer(s);
-            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution));
+            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution, Number(border)));
             setUpdateState(s.updateState);
         };
         reader.readAsText(inputFile);
@@ -301,7 +302,15 @@ export default props => {
                                                 s.addAxonsRandomly(Number(axonCount));
                                                 s.addCellsRandomly(Number(cellCount));
                                                 setSynthesizer(s);
-                                                setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution));
+                                                setScene(
+                                                    s.draw(
+                                                        viewModeVoxel,
+                                                        viewModeAxon,
+                                                        viewModeCell,
+                                                        resolution,
+                                                        Number(border)
+                                                    )
+                                                );
                                                 setUpdateState(s.updateState);
                                             }}>
                                             Initialize
@@ -427,7 +436,8 @@ export default props => {
                                                                     growSpeed,
                                                                     contractSpeed,
                                                                     minDist,
-                                                                    maxOverlap
+                                                                    maxOverlap,
+                                                                    Number(border)
                                                                 )
                                                             })
                                                         }>
@@ -435,7 +445,31 @@ export default props => {
                                                     </Button>
                                                 )}
                                             </ListItem>
-                                            <Grid item>Volume fraction:</Grid>
+                                            <Grid item>
+                                                <b>Volume fraction estimation</b>
+                                            </Grid>
+                                            <Grid item>
+                                                Select how many µm to exclude from each side of the voxel when doing the
+                                                estimation:
+                                            </Grid>
+                                            <TextField
+                                                type="number"
+                                                label="Border"
+                                                value={border}
+                                                onChange={e => {
+                                                    const b = e.target.value;
+                                                    setBorder(b);
+                                                    setScene(
+                                                        synthesizer.draw(
+                                                            viewModeVoxel,
+                                                            viewModeAxon,
+                                                            viewModeCell,
+                                                            resolution,
+                                                            Number(b)
+                                                        )
+                                                    );
+                                                }}
+                                            />
                                             <TableContainer component={Paper}>
                                                 <Table className={classes.table} aria-label="simple table">
                                                     <TableBody>
@@ -498,7 +532,8 @@ export default props => {
                                                                     vm,
                                                                     viewModeAxon,
                                                                     viewModeCell,
-                                                                    resolution
+                                                                    resolution,
+                                                                    Number(border)
                                                                 )
                                                             );
                                                         }}>
@@ -520,7 +555,13 @@ export default props => {
                                                             setViewModeAxon(vm);
                                                             setResolution(res);
                                                             setScene(
-                                                                synthesizer.draw(viewModeVoxel, vm, viewModeCell, res)
+                                                                synthesizer.draw(
+                                                                    viewModeVoxel,
+                                                                    vm,
+                                                                    viewModeCell,
+                                                                    res,
+                                                                    Number(border)
+                                                                )
                                                             );
                                                         }}>
                                                         <MenuItem value="none">hide</MenuItem>
@@ -541,7 +582,8 @@ export default props => {
                                                                     viewModeVoxel,
                                                                     viewModeAxon,
                                                                     vm,
-                                                                    resolution
+                                                                    resolution,
+                                                                    Number(border)
                                                                 )
                                                             );
                                                         }}>

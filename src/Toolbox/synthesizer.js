@@ -1,7 +1,7 @@
 import {
     Vector3,
     LineSegments,
-    CubeGeometry,
+    BoxGeometry,
     EdgesGeometry,
     Mesh,
     LineBasicMaterial,
@@ -22,7 +22,7 @@ import { randomPosition, projectOntoCube, shuffle } from "./helperFunctions";
 
 const wireframeCube = size =>
     new LineSegments(
-        new EdgesGeometry(new CubeGeometry(size, size, size)),
+        new EdgesGeometry(new BoxGeometry(size, size, size)),
         new LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
     );
 
@@ -122,7 +122,7 @@ export default class {
         cell.shape = shape.clone();
         this.cells.push(cell);
     }
-    volumeFraction(n) {
+    volumeFraction(n, border) {
         this.axons.forEach(axon => axon.computeCollisionTree(0));
         let axonCount = 0;
         let cellCount = 0;
@@ -132,7 +132,7 @@ export default class {
                     const p = new Vector3(i + 0.5, j + 0.5, k + 0.5)
                         .divideScalar(n)
                         .sub(new Vector3(0.5, 0.5, 0.5))
-                        .multiplyScalar(this.voxelSize);
+                        .multiplyScalar(this.voxelSize - 2 * border);
                     let inside = false;
                     this.axons.forEach(axon => {
                         if (axon.collisionTree.containsPoint(p)) inside = true;
@@ -148,7 +148,7 @@ export default class {
         }
         return [axonCount / (n * n * n), cellCount / (n * n * n)];
     }
-    update(growSpeed, contractSpeed, minDist, maxOverlap) {
+    update(growSpeed, contractSpeed, minDist, maxOverlap, border) {
         switch (this.updateState.name) {
             case "ready":
                 this.updateState = { name: "grow" };
@@ -181,7 +181,7 @@ export default class {
                 else this.updateState.name = "keepInVoxel";
                 break;
             case "volumeFraction":
-                const [avf, cvf] = this.volumeFraction(20);
+                const [avf, cvf] = this.volumeFraction(20, border);
                 console.log(`Volume fraction: ${100 * avf} % + ${100 * cvf} % = ${100 * (avf + cvf)} %`);
                 this.updateState = { name: "ready", volumeFraction: [avf, cvf] };
                 break;
@@ -204,9 +204,11 @@ export default class {
         light.position.set(0, 1, 0);
         scene.add(light);
     }
-    drawVoxels(scene, mode) {
+    drawVoxels(scene, mode, border) {
         if (mode === "none") return;
         scene.add(wireframeCube(this.voxelSize));
+        const size = this.voxelSize - 2 * border;
+        if (size > 0) scene.add(wireframeCube(size));
     }
     drawAxons(scene, mode, resolution) {
         switch (mode) {
@@ -230,10 +232,10 @@ export default class {
             cell.draw(scene, new Mesh(cell.getGeometry(), new MeshPhongMaterial({ color: "#ffffff" })))
         );
     }
-    draw(voxelMode, axonMode, cellMode, resolution) {
+    draw(voxelMode, axonMode, cellMode, resolution, border) {
         const scene = new Scene();
         this.drawLight(scene);
-        this.drawVoxels(scene, voxelMode);
+        this.drawVoxels(scene, voxelMode, border);
         this.drawCells(scene, cellMode);
         this.drawAxons(scene, axonMode, resolution);
         return scene;
