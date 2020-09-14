@@ -128,16 +128,22 @@ export default class {
             this.ellipsoids[i].pos.add(c.multiplyScalar(amount));
         }
     }
-    getSurfacePoint(pos, dir) {
-        return this.ellipsoids.reduce((pMax, ellipsoid) => {
-            const distMax = pMax.clone().sub(pos).dot(dir);
-            const p = ellipsoid.getSurfacePoint(pos, dir);
-            if (!p) return pMax;
-            const dist = p.clone().sub(pos).dot(dir);
-            return dist > distMax ? p : pMax;
-        }, pos);
-    }
     generatePipe(scene, resolution) {
+        const getSP = (pos, dir, i, iDiff, maxDist = 1e-10) => {
+            if (!iDiff) {
+                const sp1 = getSP(pos, dir, i, 1);
+                const sp2 = getSP(pos, dir, i, -1);
+                const dist1 = sp1.clone().sub(pos).dot(dir);
+                const dist2 = sp2.clone().sub(pos).dot(dir);
+                return dist1 > dist2 ? sp1 : sp2;
+            }
+            if (i < 0 || i >= this.ellipsoids.length) return undefined;
+            const sp = this.ellipsoids[i].getSurfacePoint(pos, dir);
+            if (!sp) return undefined;
+            const dist = sp.clone().sub(pos).dot(dir);
+            if (dist < maxDist) return undefined;
+            return getSP(pos, dir, i + iDiff, iDiff, dist) || sp;
+        };
         const d = this.ellipsoids[this.ellipsoids.length - 1].pos.clone().sub(this.ellipsoids[0].pos);
         d.normalize();
         const x = new Vector3(1, 0, 0);
@@ -168,10 +174,10 @@ export default class {
                     .multiplyScalar(Math.cos(angleAvg))
                     .add(b.clone().multiplyScalar(Math.sin(angleAvg)));
                 const len = geom.vertices.length;
-                geom.vertices.push(this.getSurfacePoint(p1, dir1));
-                geom.vertices.push(this.getSurfacePoint(p2, dir1));
-                geom.vertices.push(this.getSurfacePoint(p1, dir2));
-                geom.vertices.push(this.getSurfacePoint(p2, dir2));
+                geom.vertices.push(getSP(p1, dir1, i));
+                geom.vertices.push(getSP(p2, dir1, i + 1));
+                geom.vertices.push(getSP(p1, dir2, i));
+                geom.vertices.push(getSP(p2, dir2, i + 1));
                 geom.faces.push(new Face3(len, len + 2, len + 1, dirAvg));
                 geom.faces.push(new Face3(len + 1, len + 2, len + 3, dirAvg));
             }
