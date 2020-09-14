@@ -171,7 +171,11 @@ export default props => {
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "getOverlap")
             setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution, Number(border)));
-        if (updateState.name === "ready" && volumeFraction !== updateState.volumeFraction) {
+        if (
+            updateState.name === "ready" &&
+            updateState.volumeFraction &&
+            volumeFraction !== updateState.volumeFraction
+        ) {
             setVolumeFraction(updateState.volumeFraction);
             setGrowCount(growCount === null ? 0 : growCount + 1);
         }
@@ -326,6 +330,8 @@ export default props => {
                                                     )
                                                 );
                                                 setUpdateState(s.updateState);
+                                                setVolumeFraction(0);
+                                                setGrowCount(0);
                                             }}>
                                             Initialize
                                         </Button>
