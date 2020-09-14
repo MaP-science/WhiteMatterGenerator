@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer, Scene } from "three";
+import {
+    Vector3,
+    Matrix3,
+    PerspectiveCamera,
+    WebGLRenderer,
+    Scene,
+    MeshPhongMaterial,
+    VertexColors,
+    DoubleSide,
+    Mesh
+} from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { PLYExporter } from "three/examples/jsm/exporters/PLYExporter";
 import {
@@ -629,9 +639,14 @@ export default props => {
                                                         onClick={async () => {
                                                             const name = window.prompt(
                                                                 "File name",
-                                                                "axon_@index_@color.ply"
+                                                                "@type_@index_@color.ply"
                                                             );
                                                             if (!name) return;
+                                                            const wait = async () =>
+                                                                await (milliseconds =>
+                                                                    new Promise(resolve =>
+                                                                        window.setTimeout(resolve, milliseconds)
+                                                                    ))(100);
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
                                                                 const axon = synthesizer.axons[i];
                                                                 const s = new Scene();
@@ -643,13 +658,35 @@ export default props => {
                                                                         binary: exportBinary
                                                                     }),
                                                                     name
+                                                                        .replace(/@type/g, "axon")
                                                                         .replace(/@index/g, i)
                                                                         .replace(/@color/g, axon.color)
                                                                 );
-                                                                await (milliseconds =>
-                                                                    new Promise(resolve =>
-                                                                        window.setTimeout(resolve, milliseconds)
-                                                                    ))(100);
+                                                                await wait();
+                                                            }
+                                                            if (viewModeCell === "hide") return;
+                                                            for (let i = 0; i < synthesizer.cells.length; ++i) {
+                                                                const cell = synthesizer.cells[i];
+                                                                const s = new Scene();
+                                                                s.add(
+                                                                    new Mesh(
+                                                                        cell.getGeometry(),
+                                                                        new MeshPhongMaterial({
+                                                                            vertexColors: VertexColors,
+                                                                            side: DoubleSide
+                                                                        })
+                                                                    )
+                                                                );
+                                                                await download(
+                                                                    new PLYExporter().parse(s, null, {
+                                                                        binary: exportBinary
+                                                                    }),
+                                                                    name
+                                                                        .replace(/@type/g, "cell")
+                                                                        .replace(/@index/g, i)
+                                                                        .replace(/@color/g, cell.color)
+                                                                );
+                                                                await wait();
                                                             }
                                                         }}>
                                                         Export as multiple files
