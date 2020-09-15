@@ -87,8 +87,8 @@ export default props => {
         from: [0, 2],
         to: [0, 0.2]
     });
-    const [selectAxon, setSelectAxon] = useState(false);
-    const [selectedAxon, setSelectedAxon] = useState(null);
+    const [selectItem, setSelectItem] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
     const [exportBinary, setExportBinary] = useState(true);
     const [border, setBorder] = useState(0);
     useEffect(() => {
@@ -114,7 +114,7 @@ export default props => {
     }, [mount]);
 
     useEffect(() => {
-        if (!selectAxon) return;
+        if (!selectItem) return;
         if (!synthesizer) return;
         if (!renderer) return;
         if (!camera) return;
@@ -128,19 +128,19 @@ export default props => {
             const up = right.clone().cross(forward).normalize();
             right.multiplyScalar(x);
             up.multiplyScalar(y);
-            setSelectedAxon(synthesizer.point(camera.position, forward.clone().add(right).add(up)));
+            setSelectedItem(synthesizer.point(camera.position, forward.clone().add(right).add(up)));
         };
         const click = e => {
-            if (!selectedAxon) return;
+            if (!selectedItem) return;
             const s = new Scene();
-            viewModeAxon === "ellipsoids"
-                ? s.add(selectedAxon.getStaticGeometry())
-                : selectedAxon.meshes.forEach(m => s.add(m.clone()));
-            synthesizer.focusedAxon = null;
+            selectedItem.type === "axon"
+                ? selectedItem.object.meshes.forEach(m => s.add(m.clone()))
+                : selectedItem.object.draw(s, true);
+            synthesizer.focus = null;
             synthesizer.deselectAll();
-            setSelectedAxon(null);
-            setSelectAxon(false);
-            const name = window.prompt("File name", "axon.ply");
+            setSelectedItem(null);
+            setSelectItem(false);
+            const name = window.prompt("File name", `${selectedItem.type}.ply`);
             if (!name) return;
             save(
                 new PLYExporter().parse(s, null, {
@@ -155,7 +155,7 @@ export default props => {
             renderer.domElement.removeEventListener("mousemove", mousemove);
             renderer.domElement.removeEventListener("click", click);
         };
-    }, [synthesizer, renderer, camera, viewModeAxon, selectAxon, selectedAxon, resolution, exportBinary]);
+    }, [synthesizer, renderer, camera, viewModeAxon, selectItem, selectedItem, resolution, exportBinary]);
 
     useEffect(() => {
         if (controls) controls.update();
@@ -701,8 +701,8 @@ export default props => {
                                                 <ListItem>
                                                     <Button
                                                         variant="contained"
-                                                        onClick={() => setSelectAxon(!selectAxon)}>
-                                                        {selectAxon ? "Select an axon" : "Export single axon"}
+                                                        onClick={() => setSelectItem(!selectItem)}>
+                                                        {selectItem ? "Select an axon" : "Export single axon"}
                                                     </Button>
                                                 </ListItem>
                                                 <ListItem>

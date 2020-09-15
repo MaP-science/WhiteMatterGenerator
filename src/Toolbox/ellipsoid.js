@@ -1,9 +1,9 @@
-import { Vector3, Matrix3, Box3, SphereBufferGeometry } from "three";
+import { Vector3, Matrix3, Box3, SphereBufferGeometry, Mesh, MeshToonMaterial } from "three";
 import { v4 } from "uuid";
 import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum, min, max, applyColor } from "./helperFunctions";
 
 export default class {
-    constructor(pos, radius, deformation, minDiameter, movement, color) {
+    constructor(pos, radius, deformation, minDiameter, movement, color, generateMesh) {
         this.pos = pos.clone();
         this.radius = radius;
         this.deformation = deformation;
@@ -13,6 +13,7 @@ export default class {
         this.id = v4();
         this.color = color || "#ffffff";
         this.axisCache = {};
+        if (generateMesh) this.mesh = new Mesh(this.getGeometry(), new MeshToonMaterial({ color: this.color }));
     }
     boundingBox(minDist) {
         const x = extremum(this.shape, new Vector3(1, 0, 0)).dot(new Vector3(1, 0, 0));
@@ -109,13 +110,13 @@ export default class {
             )
         );
     }
-    draw(scene, mesh) {
-        const m = mesh.clone();
-        m.matrixAutoUpdate = false;
-        m.matrix = this.getMatrix4();
-        m.updateMatrix();
-        scene.add(m);
-        return m;
+    draw(scene, cloneMesh) {
+        this.mesh.geometry = this.getGeometry();
+        this.mesh.matrixAutoUpdate = false;
+        this.mesh.matrix = this.getMatrix4();
+        this.mesh.updateMatrix();
+        scene.add(cloneMesh ? this.mesh.clone() : this.mesh);
+        return this.mesh;
     }
     getMatrix4() {
         return mat3ToMat4(this.shape).setPosition(this.pos);

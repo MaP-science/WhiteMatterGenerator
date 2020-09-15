@@ -83,7 +83,8 @@ export default class {
                     deformation,
                     minDiameter,
                     movement,
-                    color
+                    color,
+                    false
                 )
         );
         this.voxelSize = voxelSize;
@@ -127,6 +128,16 @@ export default class {
             this.ellipsoids[i].pos.add(d);
             this.ellipsoids[i].pos.add(c.multiplyScalar(amount));
         }
+    }
+    getSurfacePoint(pos, dir) {
+        return this.ellipsoids.reduce((pMax, ellipsoid) => {
+            const p = ellipsoid.getSurfacePoint(pos, dir);
+            if (!pMax) return p;
+            const distMax = pMax.clone().sub(pos).dot(dir);
+            if (!p) return pMax;
+            const dist = p.clone().sub(pos).dot(dir);
+            return dist > distMax ? p : pMax;
+        }, undefined);
     }
     generatePipe(scene, resolution) {
         const getSP = (pos, dir, i, iDiff, maxDist = 1e-10) => {

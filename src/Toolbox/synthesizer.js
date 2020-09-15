@@ -3,7 +3,6 @@ import {
     LineSegments,
     BoxGeometry,
     EdgesGeometry,
-    Mesh,
     LineBasicMaterial,
     Scene,
     AmbientLight,
@@ -36,7 +35,7 @@ export default class {
         this.axons = [];
         this.cells = [];
         this.updateState = { name: "ready" };
-        this.focusedAxon = null;
+        this.focus = null;
     }
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
@@ -93,7 +92,15 @@ export default class {
             const p = randomPosition().multiplyScalar(this.voxelSize);
             const r = 2.5 + Math.random() * 7;
             this.cells.push(
-                new Ellipsoid(p, r, new Mapping([0, 1], [0, 0]), new Mapping([0, 1], [0, 0.01]), 1, randomHexColor())
+                new Ellipsoid(
+                    p,
+                    r,
+                    new Mapping([0, 1], [0, 0]),
+                    new Mapping([0, 1], [0, 0.01]),
+                    1,
+                    randomHexColor(),
+                    true
+                )
             );
         }
         const maxOverlap = 0.0001;
@@ -121,7 +128,15 @@ export default class {
         });
     }
     addCell(pos, shape, color) {
-        const cell = new Ellipsoid(pos, 0, new Mapping([0], [0]), new Mapping([0], [0]), 0, color || randomHexColor());
+        const cell = new Ellipsoid(
+            pos,
+            0,
+            new Mapping([0], [0]),
+            new Mapping([0], [0]),
+            0,
+            color || randomHexColor(),
+            true
+        );
         cell.shape = shape.clone();
         this.cells.push(cell);
     }
@@ -231,9 +246,7 @@ export default class {
     }
     drawCells(scene, mode) {
         if (mode === "none") return;
-        this.cells.forEach(cell =>
-            cell.draw(scene, new Mesh(cell.getGeometry(), new MeshToonMaterial({ color: cell.color })))
-        );
+        this.cells.forEach(cell => cell.draw(scene));
     }
     draw(voxelMode, axonMode, cellMode, resolution, border) {
         const scene = new Scene();
@@ -244,34 +257,45 @@ export default class {
         return scene;
     }
     point(camPos, cursorDir) {
-        let minAxon = null;
+        let result = null;
         let minDist = 10000000;
-        this.axons.forEach(axon => {
-            const sp = axon.getSurfacePoint(
-                camPos.clone().add(cursorDir.clone().multiplyScalar(1000000)),
-                cursorDir.clone().negate()
-            );
-            const dist = cursorDir.dot(sp.clone().sub(camPos));
-            if (dist > minDist) return;
-            minDist = dist;
-            minAxon = axon;
-        });
-        if (minDist < 100000 && this.focusedAxon === minAxon) return minAxon;
-        if (minDist < 100000)
-            minAxon.meshes.forEach(
+        const pos = camPos.clone().add(cursorDir.clone().multiplyScalar(1000000));
+        const dir = cursorDir.clone().negate();
+        [this.axons.map(a => ({ type: "axon", object: a })), this.cells.map(c => ({ type: "cell", object: c }))]
+            .flat()
+            .forEach(item => {
+                const sp = item.object.getSurfacePoint(pos, dir);
+                if (!sp) return;
+                const dist = cursorDir.dot(sp.clone().sub(camPos));
+                if (dist > minDist) return;
+                minDist = dist;
+                result = item;
+            });
+        console.log(result);
+        if (minDist < 100000 && this.focus?.object === result.object) return this.focus;
+        if (result?.type === "axon")
+            result.object.meshes.forEach(
                 m => (m.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide }))
             );
-        else minAxon = null;
-        this.focusedAxon = minAxon;
+        this.focus = result;
+        if (this.focus?.object?.mesh?.material)
+            this.focus.object.mesh.material = new MeshToonMaterial({ color: new Color(0xffffff) });
+        console.log(this.focus?.object?.mesh?.uuid);
         this.deselectAll();
-        return minAxon;
+        return this.focus;
     }
     deselectAll() {
         this.axons.forEach(axon => {
-            if (axon === this.focusedAxon) return;
+            if (axon === this.focus?.object) return;
             axon.meshes.forEach(
                 m => (m.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }))
             );
+        });
+        this.cells.forEach(cell => {
+            if (cell === this.focus?.object) return;
+            console.log(this.focus);
+            console.log(cell.mesh.uuid);
+            cell.mesh.material = new MeshToonMaterial({ color: cell.color });
         });
     }
 }
