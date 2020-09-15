@@ -90,6 +90,7 @@ export default props => {
     const [selectItem, setSelectItem] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [exportBinary, setExportBinary] = useState(true);
+    const [exportSimple, setExportSimple] = useState(false);
     const [border, setBorder] = useState(0);
     useEffect(() => {
         if (!mount.current) return;
@@ -144,7 +145,8 @@ export default props => {
             if (!name) return;
             save(
                 new PLYExporter().parse(s, null, {
-                    binary: exportBinary
+                    binary: exportBinary,
+                    excludeAttributes: exportSimple ? ["color", "normal", "uv"] : []
                 }),
                 name
             );
@@ -155,7 +157,7 @@ export default props => {
             renderer.domElement.removeEventListener("mousemove", mousemove);
             renderer.domElement.removeEventListener("click", click);
         };
-    }, [synthesizer, renderer, camera, viewModeAxon, selectItem, selectedItem, resolution, exportBinary]);
+    }, [synthesizer, renderer, camera, viewModeAxon, selectItem, selectedItem, resolution, exportBinary, exportSimple]);
 
     useEffect(() => {
         if (controls) controls.update();
@@ -631,7 +633,10 @@ export default props => {
                                                             if (!name) return;
                                                             save(
                                                                 new PLYExporter().parse(scene, null, {
-                                                                    binary: exportBinary
+                                                                    binary: exportBinary,
+                                                                    excludeAttributes: exportSimple
+                                                                        ? ["color", "normal", "uv"]
+                                                                        : []
                                                                 }),
                                                                 name
                                                             );
@@ -661,7 +666,10 @@ export default props => {
                                                                     : axon.meshes.forEach(m => s.add(m.clone()));
                                                                 await download(
                                                                     new PLYExporter().parse(s, null, {
-                                                                        binary: exportBinary
+                                                                        binary: exportBinary,
+                                                                        excludeAttributes: exportSimple
+                                                                            ? ["color", "normal", "uv"]
+                                                                            : []
                                                                     }),
                                                                     name
                                                                         .replace(/@type/g, "axon")
@@ -685,7 +693,10 @@ export default props => {
                                                                 );
                                                                 await download(
                                                                     new PLYExporter().parse(s, null, {
-                                                                        binary: exportBinary
+                                                                        binary: exportBinary,
+                                                                        excludeAttributes: exportSimple
+                                                                            ? ["color", "normal", "uv"]
+                                                                            : []
                                                                     }),
                                                                     name
                                                                         .replace(/@type/g, "cell")
@@ -715,6 +726,18 @@ export default props => {
                                                             />
                                                         }
                                                         label="Binary format"
+                                                    />
+                                                </ListItem>
+                                                <ListItem>
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                checked={exportSimple}
+                                                                onChange={() => setExportSimple(!exportSimple)}
+                                                                color="primary"
+                                                            />
+                                                        }
+                                                        label="Simple mesh"
                                                     />
                                                 </ListItem>
                                             </List>
