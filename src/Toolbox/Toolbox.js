@@ -702,7 +702,7 @@ export default props => {
                                                     <Button
                                                         variant="contained"
                                                         onClick={() => setSelectItem(!selectItem)}>
-                                                        {selectItem ? "Select an axon" : "Export single axon"}
+                                                        {selectItem ? "Select an element" : "Export single element"}
                                                     </Button>
                                                 </ListItem>
                                                 <ListItem>
