@@ -17,7 +17,7 @@ import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtil
 
 import Ellipsoid from "./ellipsoid";
 
-import { applyColor } from "./helperFunctions";
+import { hexColorToVector, applyColor } from "./helperFunctions";
 
 const computeCollisionTree = (ellipsoids, minDist) => {
     if (ellipsoids.length === 1)
@@ -189,11 +189,11 @@ export default class {
             )
             .flat()
             .flat();
-        geom.computeFaceNormals();
-        const mesh = new Mesh(
-            applyColor(new BufferGeometry().fromGeometry(geom), this.color),
-            new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
+        geom.computeVertexNormals();
+        geom.faces.forEach(
+            face => (face.vertexColors = new Array(3).fill(true).map(() => hexColorToVector(this.color)))
         );
+        const mesh = new Mesh(geom, new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }));
         scene.add(mesh);
         this.meshes = [mesh];
     }

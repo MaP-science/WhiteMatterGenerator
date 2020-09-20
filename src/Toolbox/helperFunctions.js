@@ -1,4 +1,4 @@
-import { Vector3, Matrix3, Matrix4, BufferAttribute } from "three";
+import { Vector3, Matrix3, Matrix4, BufferAttribute, Color } from "three";
 import fmin from "fmin";
 
 export const min = (a, b) => new Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
@@ -101,20 +101,20 @@ export const round2Decimals = n => Math.round(n * 100) / 100;
 
 export const randomHexColor = () => "#" + Math.random().toString(16).substr(2, 6);
 
+export const hexColorToVector = color =>
+    new Color(
+        parseInt(color.substr(1, 6).substr(0, 2), 16) / 255,
+        parseInt(color.substr(1, 6).substr(2, 2), 16) / 255,
+        parseInt(color.substr(1, 6).substr(4, 2), 16) / 255
+    );
+
 export const applyColor = (geometry, color) => {
     if (!geometry?.attributes?.position?.count) return geometry;
+    const col = hexColorToVector(color);
     return geometry.setAttribute(
         "color",
         new BufferAttribute(
-            new Float32Array(
-                Array(geometry.attributes.position.count)
-                    .fill([
-                        parseInt(color.substr(1, 6).substr(0, 2), 16) / 255,
-                        parseInt(color.substr(1, 6).substr(2, 2), 16) / 255,
-                        parseInt(color.substr(1, 6).substr(4, 2), 16) / 255
-                    ])
-                    .flat()
-            ),
+            new Float32Array(Array(geometry.attributes.position.count).fill([col.r, col.g, col.b]).flat()),
             3
         )
     );
