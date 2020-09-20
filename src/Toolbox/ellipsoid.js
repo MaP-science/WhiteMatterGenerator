@@ -1,6 +1,15 @@
-import { Vector3, Matrix3, Box3, SphereBufferGeometry, Mesh, MeshToonMaterial } from "three";
+import { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial } from "three";
 import { v4 } from "uuid";
-import { mat3ToMat4, randomDirection, collisionAxis, deform, extremum, min, max, applyColor } from "./helperFunctions";
+import {
+    mat3ToMat4,
+    randomDirection,
+    collisionAxis,
+    deform,
+    extremum,
+    min,
+    max,
+    hexColorToVector
+} from "./helperFunctions";
 
 export default class {
     constructor(pos, radius, deformation, minDiameter, movement, color, generateMesh) {
@@ -122,6 +131,11 @@ export default class {
         return mat3ToMat4(this.shape).setPosition(this.pos);
     }
     getGeometry() {
-        return applyColor(new SphereBufferGeometry(1, 16, 16).applyMatrix4(this.getMatrix4()), this.color);
+        const geom = new SphereGeometry(1, 16, 16).applyMatrix4(this.getMatrix4());
+        geom.computeVertexNormals();
+        geom.faces.forEach(
+            face => (face.vertexColors = new Array(3).fill(true).map(() => hexColorToVector(this.color)))
+        );
+        return geom;
     }
 }

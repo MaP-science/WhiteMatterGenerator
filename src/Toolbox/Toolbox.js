@@ -1,17 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-    Vector3,
-    Matrix3,
-    PerspectiveCamera,
-    WebGLRenderer,
-    Scene,
-    MeshPhongMaterial,
-    VertexColors,
-    DoubleSide,
-    Mesh
-} from "three";
+import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer, Geometry } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { PLYExporter } from "three/examples/jsm/exporters/PLYExporter";
 import {
     Grid,
     Paper,
@@ -35,6 +24,7 @@ import {
 } from "@material-ui/core";
 import { save } from "save-file";
 import download from "in-browser-download";
+import { PLYExporter } from "./PLYExporter";
 
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";
@@ -133,10 +123,10 @@ export default props => {
         };
         const click = e => {
             if (!selectedItem) return;
-            const s = new Scene();
-            selectedItem.type === "axon"
-                ? selectedItem.object.meshes.forEach(m => s.add(m.clone()))
-                : selectedItem.object.draw(s, true);
+            const geom =
+                selectedItem.type === "axon"
+                    ? selectedItem.object.meshes[0].geometry
+                    : selectedItem.object.mesh.geometry;
             synthesizer.focus = null;
             synthesizer.deselectAll();
             setSelectedItem(null);
@@ -144,9 +134,10 @@ export default props => {
             const name = window.prompt("File name", `${selectedItem.type}.ply`);
             if (!name) return;
             save(
-                new PLYExporter().parse(s, null, {
+                new PLYExporter().parse(geom, {
                     binary: exportBinary,
-                    excludeAttributes: exportSimple ? ["color", "normal", "uv"] : []
+                    includeColors: !exportSimple,
+                    includeNormals: !exportSimple
                 }),
                 name
             );
@@ -632,12 +623,24 @@ export default props => {
                                                             const name = window.prompt("File name", "axons.ply");
                                                             if (!name) return;
                                                             save(
-                                                                new PLYExporter().parse(scene, null, {
-                                                                    binary: exportBinary,
-                                                                    excludeAttributes: exportSimple
-                                                                        ? ["color", "normal", "uv"]
-                                                                        : []
-                                                                }),
+                                                                new PLYExporter().parse(
+                                                                    [
+                                                                        synthesizer.axons.map(
+                                                                            a => a.meshes[0].geometry
+                                                                        ),
+                                                                        synthesizer.cells.map(c => c.mesh.geometry)
+                                                                    ]
+                                                                        .flat()
+                                                                        .reduce((result, geom) => {
+                                                                            result.merge(geom);
+                                                                            return result;
+                                                                        }, new Geometry()),
+                                                                    {
+                                                                        binary: exportBinary,
+                                                                        includeColors: !exportSimple,
+                                                                        includeNormals: !exportSimple
+                                                                    }
+                                                                ),
                                                                 name
                                                             );
                                                         }}>
@@ -660,16 +663,11 @@ export default props => {
                                                                     ))(100);
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
                                                                 const axon = synthesizer.axons[i];
-                                                                const s = new Scene();
-                                                                viewModeAxon === "ellipsoids"
-                                                                    ? s.add(axon.getStaticGeometry())
-                                                                    : axon.meshes.forEach(m => s.add(m.clone()));
                                                                 await download(
-                                                                    new PLYExporter().parse(s, null, {
+                                                                    new PLYExporter().parse(axon.meshes[0].geometry, {
                                                                         binary: exportBinary,
-                                                                        excludeAttributes: exportSimple
-                                                                            ? ["color", "normal", "uv"]
-                                                                            : []
+                                                                        includeColors: !exportSimple,
+                                                                        includeNormals: !exportSimple
                                                                     }),
                                                                     name
                                                                         .replace(/@type/g, "axon")
@@ -681,22 +679,11 @@ export default props => {
                                                             if (viewModeCell === "hide") return;
                                                             for (let i = 0; i < synthesizer.cells.length; ++i) {
                                                                 const cell = synthesizer.cells[i];
-                                                                const s = new Scene();
-                                                                s.add(
-                                                                    new Mesh(
-                                                                        cell.getGeometry(),
-                                                                        new MeshPhongMaterial({
-                                                                            vertexColors: VertexColors,
-                                                                            side: DoubleSide
-                                                                        })
-                                                                    )
-                                                                );
                                                                 await download(
-                                                                    new PLYExporter().parse(s, null, {
+                                                                    new PLYExporter().parse(cell.getGeometry(), {
                                                                         binary: exportBinary,
-                                                                        excludeAttributes: exportSimple
-                                                                            ? ["color", "normal", "uv"]
-                                                                            : []
+                                                                        includeColors: !exportSimple,
+                                                                        includeNormals: !exportSimple
                                                                     }),
                                                                     name
                                                                         .replace(/@type/g, "cell")
