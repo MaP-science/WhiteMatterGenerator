@@ -164,35 +164,32 @@ export default class {
         const a = cx.length() > cy.length() ? cx : cy;
         a.normalize();
         const b = d.clone().cross(a).normalize();
+        const verts = this.ellipsoids.map((ellipsoid, i) => {
+            return new Array(resolution).fill(true).map((r, j) => {
+                const angle = (2 * Math.PI * j) / resolution;
+                const dir = a
+                    .clone()
+                    .multiplyScalar(Math.cos(angle))
+                    .add(b.clone().multiplyScalar(Math.sin(angle)));
+                return getSP(ellipsoid.pos, dir, i);
+            });
+        });
         const geom = new Geometry();
-        for (let i = 0; i < this.ellipsoids.length - 1; ++i) {
-            const p1 = this.ellipsoids[i].pos;
-            const p2 = this.ellipsoids[i + 1].pos;
-            for (let j = 0; j < resolution; ++j) {
-                const angle1 = (2 * Math.PI * j) / resolution;
-                const angle2 = (2 * Math.PI * (j + 1)) / resolution;
-                const angleAvg = (2 * Math.PI * (j + 0.5)) / resolution;
-                const dir1 = a
-                    .clone()
-                    .multiplyScalar(Math.cos(angle1))
-                    .add(b.clone().multiplyScalar(Math.sin(angle1)));
-                const dir2 = a
-                    .clone()
-                    .multiplyScalar(Math.cos(angle2))
-                    .add(b.clone().multiplyScalar(Math.sin(angle2)));
-                const dirAvg = a
-                    .clone()
-                    .multiplyScalar(Math.cos(angleAvg))
-                    .add(b.clone().multiplyScalar(Math.sin(angleAvg)));
-                const len = geom.vertices.length;
-                geom.vertices.push(getSP(p1, dir1, i));
-                geom.vertices.push(getSP(p2, dir1, i + 1));
-                geom.vertices.push(getSP(p1, dir2, i));
-                geom.vertices.push(getSP(p2, dir2, i + 1));
-                geom.faces.push(new Face3(len, len + 2, len + 1, dirAvg));
-                geom.faces.push(new Face3(len + 1, len + 2, len + 3, dirAvg));
-            }
-        }
+        geom.vertices = verts.flat();
+        geom.faces = verts
+            .slice(0, verts.length - 1)
+            .map((verti, i) =>
+                verti.map((vertij, j) => {
+                    const i00 = i * resolution + j;
+                    const i01 = i * resolution + ((j + 1) % resolution);
+                    const i10 = (i + 1) * resolution + j;
+                    const i11 = (i + 1) * resolution + ((j + 1) % resolution);
+                    return [new Face3(i00, i01, i10), new Face3(i10, i01, i11)];
+                })
+            )
+            .flat()
+            .flat();
+        geom.computeFaceNormals();
         const mesh = new Mesh(
             applyColor(new BufferGeometry().fromGeometry(geom), this.color),
             new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
