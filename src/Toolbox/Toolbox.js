@@ -172,7 +172,7 @@ export default props => {
             return setAutomaticGrowth(false);
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "getOverlap")
-            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution, Number(border)));
+            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(border)));
         if (
             updateState.name === "ready" &&
             updateState.volumeFraction &&
@@ -248,7 +248,7 @@ export default props => {
                 s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape), cell.color)
             );
             setSynthesizer(s);
-            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, resolution, Number(border)));
+            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(border)));
             setUpdateState(s.updateState);
         };
         reader.readAsText(inputFile);
@@ -327,7 +327,7 @@ export default props => {
                                                         viewModeVoxel,
                                                         viewModeAxon,
                                                         viewModeCell,
-                                                        resolution,
+                                                        Number(resolution),
                                                         Number(border)
                                                     )
                                                 );
@@ -487,7 +487,7 @@ export default props => {
                                                             viewModeVoxel,
                                                             viewModeAxon,
                                                             viewModeCell,
-                                                            resolution,
+                                                            Number(resolution),
                                                             Number(b)
                                                         )
                                                     );
@@ -555,7 +555,7 @@ export default props => {
                                                                     vm,
                                                                     viewModeAxon,
                                                                     viewModeCell,
-                                                                    resolution,
+                                                                    Number(resolution),
                                                                     Number(border)
                                                                 )
                                                             );
@@ -582,7 +582,7 @@ export default props => {
                                                                     viewModeVoxel,
                                                                     vm,
                                                                     viewModeCell,
-                                                                    res,
+                                                                    Number(res),
                                                                     Number(border)
                                                                 )
                                                             );
@@ -605,7 +605,7 @@ export default props => {
                                                                     viewModeVoxel,
                                                                     viewModeAxon,
                                                                     vm,
-                                                                    resolution,
+                                                                    Number(resolution),
                                                                     Number(border)
                                                                 )
                                                             );
