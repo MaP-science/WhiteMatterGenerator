@@ -24,11 +24,12 @@ import {
 } from "@material-ui/core";
 import { save } from "save-file";
 import download from "in-browser-download";
-import plyParser from "./plyParser";
 
-import Synthesizer from "./synthesizer";
-import Mapping from "./mapping";
-import { round2Decimals } from "./helperFunctions";
+import plyParser from "../core/plyParser";
+import Synthesizer from "../core/synthesizer";
+import Mapping from "../core/mapping";
+
+const round2Decimals = n => Math.round(n * 100) / 100;
 
 const useStyles = makeStyles(theme => ({
     gridItem: {

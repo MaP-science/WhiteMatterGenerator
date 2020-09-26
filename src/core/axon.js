@@ -1,7 +1,5 @@
 import THREE from "./three.js";
 
-import BufferGeometryUtils from "./BufferGeometryUtils.js";
-
 import Ellipsoid from "./ellipsoid.js";
 
 import { hexColorToVector, applyColor } from "./helperFunctions.js";
@@ -216,13 +214,5 @@ export default class {
         });
         scene.add(mesh);
         this.meshes = [mesh];
-    }
-    getStaticGeometry() {
-        const geom = applyColor(
-            BufferGeometryUtils.mergeBufferGeometries(this.ellipsoids.map(ellipsoid => ellipsoid.getGeometry())),
-            this.color
-        );
-        const material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide });
-        return new Mesh(geom, material);
     }
 }

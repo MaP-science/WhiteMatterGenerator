@@ -98,8 +98,6 @@ export const shuffle = a => {
     return a;
 };
 
-export const round2Decimals = n => Math.round(n * 100) / 100;
-
 export const randomHexColor = () => "#" + Math.random().toString(16).substr(2, 6);
 
 export const hexColorToVector = color =>

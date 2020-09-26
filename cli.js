@@ -1,8 +1,8 @@
 import commandLineArgs from "command-line-args";
 import fs from "fs";
-import Synthesizer from "./src/Toolbox/synthesizer.js";
-import Mapping from "./src/Toolbox/mapping.js";
-import THREE from "./src/Toolbox/three.js";
+import Synthesizer from "./src/core/synthesizer.js";
+import Mapping from "./src/core/mapping.js";
+import THREE from "./src/core/three.js";
 const { Vector3, Matrix3 } = THREE;
 
 const optionDefinitions = [
