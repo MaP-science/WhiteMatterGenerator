@@ -2,7 +2,6 @@ import commandLineArgs from "command-line-args";
 import fs from "fs";
 import Synthesizer from "./src/Toolbox/synthesizer.js";
 import Mapping from "./src/Toolbox/mapping.js";
-import PLYExporter from "./src/Toolbox/PLYExporter.js";
 import THREE from "./src/Toolbox/three.js";
 const { Vector3, Matrix3 } = THREE;
 

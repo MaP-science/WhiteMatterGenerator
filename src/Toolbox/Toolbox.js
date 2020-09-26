@@ -24,7 +24,7 @@ import {
 } from "@material-ui/core";
 import { save } from "save-file";
 import download from "in-browser-download";
-import PLYExporter from "./PLYExporter";
+import plyParser from "./plyParser";
 
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";
@@ -134,7 +134,7 @@ export default props => {
             const name = window.prompt("File name", `${selectedItem.type}.ply`);
             if (!name) return;
             save(
-                new PLYExporter().parse(geom, {
+                plyParser(geom, {
                     binary: exportBinary,
                     includeColors: !exportSimple,
                     includeNormals: !exportSimple
@@ -623,7 +623,7 @@ export default props => {
                                                             const name = window.prompt("File name", "axons.ply");
                                                             if (!name) return;
                                                             save(
-                                                                new PLYExporter().parse(
+                                                                plyParser(
                                                                     [
                                                                         synthesizer.axons.map(
                                                                             a => a.meshes[0].geometry
@@ -664,7 +664,7 @@ export default props => {
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
                                                                 const axon = synthesizer.axons[i];
                                                                 await download(
-                                                                    new PLYExporter().parse(axon.meshes[0].geometry, {
+                                                                    plyParser(axon.meshes[0].geometry, {
                                                                         binary: exportBinary,
                                                                         includeColors: !exportSimple,
                                                                         includeNormals: !exportSimple
@@ -680,7 +680,7 @@ export default props => {
                                                             for (let i = 0; i < synthesizer.cells.length; ++i) {
                                                                 const cell = synthesizer.cells[i];
                                                                 await download(
-                                                                    new PLYExporter().parse(cell.getGeometry(), {
+                                                                    plyParser(cell.getGeometry(), {
                                                                         binary: exportBinary,
                                                                         includeColors: !exportSimple,
                                                                         includeNormals: !exportSimple
