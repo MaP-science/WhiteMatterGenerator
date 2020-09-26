@@ -1,4 +1,12 @@
-import {
+import THREE from "./three.js";
+
+import BufferGeometryUtils from "./BufferGeometryUtils.js";
+
+import Ellipsoid from "./ellipsoid.js";
+
+import { hexColorToVector, applyColor } from "./helperFunctions.js";
+
+const {
     Vector3,
     MeshPhongMaterial,
     LineBasicMaterial,
@@ -11,13 +19,7 @@ import {
     Geometry,
     Face3,
     InstancedMesh
-} from "three";
-
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
-
-import Ellipsoid from "./ellipsoid";
-
-import { hexColorToVector, applyColor } from "./helperFunctions";
+} = THREE;
 
 const computeCollisionTree = (ellipsoids, minDist) => {
     if (ellipsoids.length === 1)

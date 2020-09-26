@@ -1,4 +1,9 @@
-import {
+import THREE from "./three.js";
+import Axon from "./axon.js";
+import Ellipsoid from "./ellipsoid.js";
+import Mapping from "./mapping.js";
+import { randomPosition, projectOntoCube, shuffle, randomHexColor } from "./helperFunctions.js";
+const {
     Vector3,
     LineSegments,
     BoxGeometry,
@@ -12,13 +17,7 @@ import {
     VertexColors,
     Color,
     DoubleSide
-} from "three";
-
-import Axon from "./axon";
-import Ellipsoid from "./ellipsoid";
-import Mapping from "./mapping";
-
-import { randomPosition, projectOntoCube, shuffle, randomHexColor } from "./helperFunctions";
+} = THREE;
 
 const wireframeCube = size =>
     new LineSegments(
@@ -272,27 +271,27 @@ export default class {
                 result = item;
             });
         console.log(result);
-        if (minDist < 100000 && this.focus?.object === result.object) return this.focus;
-        if (result?.type === "axon")
+        if (minDist < 100000 && (this.focus || {}).object === result.object) return this.focus;
+        if ((result || {}).type === "axon")
             result.object.meshes.forEach(
                 m => (m.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide }))
             );
         this.focus = result;
-        if (this.focus?.object?.mesh?.material)
+        if ((((this.focus || {}).object || {}).mesh || {}).material)
             this.focus.object.mesh.material = new MeshToonMaterial({ color: new Color(0xffffff) });
-        console.log(this.focus?.object?.mesh?.uuid);
+        console.log((((this.focus || {}).object || {}).mesh || {}).uuid);
         this.deselectAll();
         return this.focus;
     }
     deselectAll() {
         this.axons.forEach(axon => {
-            if (axon === this.focus?.object) return;
+            if (axon === (this.focus || {}).object) return;
             axon.meshes.forEach(
                 m => (m.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }))
             );
         });
         this.cells.forEach(cell => {
-            if (cell === this.focus?.object) return;
+            if (cell === (this.focus || {}).object) return;
             console.log(this.focus);
             console.log(cell.mesh.uuid);
             cell.mesh.material = new MeshToonMaterial({ color: cell.color });

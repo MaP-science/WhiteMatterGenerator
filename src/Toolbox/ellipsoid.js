@@ -1,4 +1,4 @@
-import { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial } from "three";
+import THREE from "./three.js";
 import { v4 } from "uuid";
 import {
     mat3ToMat4,
@@ -9,7 +9,8 @@ import {
     min,
     max,
     hexColorToVector
-} from "./helperFunctions";
+} from "./helperFunctions.js";
+const { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial } = THREE;
 
 export default class {
     constructor(pos, radius, deformation, minDiameter, movement, color, generateMesh) {

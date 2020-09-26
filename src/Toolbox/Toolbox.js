@@ -24,7 +24,7 @@ import {
 } from "@material-ui/core";
 import { save } from "save-file";
 import download from "in-browser-download";
-import { PLYExporter } from "./PLYExporter";
+import PLYExporter from "./PLYExporter";
 
 import Synthesizer from "./synthesizer";
 import Mapping from "./mapping";

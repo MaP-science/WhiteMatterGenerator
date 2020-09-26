@@ -1,4 +1,5 @@
-import { Vector3, Color } from "three";
+import THREE from "./three.js";
+const { Vector3, Color } = THREE;
 
 const PLYExporter = function () {};
 
@@ -83,4 +84,4 @@ PLYExporter.prototype = {
     }
 };
 
-export { PLYExporter };
+export default PLYExporter;

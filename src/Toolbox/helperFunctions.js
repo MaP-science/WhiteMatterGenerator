@@ -1,5 +1,6 @@
-import { Vector3, Matrix3, Matrix4, BufferAttribute, Color } from "three";
+import THREE from "./three.js";
 import fmin from "fmin";
+const { Vector3, Matrix3, Matrix4, BufferAttribute, Color } = THREE;
 
 export const min = (a, b) => new Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
 
@@ -109,7 +110,7 @@ export const hexColorToVector = color =>
     );
 
 export const applyColor = (geometry, color) => {
-    if (!geometry?.attributes?.position?.count) return geometry;
+    if (!(((geometry || {}).attributes || {}).position || {}).count) return geometry;
     const col = hexColorToVector(color);
     return geometry.setAttribute(
         "color",
