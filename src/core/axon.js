@@ -89,7 +89,7 @@ export default class {
         );
         this.voxelSize = voxelSize;
         this.color = color;
-        this.meshes = [];
+        this.mesh = null;
     }
     keepInVoxel() {
         this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));
@@ -195,14 +195,14 @@ export default class {
         );
         const mesh = new Mesh(geom, new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }));
         scene.add(mesh);
-        this.meshes = [mesh];
+        this.mesh = mesh;
     }
     generateSkeleton(scene) {
         const mesh = new Line(
             applyColor(new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)), this.color),
             new LineBasicMaterial({ vertexColors: VertexColors, side: DoubleSide })
         );
-        this.meshes = [mesh];
+        this.mesh = mesh;
         scene.add(mesh);
     }
     draw(scene) {
@@ -213,6 +213,6 @@ export default class {
             mesh.setMatrixAt(i, ellipsoid.getMatrix4());
         });
         scene.add(mesh);
-        this.meshes = [mesh];
+        this.mesh = mesh;
     }
 }

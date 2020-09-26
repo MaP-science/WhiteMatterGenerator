@@ -125,9 +125,7 @@ export default props => {
         const click = e => {
             if (!selectedItem) return;
             const geom =
-                selectedItem.type === "axon"
-                    ? selectedItem.object.meshes[0].geometry
-                    : selectedItem.object.mesh.geometry;
+                selectedItem.type === "axon" ? selectedItem.object.mesh.geometry : selectedItem.object.mesh.geometry;
             synthesizer.focus = null;
             synthesizer.deselectAll();
             setSelectedItem(null);
@@ -626,9 +624,7 @@ export default props => {
                                                             save(
                                                                 plyParser(
                                                                     [
-                                                                        synthesizer.axons.map(
-                                                                            a => a.meshes[0].geometry
-                                                                        ),
+                                                                        synthesizer.axons.map(a => a.mesh.geometry),
                                                                         synthesizer.cells.map(c => c.mesh.geometry)
                                                                     ]
                                                                         .flat()
@@ -665,7 +661,7 @@ export default props => {
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
                                                                 const axon = synthesizer.axons[i];
                                                                 await download(
-                                                                    plyParser(axon.meshes[0].geometry, {
+                                                                    plyParser(axon.mesh.geometry, {
                                                                         binary: exportBinary,
                                                                         includeColors: !exportSimple,
                                                                         includeNormals: !exportSimple

@@ -273,9 +273,7 @@ export default class {
         console.log(result);
         if (minDist < 100000 && (this.focus || {}).object === result.object) return this.focus;
         if ((result || {}).type === "axon")
-            result.object.meshes.forEach(
-                m => (m.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide }))
-            );
+            result.object.mesh.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide });
         this.focus = result;
         if ((((this.focus || {}).object || {}).mesh || {}).material)
             this.focus.object.mesh.material = new MeshToonMaterial({ color: new Color(0xffffff) });
@@ -286,9 +284,7 @@ export default class {
     deselectAll() {
         this.axons.forEach(axon => {
             if (axon === (this.focus || {}).object) return;
-            axon.meshes.forEach(
-                m => (m.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }))
-            );
+            axon.mesh.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide });
         });
         this.cells.forEach(cell => {
             if (cell === (this.focus || {}).object) return;
