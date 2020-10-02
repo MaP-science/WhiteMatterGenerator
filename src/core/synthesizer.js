@@ -64,9 +64,15 @@ export default class {
         });
         return result;
     }
-    addAxonsRandomly(axonCount) {
+    addAxonsRandomly(axonCount, gFactor) {
         for (let i = 0; i < axonCount; ++i)
-            this.addAxon(randomPosition().multiplyScalar(this.voxelSize), randomPosition(), 0.1 + Math.random() * 10);
+            this.addAxon(
+                randomPosition().multiplyScalar(this.voxelSize),
+                randomPosition(),
+                0.1 + Math.random() * 10,
+                undefined,
+                gFactor
+            );
         console.log("Total number of axons: " + this.axons.length);
     }
     addAxon(pos, dir, r, color, gFactor) {

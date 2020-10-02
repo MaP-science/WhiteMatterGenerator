@@ -83,6 +83,7 @@ export default props => {
     const [exportBinary, setExportBinary] = useState(true);
     const [exportSimple, setExportSimple] = useState(false);
     const [border, setBorder] = useState(0);
+    const [gFactor, setGFactor] = useState(0.9);
     useEffect(() => {
         if (!mount.current) return;
         // Camera
@@ -276,6 +277,12 @@ export default props => {
                                             value={axonCount}
                                             onChange={e => setAxonCount(e.target.value)}
                                         />
+                                        <TextField
+                                            type="number"
+                                            label="Number of cells"
+                                            value={cellCount}
+                                            onChange={e => setCellCount(e.target.value)}
+                                        />
                                     </ListItem>
                                     <ListItem>
                                         <TextField
@@ -289,9 +296,9 @@ export default props => {
                                         />
                                         <TextField
                                             type="number"
-                                            label="Number of cells"
-                                            value={cellCount}
-                                            onChange={e => setCellCount(e.target.value)}
+                                            label="g-factor"
+                                            value={gFactor}
+                                            onChange={e => setGFactor(e.target.value)}
                                         />
                                     </ListItem>
                                     <ListItem>
@@ -310,7 +317,7 @@ export default props => {
                                                         mapFromMaxDiameterToMinDiameter.to
                                                     )
                                                 );
-                                                s.addAxonsRandomly(Number(axonCount));
+                                                s.addAxonsRandomly(Number(axonCount), gFactor);
                                                 s.addCellsRandomly(Number(cellCount));
                                                 setSynthesizer(s);
                                                 setScene(
