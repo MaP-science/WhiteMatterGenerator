@@ -224,7 +224,8 @@ export default props => {
                     new Vector3(...axon.position),
                     new Vector3(...axon.direction),
                     axon.maxDiameter / 2,
-                    axon.color
+                    axon.color,
+                    axon.gFactor
                 );
                 const a = s.axons[s.axons.length - 1];
                 if (axon.ellipsoids)
@@ -348,7 +349,7 @@ export default props => {
                                                                 axon.end.y - axon.start.y,
                                                                 axon.end.z - axon.start.z
                                                             ],
-                                                            maxDiameter: axon.radius * 2,
+                                                            maxDiameter: axon.radius * axon.gFactor * 2,
                                                             color: axon.color,
                                                             ellipsoids: axon.ellipsoids.map(ellipsoid => ({
                                                                 position: [
@@ -357,7 +358,8 @@ export default props => {
                                                                     ellipsoid.pos.z
                                                                 ],
                                                                 shape: ellipsoid.shape.elements
-                                                            }))
+                                                            })),
+                                                            gFactor: axon.gFactor
                                                         })),
                                                         cells: synthesizer.cells.map(cell => ({
                                                             position: [cell.pos.x, cell.pos.y, cell.pos.z],

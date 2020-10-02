@@ -67,10 +67,22 @@ const getOverlap = (a, b, minDist, maxOverlap) => {
 };
 
 export default class {
-    constructor(start, end, radius, deformation, minDiameter, movement, ellipsoidDensity, voxelSize, color) {
+    constructor(
+        start,
+        end,
+        radius,
+        deformation,
+        minDiameter,
+        movement,
+        ellipsoidDensity,
+        voxelSize,
+        color,
+        gFactor = 1
+    ) {
         this.start = start.clone();
         this.end = end.clone();
-        this.radius = radius;
+        this.gFactor = gFactor;
+        this.radius = radius / gFactor;
         const n = Math.max(Math.round(end.clone().sub(start.clone()).length() * ellipsoidDensity), 2);
         this.ellipsoids = new Array(n).fill(true).map(
             (_, i) =>
@@ -79,7 +91,7 @@ export default class {
                         .clone()
                         .multiplyScalar(1 - i / (n - 1))
                         .add(end.clone().multiplyScalar(i / (n - 1))),
-                    radius,
+                    this.radius,
                     deformation,
                     minDiameter,
                     movement,
@@ -140,20 +152,23 @@ export default class {
         }, undefined);
     }
     generatePipe(scene, resolution) {
-        const getSP = (pos, dir, i, iDiff, maxDist = 1e-10) => {
+        const getSP = (pos, dir, i, iDiff, scale, maxDist = 1e-10) => {
             if (!iDiff) {
-                const sp1 = getSP(pos, dir, i, 1);
-                const sp2 = getSP(pos, dir, i, -1);
+                const sp1 = getSP(pos, dir, i, 1, scale);
+                const sp2 = getSP(pos, dir, i, -1, scale);
                 const dist1 = sp1.clone().sub(pos).dot(dir);
                 const dist2 = sp2.clone().sub(pos).dot(dir);
                 return dist1 > dist2 ? sp1 : sp2;
             }
             if (i < 0 || i >= this.ellipsoids.length) return undefined;
+            const shape = this.ellipsoids[i].shape;
+            this.ellipsoids[i].shape = shape.clone().multiplyScalar(scale);
             const sp = this.ellipsoids[i].getSurfacePoint(pos, dir);
+            this.ellipsoids[i].shape = shape;
             if (!sp) return undefined;
             const dist = sp.clone().sub(pos).dot(dir);
             if (dist < maxDist) return undefined;
-            return getSP(pos, dir, i + iDiff, iDiff, dist) || sp;
+            return getSP(pos, dir, i + iDiff, iDiff, scale, dist) || sp;
         };
         const d = this.ellipsoids[this.ellipsoids.length - 1].pos.clone().sub(this.ellipsoids[0].pos);
         d.normalize();
@@ -164,29 +179,34 @@ export default class {
         const a = cx.length() > cy.length() ? cx : cy;
         a.normalize();
         const b = d.clone().cross(a).normalize();
-        const verts = this.ellipsoids.map((ellipsoid, i) => {
-            return new Array(resolution).fill(true).map((r, j) => {
-                const angle = (2 * Math.PI * j) / resolution;
-                const dir = a
-                    .clone()
-                    .multiplyScalar(Math.cos(angle))
-                    .add(b.clone().multiplyScalar(Math.sin(angle)));
-                return getSP(ellipsoid.pos, dir, i);
-            });
-        });
+        const verts = [1, this.gFactor].map(gf =>
+            this.ellipsoids.map((ellipsoid, i) => {
+                return new Array(resolution).fill(true).map((r, j) => {
+                    const angle = (2 * Math.PI * j) / resolution;
+                    const dir = a
+                        .clone()
+                        .multiplyScalar(Math.cos(angle))
+                        .add(b.clone().multiplyScalar(Math.sin(angle)));
+                    return getSP(ellipsoid.pos, dir, i, 0, gf);
+                });
+            })
+        );
         const geom = new Geometry();
-        geom.vertices = verts.flat();
+        geom.vertices = verts.flat().flat();
         geom.faces = verts
-            .slice(0, verts.length - 1)
-            .map((verti, i) =>
-                verti.map((vertij, j) => {
-                    const i00 = i * resolution + j;
-                    const i01 = i * resolution + ((j + 1) % resolution);
-                    const i10 = (i + 1) * resolution + j;
-                    const i11 = (i + 1) * resolution + ((j + 1) % resolution);
-                    return [new Face3(i00, i01, i10), new Face3(i10, i01, i11)];
-                })
-            )
+            .map((v, index) => {
+                const offset = index * (geom.vertices.length / 2);
+                return v.slice(0, v.length - 1).map((verti, i) =>
+                    verti.map((vertij, j) => {
+                        const i00 = offset + i * resolution + j;
+                        const i01 = offset + i * resolution + ((j + 1) % resolution);
+                        const i10 = offset + (i + 1) * resolution + j;
+                        const i11 = offset + (i + 1) * resolution + ((j + 1) % resolution);
+                        return [new Face3(i00, i01, i10), new Face3(i10, i01, i11)];
+                    })
+                );
+            })
+            .flat()
             .flat()
             .flat();
         geom.computeVertexNormals();

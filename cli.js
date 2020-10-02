@@ -35,7 +35,8 @@ data.axons.forEach(axon => {
         new Vector3(...axon.position),
         new Vector3(...axon.direction),
         axon.maxDiameter / 2,
-        axon.color
+        axon.color,
+        axon.gFactor
     );
     const a = synthesizer.axons[synthesizer.axons.length - 1];
     if (axon.ellipsoids)
@@ -66,12 +67,13 @@ for (let i = 0; i < iterations; ++i) {
         axons: synthesizer.axons.map(axon => ({
             position: [axon.start.x, axon.start.y, axon.start.z],
             direction: [axon.end.x - axon.start.x, axon.end.y - axon.start.y, axon.end.z - axon.start.z],
-            maxDiameter: axon.radius * 2,
+            maxDiameter: axon.radius * axon.gFactor * 2,
             color: axon.color,
             ellipsoids: axon.ellipsoids.map(ellipsoid => ({
                 position: [ellipsoid.pos.x, ellipsoid.pos.y, ellipsoid.pos.z],
                 shape: ellipsoid.shape.elements
-            }))
+            })),
+            gFactor: axon.gFactor
         })),
         cells: synthesizer.cells.map(cell => ({
             position: [cell.pos.x, cell.pos.y, cell.pos.z],

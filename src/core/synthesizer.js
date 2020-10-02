@@ -69,7 +69,7 @@ export default class {
             this.addAxon(randomPosition().multiplyScalar(this.voxelSize), randomPosition(), 0.1 + Math.random() * 10);
         console.log("Total number of axons: " + this.axons.length);
     }
-    addAxon(pos, dir, r, color) {
+    addAxon(pos, dir, r, color, gFactor) {
         const a = projectOntoCube(pos, dir, this.voxelSize);
         const b = projectOntoCube(pos, dir.clone().negate(), this.voxelSize);
         this.axons.push(
@@ -82,7 +82,8 @@ export default class {
                 1,
                 this.ellipsoidDensity,
                 this.voxelSize,
-                color || randomHexColor()
+                color || randomHexColor(),
+                gFactor
             )
         );
     }
