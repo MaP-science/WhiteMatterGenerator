@@ -27,8 +27,8 @@ const mapFromMaxDiameterToMinDiameter = data.mapFromMaxDiameterToMinDiameter;
 const synthesizer = new Synthesizer(
     data.voxelSize,
     data.ellipsoidDensity,
-    new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
-    new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
+    new Mapping(data.mapFromDiameterToDeformationFactor),
+    new Mapping(data.mapFromMaxDiameterToMinDiameter)
 );
 data.axons.forEach(axon => {
     synthesizer.addAxon(
@@ -58,12 +58,12 @@ for (let i = 0; i < iterations; ++i) {
     while ((synthesizer.updateState || {}).name !== "ready");
 
     const config = {
-        voxelSize: Number(voxelSize),
-        ellipsoidDensity: Number(ellipsoidDensity),
+        voxelSize: synthesizer.voxelSize,
+        ellipsoidDensity: synthesizer.ellipsoidDensity,
         growSpeed: growSpeed,
         contractSpeed: contractSpeed,
-        mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
-        mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter,
+        mapFromDiameterToDeformationFactor: synthesizer.deformation.toJSON(),
+        mapFromMaxDiameterToMinDiameter: synthesizer.minDiameter.toJSON(),
         axons: synthesizer.axons.map(axon => ({
             position: [axon.start.x, axon.start.y, axon.start.z],
             direction: [axon.end.x - axon.start.x, axon.end.y - axon.start.y, axon.end.z - axon.start.z],

@@ -216,8 +216,8 @@ export default props => {
             const s = new Synthesizer(
                 data.voxelSize,
                 data.ellipsoidDensity,
-                new Mapping(data.mapFromDiameterToDeformationFactor.from, data.mapFromDiameterToDeformationFactor.to),
-                new Mapping(data.mapFromMaxDiameterToMinDiameter.from, data.mapFromMaxDiameterToMinDiameter.to)
+                new Mapping(data.mapFromDiameterToDeformationFactor),
+                new Mapping(data.mapFromMaxDiameterToMinDiameter)
             );
             setAxonCount(data.axons.length);
             data.axons.forEach(axon => {
@@ -308,14 +308,8 @@ export default props => {
                                                 const s = new Synthesizer(
                                                     Number(voxelSize),
                                                     Number(ellipsoidDensity),
-                                                    new Mapping(
-                                                        mapFromDiameterToDeformationFactor.from,
-                                                        mapFromDiameterToDeformationFactor.to
-                                                    ),
-                                                    new Mapping(
-                                                        mapFromMaxDiameterToMinDiameter.from,
-                                                        mapFromMaxDiameterToMinDiameter.to
-                                                    )
+                                                    new Mapping(mapFromDiameterToDeformationFactor),
+                                                    new Mapping(mapFromMaxDiameterToMinDiameter)
                                                 );
                                                 s.addAxonsRandomly(Number(axonCount), gFactor);
                                                 s.addCellsRandomly(Number(cellCount));
@@ -343,12 +337,12 @@ export default props => {
                                                 variant="contained"
                                                 onClick={() => {
                                                     const config = {
-                                                        voxelSize: Number(voxelSize),
-                                                        ellipsoidDensity: Number(ellipsoidDensity),
+                                                        voxelSize: synthesizer.voxelSize,
+                                                        ellipsoidDensity: synthesizer.ellipsoidDensity,
                                                         growSpeed: growSpeed,
                                                         contractSpeed: contractSpeed,
-                                                        mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
-                                                        mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter,
+                                                        mapFromDiameterToDeformationFactor: synthesizer.deformation.toJSON(),
+                                                        mapFromMaxDiameterToMinDiameter: synthesizer.minDiameter.toJSON(),
                                                         axons: synthesizer.axons.map(axon => ({
                                                             position: [axon.start.x, axon.start.y, axon.start.z],
                                                             direction: [

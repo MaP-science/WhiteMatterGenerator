@@ -101,8 +101,8 @@ export default class {
                 new Ellipsoid(
                     p,
                     r,
-                    new Mapping([0, 1], [0, 0]),
-                    new Mapping([0, 1], [0, 0.01]),
+                    new Mapping({ from: [0, 1], to: [0, 0] }),
+                    new Mapping({ from: [0, 1], to: [0, 0.01] }),
                     1,
                     randomHexColor(),
                     true
@@ -129,7 +129,7 @@ export default class {
             this.cells.forEach((a, i) => a.grow(-0.05));
         }
         this.cells.forEach((a, i) => {
-            a.deformation = new Mapping([0], [0]);
+            a.deformation = new Mapping({ from: [0], to: [0] });
             a.movement = 0;
         });
     }
@@ -137,8 +137,8 @@ export default class {
         const cell = new Ellipsoid(
             pos,
             0,
-            new Mapping([0], [0]),
-            new Mapping([0], [0]),
+            new Mapping({ from: [0], to: [0] }),
+            new Mapping({ from: [0], to: [0] }),
             0,
             color || randomHexColor(),
             true

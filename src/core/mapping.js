@@ -11,10 +11,10 @@ const map2 = (values, x, i, j) => {
 const map3 = (values, x) => map2(values, x, 0, values.length - 1);
 
 export default class {
-    constructor(x, y) {
-        this.values = x.map((xv, i) => ({
+    constructor({ from, to }) {
+        this.values = from.map((xv, i) => ({
             x: xv,
-            y: y[i]
+            y: to[i]
         }));
         this.valuesInverse = this.values.map(value => ({ x: value.y, y: value.x }));
     }
@@ -23,5 +23,8 @@ export default class {
     }
     mapInverse(y) {
         return map3(this.valuesInverse, y);
+    }
+    toJSON() {
+        return { from: this.values.map(v => v.x), to: this.values.map(v => v.y) };
     }
 }
