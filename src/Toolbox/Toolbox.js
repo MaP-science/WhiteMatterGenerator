@@ -83,7 +83,7 @@ export default props => {
     const [exportBinary, setExportBinary] = useState(true);
     const [exportSimple, setExportSimple] = useState(false);
     const [border, setBorder] = useState(0);
-    const [gFactor, setGFactor] = useState(0.9);
+    const [gFactor, setGFactor] = useState(0.7);
     useEffect(() => {
         if (!mount.current) return;
         // Camera
