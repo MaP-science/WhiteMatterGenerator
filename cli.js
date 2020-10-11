@@ -69,11 +69,11 @@ for (let i = 0; i < iterations; ++i) {
             direction: [axon.end.x - axon.start.x, axon.end.y - axon.start.y, axon.end.z - axon.start.z],
             maxDiameter: axon.radius * axon.gFactor * 2,
             color: axon.color,
+            gFactor: axon.gFactor,
             ellipsoids: axon.ellipsoids.map(ellipsoid => ({
                 position: [ellipsoid.pos.x, ellipsoid.pos.y, ellipsoid.pos.z],
                 shape: ellipsoid.shape.elements
-            })),
-            gFactor: axon.gFactor
+            }))
         })),
         cells: synthesizer.cells.map(cell => ({
             position: [cell.pos.x, cell.pos.y, cell.pos.z],

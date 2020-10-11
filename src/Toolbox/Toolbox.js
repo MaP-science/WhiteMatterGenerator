@@ -352,6 +352,7 @@ export default props => {
                                                             ],
                                                             maxDiameter: axon.radius * axon.gFactor * 2,
                                                             color: axon.color,
+                                                            gFactor: axon.gFactor,
                                                             ellipsoids: axon.ellipsoids.map(ellipsoid => ({
                                                                 position: [
                                                                     ellipsoid.pos.x,
@@ -359,8 +360,7 @@ export default props => {
                                                                     ellipsoid.pos.z
                                                                 ],
                                                                 shape: ellipsoid.shape.elements
-                                                            })),
-                                                            gFactor: axon.gFactor
+                                                            }))
                                                         })),
                                                         cells: synthesizer.cells.map(cell => ({
                                                             position: [cell.pos.x, cell.pos.y, cell.pos.z],
