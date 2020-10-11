@@ -101,7 +101,7 @@ export default class {
         );
         this.voxelSize = voxelSize;
         this.color = color;
-        this.mesh = null;
+        this.meshes = [];
     }
     keepInVoxel() {
         this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));
@@ -151,7 +151,7 @@ export default class {
             return dist > distMax ? p : pMax;
         }, undefined);
     }
-    generatePipe(scene, resolution) {
+    generatePipe(gFactor, resolution) {
         const getSP = (pos, dir, i, iDiff, scale, maxDist = 1e-10) => {
             if (!iDiff) {
                 const sp1 = getSP(pos, dir, i, 1, scale);
@@ -179,50 +179,50 @@ export default class {
         const a = cx.length() > cy.length() ? cx : cy;
         a.normalize();
         const b = d.clone().cross(a).normalize();
-        const verts = [1, this.gFactor].map(gf =>
-            this.ellipsoids.map((ellipsoid, i) => {
-                return new Array(resolution).fill(true).map((r, j) => {
-                    const angle = (2 * Math.PI * j) / resolution;
-                    const dir = a
-                        .clone()
-                        .multiplyScalar(Math.cos(angle))
-                        .add(b.clone().multiplyScalar(Math.sin(angle)));
-                    return getSP(ellipsoid.pos, dir, i, 0, gf);
-                });
-            })
-        );
+        const verts = this.ellipsoids.map((ellipsoid, i) => {
+            return new Array(resolution).fill(true).map((r, j) => {
+                const angle = (2 * Math.PI * j) / resolution;
+                const dir = a
+                    .clone()
+                    .multiplyScalar(Math.cos(angle))
+                    .add(b.clone().multiplyScalar(Math.sin(angle)));
+                return getSP(ellipsoid.pos, dir, i, 0, gFactor);
+            });
+        });
         const geom = new Geometry();
-        geom.vertices = verts.flat().flat();
+        geom.vertices = verts.flat();
         geom.faces = verts
-            .map((v, index) => {
-                const offset = index * (geom.vertices.length / 2);
-                return v.slice(0, v.length - 1).map((verti, i) =>
-                    verti.map((vertij, j) => {
-                        const i00 = offset + i * resolution + j;
-                        const i01 = offset + i * resolution + ((j + 1) % resolution);
-                        const i10 = offset + (i + 1) * resolution + j;
-                        const i11 = offset + (i + 1) * resolution + ((j + 1) % resolution);
-                        return [new Face3(i00, i01, i10), new Face3(i10, i01, i11)];
-                    })
-                );
-            })
-            .flat()
+            .slice(0, verts.length - 1)
+            .map((verti, i) =>
+                verti.map((vertij, j) => {
+                    const i00 = i * resolution + j;
+                    const i01 = i * resolution + ((j + 1) % resolution);
+                    const i10 = (i + 1) * resolution + j;
+                    const i11 = (i + 1) * resolution + ((j + 1) % resolution);
+                    return [new Face3(i00, i01, i10), new Face3(i10, i01, i11)];
+                })
+            )
             .flat()
             .flat();
         geom.computeVertexNormals();
         geom.faces.forEach(
             face => (face.vertexColors = new Array(3).fill(true).map(() => hexColorToVector(this.color)))
         );
-        const mesh = new Mesh(geom, new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }));
-        scene.add(mesh);
-        this.mesh = mesh;
+        return new Mesh(geom, new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }));
+    }
+    generatePipes(scene, resolution) {
+        const outer = this.generatePipe(1, resolution);
+        const inner = this.generatePipe(this.gFactor, resolution);
+        scene.add(outer);
+        scene.add(inner);
+        this.meshes = [outer, inner];
     }
     generateSkeleton(scene) {
         const mesh = new Line(
             applyColor(new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)), this.color),
             new LineBasicMaterial({ vertexColors: VertexColors, side: DoubleSide })
         );
-        this.mesh = mesh;
+        this.meshes = [mesh];
         scene.add(mesh);
     }
     draw(scene) {
@@ -233,6 +233,6 @@ export default class {
             mesh.setMatrixAt(i, ellipsoid.getMatrix4());
         });
         scene.add(mesh);
-        this.mesh = mesh;
+        this.mesh = [mesh];
     }
 }

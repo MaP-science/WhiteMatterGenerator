@@ -22,7 +22,6 @@ import {
     FormControlLabel,
     Switch
 } from "@material-ui/core";
-import { save } from "save-file";
 import download from "in-browser-download";
 
 import plyParser from "../core/plyParser";
@@ -125,21 +124,25 @@ export default props => {
         };
         const click = e => {
             if (!selectedItem) return;
-            const geom =
-                selectedItem.type === "axon" ? selectedItem.object.mesh.geometry : selectedItem.object.mesh.geometry;
+            const geoms =
+                selectedItem.type === "axon"
+                    ? selectedItem.object.meshes.map(mesh => mesh.geometry)
+                    : [selectedItem.object.mesh.geometry];
             synthesizer.focus = null;
             synthesizer.deselectAll();
             setSelectedItem(null);
             setSelectItem(false);
-            const name = window.prompt("File name", `${selectedItem.type}.ply`);
+            const name = window.prompt("File name", (selectedItem.type === "axon" ? "@type" : "cell") + "_@color.ply");
             if (!name) return;
-            save(
-                plyParser(geom, {
-                    binary: exportBinary,
-                    includeColors: !exportSimple,
-                    includeNormals: !exportSimple
-                }),
-                name
+            geoms.forEach((geom, i) =>
+                download(
+                    plyParser(geom, {
+                        binary: exportBinary,
+                        includeColors: !exportSimple,
+                        includeNormals: !exportSimple
+                    }),
+                    name.replace(/@type/g, i === 0 ? "myelin" : "axon").replace(/@color/g, selectedItem.object.color)
+                )
             );
         };
         renderer.domElement.addEventListener("mousemove", mousemove);
@@ -368,7 +371,7 @@ export default props => {
                                                             color: cell.color
                                                         }))
                                                     };
-                                                    save(JSON.stringify(config, null, 4), "config.json");
+                                                    download(JSON.stringify(config, null, 4), "config.json");
                                                 }}>
                                                 Download
                                             </Button>
@@ -624,12 +627,15 @@ export default props => {
                                                         onClick={() => {
                                                             const name = window.prompt("File name", "axons.ply");
                                                             if (!name) return;
-                                                            save(
+                                                            download(
                                                                 plyParser(
                                                                     [
-                                                                        synthesizer.axons.map(a => a.mesh.geometry),
+                                                                        synthesizer.axons.map(a =>
+                                                                            a.meshes.map(mesh => mesh.geometry)
+                                                                        ),
                                                                         synthesizer.cells.map(c => c.mesh.geometry)
                                                                     ]
+                                                                        .flat()
                                                                         .flat()
                                                                         .reduce((result, geom) => {
                                                                             result.merge(geom);
@@ -661,10 +667,22 @@ export default props => {
                                                                     new Promise(resolve =>
                                                                         window.setTimeout(resolve, milliseconds)
                                                                     ))(100);
+
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
                                                                 const axon = synthesizer.axons[i];
                                                                 await download(
-                                                                    plyParser(axon.mesh.geometry, {
+                                                                    plyParser(axon.meshes[0].geometry, {
+                                                                        binary: exportBinary,
+                                                                        includeColors: !exportSimple,
+                                                                        includeNormals: !exportSimple
+                                                                    }),
+                                                                    name
+                                                                        .replace(/@type/g, "myelin")
+                                                                        .replace(/@index/g, i)
+                                                                        .replace(/@color/g, axon.color)
+                                                                );
+                                                                await download(
+                                                                    plyParser(axon.meshes[1].geometry, {
                                                                         binary: exportBinary,
                                                                         includeColors: !exportSimple,
                                                                         includeNormals: !exportSimple

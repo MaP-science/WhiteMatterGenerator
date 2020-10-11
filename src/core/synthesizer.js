@@ -218,7 +218,7 @@ export default class {
     generatePipes(scene, resolution) {
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
-            axon.generatePipe(scene, resolution);
+            axon.generatePipes(scene, resolution);
         });
         return scene;
     }
@@ -277,21 +277,23 @@ export default class {
                 minDist = dist;
                 result = item;
             });
-        console.log(result);
         if (minDist < 100000 && (this.focus || {}).object === result.object) return this.focus;
         if ((result || {}).type === "axon")
-            result.object.mesh.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide });
+            result.object.meshes.forEach(
+                mesh => (mesh.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide }))
+            );
         this.focus = result;
         if ((((this.focus || {}).object || {}).mesh || {}).material)
             this.focus.object.mesh.material = new MeshToonMaterial({ color: new Color(0xffffff) });
-        console.log((((this.focus || {}).object || {}).mesh || {}).uuid);
         this.deselectAll();
         return this.focus;
     }
     deselectAll() {
         this.axons.forEach(axon => {
             if (axon === (this.focus || {}).object) return;
-            axon.mesh.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide });
+            axon.meshes.forEach(
+                mesh => (mesh.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }))
+            );
         });
         this.cells.forEach(cell => {
             if (cell === (this.focus || {}).object) return;
