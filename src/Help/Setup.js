@@ -60,8 +60,8 @@ export default props => (
             </li>
             <li>
                 <b>mapFromMaxDiameterToMinDiameter</b> (object) - This map determines the minimum diameter an ellipsoid
-                can have given its target size (max diameter). The values defining the map will be linearly
-                interpolated.
+                can have given its target size (max diameter of axon + myelin). The values defining the map will be
+                linearly interpolated.
                 <ul>
                     <li>
                         <b>from</b> (array of numbers) - The input values of the map, i.e. maximum diameters. This array
@@ -86,7 +86,7 @@ export default props => (
                         aligned with this vector.
                     </li>
                     <li>
-                        <b>maxDiameter</b> (number) - The maximum attainable diameter of the axon.
+                        <b>maxDiameter</b> (number) - The maximum attainable diameter of axon + myelin.
                     </li>
                 </ul>
             </li>
