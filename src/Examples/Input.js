@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import download from "in-browser-download";
 
 const inputExample = {
     voxelSize: 10,
@@ -18,18 +19,23 @@ const inputExample = {
         {
             position: [0, 0, 0],
             direction: [1, 0, 0],
-            maxDiameter: 1
+            maxDiameter: 1,
+            color: "#ff0000",
+            gFactor: 0.7
         },
         {
             position: [1, 0.1, 0],
             direction: [1, 1, 1],
-            maxDiameter: 0.5
+            maxDiameter: 0.5,
+            color: "#00ff00",
+            gFactor: 0.5
         }
     ],
     cells: [
         {
             position: [2, 1, 0],
-            shape: [1.5, 0, 0, 0, 1, 0, 0, 0, 1]
+            shape: [1.5, 0, 0, 0, 1, 0, 0, 0, 1],
+            color: "#0000ff"
         }
     ]
 };
@@ -41,20 +47,10 @@ export default props => {
             In the setup phase you can provide an input file. In this example create a new file and put in the
             following:
             <pre>{content}</pre>
-            and save the file as e.g. "input.json" (or click{" "}
-            <button
-                onClick={() => {
-                    const link = document.createElement("a");
-                    link.setAttribute("href", "data:text/json;charset=utf-8," + content);
-                    link.setAttribute("download", "input.json");
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }}>
-                here
-            </button>{" "}
-            to download the file). Click the "upload config file" button and select the file. This should initialize 2
-            axons and 1 cell in the specified positions.
+            and save the file as e.g. "config.json" (or click{" "}
+            <button onClick={() => download(content, "config.json")}>here</button> to download the file). Click the
+            "Upload" button and select the file. This should initialize a red and a green axon and a blue cell in the
+            specified positions.
             <br />
             <Link to="/help/setup">Click here to see a description of the input file format.</Link>
         </>
