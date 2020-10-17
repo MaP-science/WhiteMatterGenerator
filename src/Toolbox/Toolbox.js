@@ -68,6 +68,7 @@ export default props => {
     const [inputFile, setInputFile] = useState(null);
     const [updateState, setUpdateState] = useState({});
     const [growCount, setGrowCount] = useState(null);
+    const [growCountTarget, setGrowCountTarget] = useState(null);
     const [automaticGrowth, setAutomaticGrowth] = useState(false);
     const [mapFromDiameterToDeformationFactor, setMapFromDiameterToDeformationFactor] = useState({
         from: [0, 2],
@@ -167,15 +168,17 @@ export default props => {
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "getOverlap")
             setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(border)));
+        let gc = growCount;
         if (
             updateState.name === "ready" &&
             updateState.volumeFraction &&
             volumeFraction !== updateState.volumeFraction
         ) {
             setVolumeFraction(updateState.volumeFraction);
-            setGrowCount(growCount === null ? 0 : growCount + 1);
+            gc = growCount === null ? 0 : growCount + 1;
         }
-        if (updateState.name !== "ready" || automaticGrowth) {
+        setGrowCount(gc);
+        if (updateState.name !== "ready" || automaticGrowth || gc < growCountTarget) {
             const us = { ...synthesizer.update(growSpeed, contractSpeed, minDist, maxOverlap, Number(border)) };
             window.setTimeout(() => setUpdateState(us), 0);
             return;
@@ -199,6 +202,7 @@ export default props => {
         volumeFraction,
         automaticGrowth,
         growCount,
+        growCountTarget,
         volumeFractionTarget,
         border
     ]);
@@ -447,21 +451,33 @@ export default props => {
                                                         %
                                                     </>
                                                 ) : (
-                                                    <Button
-                                                        variant="contained"
-                                                        onClick={() =>
-                                                            setUpdateState({
-                                                                ...synthesizer.update(
-                                                                    growSpeed,
-                                                                    contractSpeed,
-                                                                    minDist,
-                                                                    maxOverlap,
-                                                                    Number(border)
-                                                                )
-                                                            })
-                                                        }>
-                                                        Perform 1 grow step
-                                                    </Button>
+                                                    <>
+                                                        <Button
+                                                            variant="contained"
+                                                            onClick={() =>
+                                                                setUpdateState({
+                                                                    ...synthesizer.update(
+                                                                        growSpeed,
+                                                                        contractSpeed,
+                                                                        minDist,
+                                                                        maxOverlap,
+                                                                        Number(border)
+                                                                    )
+                                                                })
+                                                            }>
+                                                            Perform 1 grow step
+                                                        </Button>
+                                                        <Button
+                                                            variant="contained"
+                                                            onClick={() => {
+                                                                const x = parseInt(
+                                                                    window.prompt("How many grow steps?")
+                                                                );
+                                                                if (x) setGrowCountTarget(growCount + x);
+                                                            }}>
+                                                            Perform x grow steps
+                                                        </Button>
+                                                    </>
                                                 )}
                                             </ListItem>
                                             <Grid item>
