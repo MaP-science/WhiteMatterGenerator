@@ -333,6 +333,7 @@ export default props => {
                                                 setUpdateState(s.updateState);
                                                 setVolumeFraction(0);
                                                 setGrowCount(0);
+                                                setGrowCountTarget(0);
                                             }}>
                                             Initialize
                                         </Button>
