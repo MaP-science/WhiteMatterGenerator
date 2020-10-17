@@ -139,4 +139,8 @@ export default class {
         );
         return geom;
     }
+    crossSectionDiameter(axis) {
+        axis.normalize();
+        return 2 * Math.sqrt(this.shape.determinant() / extremum(this.shape, axis).dot(axis));
+    }
 }
