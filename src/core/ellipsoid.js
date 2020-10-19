@@ -8,7 +8,8 @@ import {
     extremum,
     min,
     max,
-    hexColorToVector
+    hexColorToVector,
+    addMatrix3
 } from "./helperFunctions.js";
 const { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial } = THREE;
 
@@ -102,23 +103,13 @@ export default class {
         return r.clone().add(x).applyMatrix3(this.shape).add(this.pos);
     }
     grow(amount) {
-        const s = this.shape.clone().transpose().multiply(this.shape);
-        const sx = Math.sqrt(s.elements[0]);
-        const sy = Math.sqrt(s.elements[4]);
-        const sz = Math.sqrt(s.elements[8]);
-        this.shape.multiply(
-            new Matrix3().set(
-                1 + amount * (this.radius / sx - 1),
-                0,
-                0,
-                0,
-                1 + amount * (this.radius / sy - 1),
-                0,
-                0,
-                0,
-                1 + amount * (this.radius / sz - 1)
-            )
+        this.shape = addMatrix3(
+            this.shape.multiplyScalar(1 - amount),
+            new Matrix3().multiplyScalar(this.radius * amount)
         );
+        const w = 0.2;
+        const avg = Math.cbrt(this.shape.determinant());
+        this.shape = addMatrix3(this.shape.multiplyScalar(1 - w), new Matrix3().multiplyScalar(w * avg));
     }
     draw(scene, cloneMesh) {
         this.mesh.geometry = this.getGeometry();

@@ -182,7 +182,8 @@ export default class {
                 this.updateState = { name: "contract" };
                 break;
             case "contract":
-                this.axons.forEach(axon => axon.contract(contractSpeed));
+                for (let i = 0; i < contractSpeed; ++i)
+                    this.axons.forEach(axon => axon.contract(Math.min(contractSpeed - i, 1)));
                 this.updateState = { name: "keepInVoxel", progress: 0 };
                 break;
             case "keepInVoxel":
