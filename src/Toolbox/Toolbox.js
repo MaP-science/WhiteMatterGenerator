@@ -175,7 +175,7 @@ export default props => {
             volumeFraction !== updateState.volumeFraction
         ) {
             setVolumeFraction(updateState.volumeFraction);
-            gc = growCount === null ? 0 : growCount + 1;
+            gc = (growCount || 0) + 1;
         }
         setGrowCount(gc);
         if (updateState.name !== "ready" || automaticGrowth || gc < growCountTarget) {
@@ -210,7 +210,7 @@ export default props => {
     useEffect(() => {
         if (!inputFile) return;
         const reader = new FileReader();
-        reader.onload = async event => {
+        reader.onload = event => {
             const data = JSON.parse(event.target.result);
 
             setVoxelSize(data.voxelSize);
@@ -249,11 +249,13 @@ export default props => {
             setSynthesizer(s);
             setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(border)));
             setUpdateState(s.updateState);
+            setVolumeFraction(0);
+            setGrowCountTarget(0);
+            setGrowCount(0);
         };
         reader.readAsText(inputFile);
         setInputFile(null);
     }, [inputFile, viewModeVoxel, viewModeAxon, resolution, viewModeCell, border]);
-
     return (
         <>
             <Grid container item xs={11}>
