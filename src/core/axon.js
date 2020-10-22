@@ -152,23 +152,12 @@ export default class {
         }, undefined);
     }
     generatePipe(gFactor, resolution) {
-        const getSP = (pos, dir, i, iDiff, scale, maxDist = 1e-10) => {
-            if (!iDiff) {
-                const sp1 = getSP(pos, dir, i, 1, scale);
-                const sp2 = getSP(pos, dir, i, -1, scale);
-                const dist1 = sp1.clone().sub(pos).dot(dir);
-                const dist2 = sp2.clone().sub(pos).dot(dir);
-                return dist1 > dist2 ? sp1 : sp2;
-            }
-            if (i < 0 || i >= this.ellipsoids.length) return undefined;
+        const getSP = (pos, dir, i, scale) => {
             const shape = this.ellipsoids[i].shape;
             this.ellipsoids[i].shape = shape.clone().multiplyScalar(scale);
             const sp = this.ellipsoids[i].getSurfacePoint(pos, dir);
             this.ellipsoids[i].shape = shape;
-            if (!sp) return undefined;
-            const dist = sp.clone().sub(pos).dot(dir);
-            if (dist < maxDist) return undefined;
-            return getSP(pos, dir, i + iDiff, iDiff, scale, dist) || sp;
+            return sp;
         };
         const d = this.ellipsoids[this.ellipsoids.length - 1].pos.clone().sub(this.ellipsoids[0].pos);
         d.normalize();
@@ -186,7 +175,25 @@ export default class {
                     .clone()
                     .multiplyScalar(Math.cos(angle))
                     .add(b.clone().multiplyScalar(Math.sin(angle)));
-                return getSP(ellipsoid.pos, dir, i, 0, gFactor);
+                let sp = getSP(ellipsoid.pos, dir, i, gFactor);
+                let dist = sp.clone().sub(ellipsoid.pos).dot(dir);
+                for (let i2 = i + 1; i2 < this.ellipsoids.length; ++i2) {
+                    let sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
+                    if (!sp2) break;
+                    let dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
+                    if (dist2 < dist) continue;
+                    sp = sp2;
+                    dist = dist2;
+                }
+                for (let i2 = i - 1; i2 >= 0; --i2) {
+                    let sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
+                    if (!sp2) break;
+                    let dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
+                    if (dist2 < dist) continue;
+                    sp = sp2;
+                    dist = dist2;
+                }
+                return sp;
             });
         });
         const geom = new Geometry();
