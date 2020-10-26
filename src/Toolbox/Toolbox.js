@@ -236,7 +236,7 @@ export default props => {
                     axon.gFactor
                 );
                 const a = s.axons[s.axons.length - 1];
-                if (axon.ellipsoids)
+                if (axon.ellipsoids && axon.ellipsoids.length === a.ellipsoids.length)
                     axon.ellipsoids.forEach((ellipsoid, i) => {
                         a.ellipsoids[i].pos = new Vector3(...ellipsoid.position);
                         a.ellipsoids[i].shape = new Matrix3().set(...ellipsoid.shape);
