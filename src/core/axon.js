@@ -151,7 +151,7 @@ export default class {
             return dist > distMax ? p : pMax;
         }, undefined);
     }
-    generatePipe(gFactor, resolution) {
+    generatePipe(gFactor, resolution, closed) {
         const getSP = (pos, dir, i, scale) => {
             const shape = this.ellipsoids[i].shape;
             this.ellipsoids[i].shape = shape.clone().multiplyScalar(scale);
@@ -211,6 +211,26 @@ export default class {
             )
             .flat()
             .flat();
+        if (closed) {
+            const index1 = geom.vertices.length;
+            geom.vertices.push(this.ellipsoids[0].pos.clone());
+            const index2 = geom.vertices.length;
+            geom.vertices.push(this.ellipsoids[this.ellipsoids.length - 1].pos.clone());
+            verts[0].forEach((v, i) => {
+                geom.faces.push(
+                    new Face3(verts[0].length - 1 - i, verts[0].length - 1 - ((i + 1) % verts[0].length), index1)
+                );
+            });
+            verts[verts.length - 1].forEach((v, i) => {
+                geom.faces.push(
+                    new Face3(
+                        (verts.length - 1) * resolution + i,
+                        (verts.length - 1) * resolution + ((i + 1) % verts[verts.length - 1].length),
+                        index2
+                    )
+                );
+            });
+        }
         geom.computeVertexNormals();
         geom.faces.forEach(
             face => (face.vertexColors = new Array(3).fill(true).map(() => hexColorToVector(this.color)))
