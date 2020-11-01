@@ -27,6 +27,7 @@ import download from "in-browser-download";
 import plyParser from "../core/plyParser";
 import Synthesizer from "../core/synthesizer";
 import Mapping from "../core/mapping";
+import { addMatrix3 } from "../core/helperFunctions.js";
 
 const round2Decimals = n => Math.round(n * 100) / 100;
 
@@ -236,11 +237,26 @@ export default props => {
                     axon.gFactor
                 );
                 const a = s.axons[s.axons.length - 1];
-                if (axon.ellipsoids && axon.ellipsoids.length === a.ellipsoids.length)
-                    axon.ellipsoids.forEach((ellipsoid, i) => {
-                        a.ellipsoids[i].pos = new Vector3(...ellipsoid.position);
-                        a.ellipsoids[i].shape = new Matrix3().set(...ellipsoid.shape);
-                    });
+                if (!axon.ellipsoids) return;
+                a.ellipsoids.forEach((e, i) => {
+                    const t = (axon.ellipsoids.length - 1) * (i / (a.ellipsoids.length - 1));
+                    const index = Math.min(Math.floor(t), axon.ellipsoids.length - 2);
+                    const w = t - index;
+                    e.pos = new Vector3(...axon.ellipsoids[index].position)
+                        .clone()
+                        .multiplyScalar(1 - w)
+                        .add(new Vector3(...axon.ellipsoids[index + 1].position).clone().multiplyScalar(w));
+                    e.shape = addMatrix3(
+                        new Matrix3()
+                            .set(...axon.ellipsoids[index].shape)
+                            .clone()
+                            .multiplyScalar(1 - w),
+                        new Matrix3()
+                            .set(...axon.ellipsoids[index + 1].shape)
+                            .clone()
+                            .multiplyScalar(w)
+                    );
+                });
             });
             setCellCount(data.cells.length);
             data.cells.forEach(cell =>
