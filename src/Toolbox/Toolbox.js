@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Vector3, Matrix3, PerspectiveCamera, WebGLRenderer, Geometry } from "three";
+import { Vector3, PerspectiveCamera, WebGLRenderer, Geometry } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
     Grid,
@@ -26,8 +26,6 @@ import download from "in-browser-download";
 
 import plyParser from "../core/plyParser";
 import Synthesizer from "../core/synthesizer";
-import Mapping from "../core/mapping";
-import { addMatrix3 } from "../core/helperFunctions.js";
 
 const round2Decimals = n => Math.round(n * 100) / 100;
 
@@ -213,55 +211,15 @@ export default props => {
         const reader = new FileReader();
         reader.onload = event => {
             const data = JSON.parse(event.target.result);
-
+            const s = new Synthesizer(data);
             setVoxelSize(data.voxelSize);
             setEllipsoidDensity(data.ellipsoidDensity);
             setGrowSpeed(data.growSpeed);
             setContractSpeed(data.contractSpeed);
             setMapFromDiameterToDeformationFactor(data.mapFromDiameterToDeformationFactor);
             setMapFromMaxDiameterToMinDiameter(data.mapFromMaxDiameterToMinDiameter);
-
-            const s = new Synthesizer(
-                data.voxelSize,
-                data.ellipsoidDensity,
-                new Mapping(data.mapFromDiameterToDeformationFactor),
-                new Mapping(data.mapFromMaxDiameterToMinDiameter)
-            );
             setAxonCount(data.axons.length);
-            data.axons.forEach(axon => {
-                s.addAxon(
-                    new Vector3(...axon.position),
-                    new Vector3(...axon.direction),
-                    axon.maxDiameter / 2,
-                    axon.color,
-                    axon.gFactor
-                );
-                const a = s.axons[s.axons.length - 1];
-                if (!axon.ellipsoids) return;
-                a.ellipsoids.forEach((e, i) => {
-                    const t = (axon.ellipsoids.length - 1) * (i / (a.ellipsoids.length - 1));
-                    const index = Math.min(Math.floor(t), axon.ellipsoids.length - 2);
-                    const w = t - index;
-                    e.pos = new Vector3(...axon.ellipsoids[index].position)
-                        .clone()
-                        .multiplyScalar(1 - w)
-                        .add(new Vector3(...axon.ellipsoids[index + 1].position).clone().multiplyScalar(w));
-                    e.shape = addMatrix3(
-                        new Matrix3()
-                            .set(...axon.ellipsoids[index].shape)
-                            .clone()
-                            .multiplyScalar(1 - w),
-                        new Matrix3()
-                            .set(...axon.ellipsoids[index + 1].shape)
-                            .clone()
-                            .multiplyScalar(w)
-                    );
-                });
-            });
             setCellCount(data.cells.length);
-            data.cells.forEach(cell =>
-                s.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape), cell.color)
-            );
             setSynthesizer(s);
             setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(border)));
             setUpdateState(s.updateState);
@@ -330,12 +288,12 @@ export default props => {
                                         <Button
                                             variant="contained"
                                             onClick={() => {
-                                                const s = new Synthesizer(
-                                                    Number(voxelSize),
-                                                    Number(ellipsoidDensity),
-                                                    new Mapping(mapFromDiameterToDeformationFactor),
-                                                    new Mapping(mapFromMaxDiameterToMinDiameter)
-                                                );
+                                                const s = new Synthesizer({
+                                                    voxelSize: voxelSize,
+                                                    ellipsoidDensity: ellipsoidDensity,
+                                                    mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
+                                                    mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter
+                                                });
                                                 s.addAxonsRandomly(Number(axonCount), gFactor);
                                                 s.addCellsRandomly(Number(cellCount));
                                                 setSynthesizer(s);
@@ -363,47 +321,9 @@ export default props => {
                                                 variant="contained"
                                                 onClick={() => {
                                                     const config = {
-                                                        voxelSize: synthesizer.voxelSize,
-                                                        ellipsoidDensity: synthesizer.ellipsoidDensity,
+                                                        ...synthesizer.toJSON(),
                                                         growSpeed: growSpeed,
-                                                        contractSpeed: contractSpeed,
-                                                        mapFromDiameterToDeformationFactor: synthesizer.deformation.toJSON(),
-                                                        mapFromMaxDiameterToMinDiameter: synthesizer.minDiameter.toJSON(),
-                                                        axons: synthesizer.axons.map(axon => ({
-                                                            position: [axon.start.x, axon.start.y, axon.start.z],
-                                                            direction: [
-                                                                axon.end.x - axon.start.x,
-                                                                axon.end.y - axon.start.y,
-                                                                axon.end.z - axon.start.z
-                                                            ],
-                                                            maxDiameter: axon.radius * axon.gFactor * 2,
-                                                            color: axon.color,
-                                                            gFactor: axon.gFactor,
-                                                            ellipsoids: axon.ellipsoids.map((ellipsoid, i) => {
-                                                                const myelinDiameter = ellipsoid.crossSectionDiameter(
-                                                                    axon.ellipsoids[
-                                                                        Math.min(i + 1, axon.ellipsoids.length - 1)
-                                                                    ].pos
-                                                                        .clone()
-                                                                        .sub(axon.ellipsoids[Math.max(i - 1, 0)].pos)
-                                                                );
-                                                                return {
-                                                                    position: [
-                                                                        ellipsoid.pos.x,
-                                                                        ellipsoid.pos.y,
-                                                                        ellipsoid.pos.z
-                                                                    ],
-                                                                    shape: ellipsoid.shape.elements,
-                                                                    axonDiameter: myelinDiameter * axon.gFactor,
-                                                                    myelinDiameter: myelinDiameter
-                                                                };
-                                                            })
-                                                        })),
-                                                        cells: synthesizer.cells.map(cell => ({
-                                                            position: [cell.pos.x, cell.pos.y, cell.pos.z],
-                                                            shape: cell.shape.elements,
-                                                            color: cell.color
-                                                        }))
+                                                        contractSpeed: contractSpeed
                                                     };
                                                     download(JSON.stringify(config, null, 4), "config.json");
                                                 }}>
@@ -428,6 +348,31 @@ export default props => {
                                         <List>
                                             <ListItem>
                                                 <b>After setup</b>
+                                            </ListItem>
+                                            <ListItem>
+                                                Ellipsoid density of axons: {ellipsoidDensity}
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => {
+                                                        const value = Number(window.prompt("New ellipsoid density"));
+                                                        if (!value) return;
+                                                        const data = synthesizer.toJSON();
+                                                        data.ellipsoidDensity = value;
+                                                        const s = new Synthesizer(data);
+                                                        setSynthesizer(s);
+                                                        setScene(
+                                                            s.draw(
+                                                                viewModeVoxel,
+                                                                viewModeAxon,
+                                                                viewModeCell,
+                                                                Number(resolution),
+                                                                Number(border)
+                                                            )
+                                                        );
+                                                        setEllipsoidDensity(value);
+                                                    }}>
+                                                    Change
+                                                </Button>
                                             </ListItem>
                                             <ListItem>
                                                 <TextField

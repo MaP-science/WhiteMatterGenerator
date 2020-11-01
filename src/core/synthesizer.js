@@ -2,9 +2,10 @@ import THREE from "./three.js";
 import Axon from "./axon.js";
 import Ellipsoid from "./ellipsoid.js";
 import Mapping from "./mapping.js";
-import { randomPosition, projectOntoCube, shuffle, randomHexColor } from "./helperFunctions.js";
+import { randomPosition, projectOntoCube, shuffle, randomHexColor, addMatrix3 } from "./helperFunctions.js";
 const {
     Vector3,
+    Matrix3,
     LineSegments,
     BoxGeometry,
     EdgesGeometry,
@@ -26,15 +27,81 @@ const wireframeCube = size =>
     );
 
 export default class {
-    constructor(voxelSize, ellipsoidDensity, deformation, minDiameter) {
-        this.ellipsoidDensity = ellipsoidDensity;
-        this.voxelSize = voxelSize;
-        this.deformation = deformation;
-        this.minDiameter = minDiameter;
+    constructor(config) {
+        this.voxelSize = Number(config.voxelSize);
+        this.ellipsoidDensity = Number(config.ellipsoidDensity);
+        this.deformation = new Mapping(config.mapFromDiameterToDeformationFactor);
+        this.minDiameter = new Mapping(config.mapFromMaxDiameterToMinDiameter);
         this.axons = [];
         this.cells = [];
         this.updateState = { name: "ready" };
         this.focus = null;
+        (config.axons || []).forEach(axon => {
+            this.addAxon(
+                new Vector3(...axon.position),
+                new Vector3(...axon.direction),
+                axon.maxDiameter / 2,
+                axon.color,
+                axon.gFactor
+            );
+            const a = this.axons[this.axons.length - 1];
+            if (!axon.ellipsoids) return;
+            a.ellipsoids.forEach((e, i) => {
+                const t = (axon.ellipsoids.length - 1) * (i / (a.ellipsoids.length - 1));
+                const index = Math.min(Math.floor(t), axon.ellipsoids.length - 2);
+                const w = t - index;
+                e.pos = new Vector3(...axon.ellipsoids[index].position)
+                    .clone()
+                    .multiplyScalar(1 - w)
+                    .add(new Vector3(...axon.ellipsoids[index + 1].position).clone().multiplyScalar(w));
+                e.shape = addMatrix3(
+                    new Matrix3()
+                        .set(...axon.ellipsoids[index].shape)
+                        .clone()
+                        .multiplyScalar(1 - w),
+                    new Matrix3()
+                        .set(...axon.ellipsoids[index + 1].shape)
+                        .clone()
+                        .multiplyScalar(w)
+                );
+            });
+        });
+        (config.cells || []).forEach(cell =>
+            this.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape), cell.color)
+        );
+    }
+    toJSON() {
+        return {
+            voxelSize: this.voxelSize,
+            ellipsoidDensity: this.ellipsoidDensity,
+            mapFromDiameterToDeformationFactor: this.deformation.toJSON(),
+            mapFromMaxDiameterToMinDiameter: this.minDiameter.toJSON(),
+            axons: this.axons.map(axon => ({
+                position: [axon.start.x, axon.start.y, axon.start.z],
+                direction: [axon.end.x - axon.start.x, axon.end.y - axon.start.y, axon.end.z - axon.start.z],
+                maxDiameter: axon.radius * axon.gFactor * 2,
+                color: axon.color,
+                gFactor: axon.gFactor,
+                ellipsoids: axon.ellipsoids.map((ellipsoid, i) => {
+                    const myelinDiameter = ellipsoid.crossSectionDiameter(
+                        axon.ellipsoids[Math.min(i + 1, axon.ellipsoids.length - 1)].pos
+                            .clone()
+                            .sub(axon.ellipsoids[Math.max(i - 1, 0)].pos)
+                    );
+                    return {
+                        position: [ellipsoid.pos.x, ellipsoid.pos.y, ellipsoid.pos.z],
+                        shape: ellipsoid.shape.elements,
+                        axonDiameter: myelinDiameter * axon.gFactor,
+                        myelinDiameter: myelinDiameter
+                    };
+                })
+            })),
+            cells: this.cells.map(cell => ({
+                position: [cell.pos.x, cell.pos.y, cell.pos.z],
+                shape: cell.shape.elements,
+                color: cell.color
+            }))
+        };
     }
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
