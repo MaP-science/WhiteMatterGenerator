@@ -213,6 +213,7 @@ export default props => {
             const data = JSON.parse(event.target.result);
             const s = new Synthesizer(data);
             setVoxelSize(data.voxelSize);
+            setBorder(data.border || 0);
             setEllipsoidDensity(data.ellipsoidDensity);
             setGrowSpeed(data.growSpeed);
             setContractSpeed(data.contractSpeed);
@@ -221,7 +222,7 @@ export default props => {
             setAxonCount(data.axons.length);
             setCellCount(data.cells.length);
             setSynthesizer(s);
-            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(border)));
+            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(data.border)));
             setUpdateState(s.updateState);
             setVolumeFraction(0);
             setGrowCountTarget(0);
@@ -321,9 +322,10 @@ export default props => {
                                                 variant="contained"
                                                 onClick={() => {
                                                     const config = {
-                                                        ...synthesizer.toJSON(),
                                                         growSpeed: growSpeed,
-                                                        contractSpeed: contractSpeed
+                                                        contractSpeed: contractSpeed,
+                                                        border: border,
+                                                        ...synthesizer.toJSON()
                                                     };
                                                     download(JSON.stringify(config, null, 4), "config.json");
                                                 }}>

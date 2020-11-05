@@ -17,6 +17,7 @@ const iterations = options.iterations || 10;
 
 const growSpeed = data.growSpeed;
 const contractSpeed = data.contractSpeed;
+const border = data.border;
 
 const synthesizer = new Synthesizer(data);
 
@@ -27,6 +28,6 @@ if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 for (let i = 0; i < iterations; ++i) {
     do synthesizer.update(growSpeed, contractSpeed, 0.01, 0.0001, 0);
     while ((synthesizer.updateState || {}).name !== "ready");
-    const config = { ...synthesizer.toJSON(), growSpeed: growSpeed, contractSpeed: contractSpeed };
+    const config = { growSpeed: growSpeed, contractSpeed: contractSpeed, border: border, ...synthesizer.toJSON() };
     fs.writeFileSync(`${outputDir}/config_output_${i + 1}.json`, JSON.stringify(config, null, 4));
 }
