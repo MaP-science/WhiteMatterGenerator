@@ -2,7 +2,7 @@ import THREE from "./three.js";
 
 import Ellipsoid from "./ellipsoid.js";
 
-import { hexColorToVector, applyColor } from "./helperFunctions.js";
+import { hexColorToVector, applyColor, addMatrix3 } from "./helperFunctions.js";
 
 const {
     Vector3,
@@ -83,25 +83,18 @@ export default class {
         this.end = end.clone();
         this.gFactor = gFactor;
         this.radius = radius / gFactor;
-        const n = Math.max(Math.round(end.clone().sub(start.clone()).length() * ellipsoidDensity), 2);
-        this.ellipsoids = new Array(n).fill(true).map(
-            (_, i) =>
-                new Ellipsoid(
-                    start
-                        .clone()
-                        .multiplyScalar(1 - i / (n - 1))
-                        .add(end.clone().multiplyScalar(i / (n - 1))),
-                    this.radius,
-                    deformation,
-                    minDiameter,
-                    movement,
-                    color,
-                    false
-                )
-        );
+        this.ellipsoidDensity = ellipsoidDensity;
         this.voxelSize = voxelSize;
+        this.deformation = deformation;
+        this.minDiameter = minDiameter;
+        this.movement = movement;
         this.color = color;
         this.meshes = [];
+        this.ellipsoids = [
+            new Ellipsoid(start, this.radius, deformation, minDiameter, movement, color, false),
+            new Ellipsoid(end, this.radius, deformation, minDiameter, movement, color, false)
+        ];
+        this.redistribute();
     }
     keepInVoxel() {
         this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));
@@ -137,9 +130,60 @@ export default class {
             c.sub(this.ellipsoids[i].pos);
             d.multiplyScalar(c.dot(d));
             c.sub(d);
-            this.ellipsoids[i].pos.add(d);
             this.ellipsoids[i].pos.add(c.multiplyScalar(amount));
         }
+        this.redistribute();
+    }
+    redistribute() {
+        const length = this.getLength();
+        const ellipsoidCount = Math.max(Math.round(length * this.ellipsoidDensity), 2);
+        const dLength = length / (ellipsoidCount - 1);
+        let d = 0;
+        let index = 0;
+        this.ellipsoids = [...Array(ellipsoidCount)].map((_, i) => {
+            while (index + 2 < this.ellipsoids.length) {
+                const l = this.ellipsoids[index].pos
+                    .clone()
+                    .sub(this.ellipsoids[index + 1].pos)
+                    .length();
+                if (d < l) break;
+                d -= l;
+                ++index;
+            }
+            const w =
+                d /
+                this.ellipsoids[index].pos
+                    .clone()
+                    .sub(this.ellipsoids[index + 1].pos)
+                    .length();
+            const e = new Ellipsoid(
+                this.ellipsoids[index].pos
+                    .clone()
+                    .multiplyScalar(1 - w)
+                    .add(this.ellipsoids[index + 1].pos.clone().multiplyScalar(w)),
+                this.radius,
+                this.deformation,
+                this.minDiameter,
+                this.movement,
+                this.color,
+                false
+            );
+            e.shape = addMatrix3(
+                this.ellipsoids[index].shape.clone().multiplyScalar(1 - w),
+                this.ellipsoids[index + 1].shape.clone().multiplyScalar(w)
+            );
+            d += dLength;
+            return e;
+        });
+    }
+    getLength() {
+        let result = 0;
+        for (let i = 0; i + 1 < this.ellipsoids.length; ++i)
+            result += this.ellipsoids[i].pos
+                .clone()
+                .sub(this.ellipsoids[i + 1].pos)
+                .length();
+        return result;
     }
     getSurfacePoint(pos, dir) {
         return this.ellipsoids.reduce((pMax, ellipsoid) => {
