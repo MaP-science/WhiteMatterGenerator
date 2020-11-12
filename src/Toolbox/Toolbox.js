@@ -275,7 +275,7 @@ export default props => {
                                             type="number"
                                             label="Ellipsoid density of axons"
                                             InputProps={{
-                                                endAdornment: <InputAdornment position="start">µm⁻¹</InputAdornment>
+                                                endAdornment: <InputAdornment position="start" />
                                             }}
                                             value={ellipsoidDensity}
                                             onChange={e => setEllipsoidDensity(e.target.value)}
