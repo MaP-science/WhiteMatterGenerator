@@ -136,7 +136,7 @@ export default class {
     }
     redistribute() {
         const length = this.getLength();
-        const ellipsoidCount = Math.max(Math.round(length * this.ellipsoidDensity), 2);
+        const ellipsoidCount = 1 + Math.max(Math.ceil(length * (this.ellipsoidDensity / (2 * this.radius))), 1);
         const dLength = length / (ellipsoidCount - 1);
         let d = 0;
         let index = 0;
@@ -279,7 +279,10 @@ export default class {
         geom.faces.forEach(
             face => (face.vertexColors = new Array(3).fill(true).map(() => hexColorToVector(this.color)))
         );
-        return new Mesh(geom, new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }));
+        return new Mesh(
+            new BufferGeometry().fromGeometry(geom),
+            new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
+        );
     }
     generatePipes(scene, resolution) {
         const outer = this.generatePipe(1, resolution);

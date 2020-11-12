@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Vector3, PerspectiveCamera, WebGLRenderer, Geometry } from "three";
+import { Vector3, PerspectiveCamera, WebGLRenderer } from "three";
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+
 import {
     Grid,
     Paper,
@@ -622,18 +624,16 @@ export default props => {
                                                             if (!name) return;
                                                             download(
                                                                 plyParser(
-                                                                    [
-                                                                        synthesizer.axons.map(a =>
-                                                                            a.meshes.map(mesh => mesh.geometry)
-                                                                        ),
-                                                                        synthesizer.cells.map(c => c.mesh.geometry)
-                                                                    ]
-                                                                        .flat()
-                                                                        .flat()
-                                                                        .reduce((result, geom) => {
-                                                                            result.merge(geom);
-                                                                            return result;
-                                                                        }, new Geometry()),
+                                                                    BufferGeometryUtils.mergeBufferGeometries(
+                                                                        [
+                                                                            synthesizer.axons.map(a =>
+                                                                                a.meshes.map(mesh => mesh.geometry)
+                                                                            ),
+                                                                            synthesizer.cells.map(c => c.mesh.geometry)
+                                                                        ]
+                                                                            .flat()
+                                                                            .flat()
+                                                                    ),
                                                                     {
                                                                         binary: exportBinary,
                                                                         includeColors: !exportSimple,

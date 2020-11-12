@@ -61,12 +61,13 @@ export default class {
         this.axisCache[ellipsoid.id] = axis;
         axisLength += minDist;
         if (axisLength < 0) return;
+        const ratio = ellipsoid.radius / this.radius;
         // Collision resolution
         // Update shape
         const c1 = extremum(this.shape, axis).dot(axis);
         const c2 = extremum(ellipsoid.shape, axis).dot(axis);
-        const delta1 = this.deformation.map(c1 * 2) / (c1 * 2);
-        const delta2 = ellipsoid.deformation.map(c2 * 2) / (c2 * 2);
+        const delta1 = (this.deformation.map(c1 * 2) / (c1 * 2)) * Math.min(ratio, 1);
+        const delta2 = (ellipsoid.deformation.map(c2 * 2) / (c2 * 2)) * Math.min(1 / ratio, 1);
         const mu1 = this.minDiameter.map(this.radius * 2) / (c1 * 2);
         const mu2 = ellipsoid.minDiameter.map(ellipsoid.radius * 2) / (c2 * 2);
         const s1 = Math.max(-axisLength * delta1, mu1 - 1);
@@ -75,9 +76,11 @@ export default class {
         deform(ellipsoid.shape, axis, s2);
         axisLength += s1 * c1 + s2 * c2;
         // Update position
-        const w = axisLength / (this.movement + ellipsoid.movement);
-        this.pos.sub(axis.clone().multiplyScalar(this.movement * w));
-        ellipsoid.pos.add(axis.clone().multiplyScalar(ellipsoid.movement * w));
+        const m1 = this.movement * ratio;
+        const m2 = ellipsoid.movement;
+        const w = axisLength / (m1 + m2);
+        this.pos.sub(axis.clone().multiplyScalar(m1 * w));
+        ellipsoid.pos.add(axis.clone().multiplyScalar(m2 * w));
     }
     getOverlap(ellipsoid, minDist, maxOverlap) {
         let [axisLength, axis] = collisionAxis(
