@@ -78,26 +78,7 @@ export default class {
             ellipsoidDensity: this.ellipsoidDensity,
             mapFromDiameterToDeformationFactor: this.deformation.toJSON(),
             mapFromMaxDiameterToMinDiameter: this.minDiameter.toJSON(),
-            axons: this.axons.map(axon => ({
-                position: [axon.start.x, axon.start.y, axon.start.z],
-                direction: [axon.end.x - axon.start.x, axon.end.y - axon.start.y, axon.end.z - axon.start.z],
-                maxDiameter: axon.radius * axon.gFactor * 2,
-                color: axon.color,
-                gFactor: axon.gFactor,
-                ellipsoids: axon.ellipsoids.map((ellipsoid, i) => {
-                    const myelinDiameter = ellipsoid.crossSectionDiameter(
-                        axon.ellipsoids[Math.min(i + 1, axon.ellipsoids.length - 1)].pos
-                            .clone()
-                            .sub(axon.ellipsoids[Math.max(i - 1, 0)].pos)
-                    );
-                    return {
-                        position: [ellipsoid.pos.x, ellipsoid.pos.y, ellipsoid.pos.z],
-                        shape: ellipsoid.shape.elements,
-                        axonDiameter: myelinDiameter * axon.gFactor,
-                        myelinDiameter: myelinDiameter
-                    };
-                })
-            })),
+            axons: this.axons.map(axon => axon.toJSON()),
             cells: this.cells.map(cell => ({
                 position: [cell.pos.x, cell.pos.y, cell.pos.z],
                 shape: cell.shape.elements,

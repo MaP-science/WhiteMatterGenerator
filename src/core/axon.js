@@ -308,6 +308,28 @@ export default class {
         scene.add(mesh);
         this.mesh = [mesh];
     }
+    toJSON() {
+        return {
+            position: [this.start.x, this.start.y, this.start.z],
+            direction: [this.end.x - this.start.x, this.end.y - this.start.y, this.end.z - this.start.z],
+            maxDiameter: this.radius * this.gFactor * 2,
+            color: this.color,
+            gFactor: this.gFactor,
+            ellipsoids: this.ellipsoids.map((ellipsoid, i) => {
+                const myelinDiameter = ellipsoid.crossSectionDiameter(
+                    this.ellipsoids[Math.min(i + 1, this.ellipsoids.length - 1)].pos
+                        .clone()
+                        .sub(this.ellipsoids[Math.max(i - 1, 0)].pos)
+                );
+                return {
+                    position: [ellipsoid.pos.x, ellipsoid.pos.y, ellipsoid.pos.z],
+                    shape: ellipsoid.shape.elements,
+                    axonDiameter: myelinDiameter * this.gFactor,
+                    myelinDiameter: myelinDiameter
+                };
+            })
+        };
+    }
     toPLY(binary, simple, i) {
         return plyParser(this.meshes[i].geometry, {
             binary: binary,
