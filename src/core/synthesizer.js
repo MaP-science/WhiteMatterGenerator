@@ -149,7 +149,6 @@ export default class {
                 r,
                 this.deformation,
                 this.minDiameter,
-                1,
                 this.ellipsoidDensity,
                 this.voxelSize,
                 color || randomHexColor(),

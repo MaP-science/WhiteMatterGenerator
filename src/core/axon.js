@@ -66,18 +66,7 @@ const getOverlap = (a, b, minDist, maxOverlap) => {
 };
 
 export default class {
-    constructor(
-        start,
-        end,
-        radius,
-        deformation,
-        minDiameter,
-        movement,
-        ellipsoidDensity,
-        voxelSize,
-        color,
-        gFactor = 1
-    ) {
+    constructor(start, end, radius, deformation, minDiameter, ellipsoidDensity, voxelSize, color, gFactor = 1) {
         this.start = start.clone();
         this.end = end.clone();
         this.gFactor = gFactor;
@@ -86,12 +75,11 @@ export default class {
         this.voxelSize = voxelSize;
         this.deformation = deformation;
         this.minDiameter = minDiameter;
-        this.movement = movement;
         this.color = color;
         this.meshes = [];
         this.ellipsoids = [
-            new Ellipsoid(start, this.radius, deformation, minDiameter, movement, color, false),
-            new Ellipsoid(end, this.radius, deformation, minDiameter, movement, color, false)
+            new Ellipsoid(start, this.radius, deformation, minDiameter, 1, color, false),
+            new Ellipsoid(end, this.radius, deformation, minDiameter, 1, color, false)
         ];
         this.redistribute();
     }
@@ -163,7 +151,7 @@ export default class {
                 this.radius,
                 this.deformation,
                 this.minDiameter,
-                this.movement,
+                1,
                 this.color,
                 false
             );
