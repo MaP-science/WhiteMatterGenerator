@@ -43,9 +43,9 @@ export default class {
                 new Axon(
                     new Vector3(...axon.position),
                     new Vector3(...axon.direction),
+                    axon.maxDiameter / 2,
                     axon.color,
                     axon.gFactor,
-                    axon.maxDiameter / 2,
                     this
                 )
             );

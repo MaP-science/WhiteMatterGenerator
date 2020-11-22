@@ -86,12 +86,10 @@ export default class {
     keepInVoxel() {
         this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));
         [this.ellipsoids[0], this.ellipsoids[this.ellipsoids.length - 1]].forEach(ellipsoid => {
-            const ax = Math.abs(ellipsoid.pos.x);
-            const ay = Math.abs(ellipsoid.pos.y);
-            const az = Math.abs(ellipsoid.pos.z);
-            if (ax > ay && ax > az) return (ellipsoid.pos.x *= this.voxelSize / (2 * ax));
-            if (ay > az) return (ellipsoid.pos.y *= this.voxelSize / (2 * ay));
-            ellipsoid.pos.z *= this.voxelSize / (2 * az);
+            const max = Math.max(...ellipsoid.pos.toArray().map(Math.abs));
+            ellipsoid.pos.fromArray(
+                ellipsoid.pos.toArray().map(v => (Math.abs(v) === max ? (v = Math.sign(v) * (this.voxelSize / 2)) : v))
+            );
         });
     }
     computeCollisionTree(minDist) {

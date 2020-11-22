@@ -7,8 +7,6 @@ import {
     collisionAxis,
     deform,
     extremum,
-    min,
-    max,
     hexColorToVector,
     addMatrix3,
     randomHexColor
@@ -39,9 +37,7 @@ export default class {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
     }
     keepInVoxel(voxelSize) {
-        const gridMin = new Vector3(-voxelSize / 2, -voxelSize / 2, -voxelSize / 2);
-        const gridMax = new Vector3(voxelSize / 2, voxelSize / 2, voxelSize / 2);
-        this.pos = min(max(this.pos, gridMin), gridMax);
+        this.pos.fromArray(this.pos.toArray().map(v => Math.min(Math.max(v, -voxelSize / 2), voxelSize / 2)));
     }
     collision(ellipsoid, minDist, maxOverlap) {
         const d = ellipsoid.pos.clone().sub(this.pos);

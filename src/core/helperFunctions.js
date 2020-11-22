@@ -2,10 +2,6 @@ import THREE from "./three.js";
 import fmin from "fmin";
 const { Vector3, Matrix3, Matrix4, BufferAttribute, Color } = THREE;
 
-export const min = (a, b) => new Vector3().set(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
-
-export const max = (a, b) => new Vector3().set(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
-
 export const randomPosition = () => new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
 
 export const randomDirection = () => {
