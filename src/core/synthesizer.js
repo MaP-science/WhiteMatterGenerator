@@ -203,7 +203,7 @@ export default class {
     addCell(pos, shape, color) {
         const cell = new Ellipsoid(
             pos,
-            0,
+            Math.cbrt(shape.determinant()),
             new Mapping({ from: [0], to: [0] }),
             new Mapping({ from: [0], to: [0] }),
             0,
