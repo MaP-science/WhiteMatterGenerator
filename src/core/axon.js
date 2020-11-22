@@ -1,7 +1,7 @@
 import THREE from "./three.js";
 import Ellipsoid from "./ellipsoid.js";
 import plyParser from "../core/plyParser";
-import { hexColorToVector, applyColor, addMatrix3 } from "./helperFunctions.js";
+import { hexColorToVector, applyColor, addMatrix3, randomHexColor } from "./helperFunctions.js";
 
 const {
     Vector3,
@@ -75,7 +75,7 @@ export default class {
         this.voxelSize = voxelSize;
         this.deformation = deformation;
         this.minDiameter = minDiameter;
-        this.color = color;
+        this.color = color || randomHexColor();
         this.meshes = [];
         this.ellipsoids = [
             new Ellipsoid(start, this.radius, deformation, minDiameter, 1, color, false),

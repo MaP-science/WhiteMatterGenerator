@@ -10,7 +10,8 @@ import {
     min,
     max,
     hexColorToVector,
-    addMatrix3
+    addMatrix3,
+    randomHexColor
 } from "./helperFunctions.js";
 const { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial } = THREE;
 
@@ -23,7 +24,7 @@ export default class {
         this.movement = movement;
         this.shape = new Matrix3().multiplyScalar(this.minDiameter.map(this.radius * 2) / 2);
         this.id = v4();
-        this.color = color || "#ffffff";
+        this.color = color || randomHexColor();
         this.axisCache = {};
         if (generateMesh) this.mesh = new Mesh(this.getGeometry(), new MeshToonMaterial({ color: this.color }));
     }

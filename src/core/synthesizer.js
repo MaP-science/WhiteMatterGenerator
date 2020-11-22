@@ -3,7 +3,7 @@ import THREE from "./three.js";
 import Axon from "./axon.js";
 import Ellipsoid from "./ellipsoid.js";
 import Mapping from "./mapping.js";
-import { randomPosition, projectOntoCube, shuffle, randomHexColor, addMatrix3 } from "./helperFunctions.js";
+import { randomPosition, projectOntoCube, shuffle, addMatrix3 } from "./helperFunctions.js";
 import plyParser from "./plyParser";
 const {
     Vector3,
@@ -68,9 +68,20 @@ export default class {
                 );
             });
         });
-        (config.cells || []).forEach(cell =>
-            this.addCell(new Vector3(...cell.position), new Matrix3().set(...cell.shape), cell.color)
-        );
+        (config.cells || []).forEach(c => {
+            const shape = new Matrix3().set(...c.shape);
+            const cell = new Ellipsoid(
+                new Vector3(...c.position),
+                Math.cbrt(shape.determinant()),
+                new Mapping({ from: [0], to: [0] }),
+                new Mapping({ from: [0], to: [0] }),
+                0,
+                c.color,
+                true
+            );
+            cell.shape = shape.clone();
+            this.cells.push(cell);
+        });
     }
     toJSON() {
         return {
@@ -143,17 +154,7 @@ export default class {
         const a = projectOntoCube(pos, dir, this.voxelSize);
         const b = projectOntoCube(pos, dir.clone().negate(), this.voxelSize);
         this.axons.push(
-            new Axon(
-                a,
-                b,
-                r,
-                this.deformation,
-                this.minDiameter,
-                this.ellipsoidDensity,
-                this.voxelSize,
-                color || randomHexColor(),
-                gFactor
-            )
+            new Axon(a, b, r, this.deformation, this.minDiameter, this.ellipsoidDensity, this.voxelSize, color, gFactor)
         );
     }
     addCellsRandomly(cellCount) {
@@ -167,7 +168,7 @@ export default class {
                     new Mapping({ from: [0, 1], to: [0, 0] }),
                     new Mapping({ from: [0, 1], to: [0, 0.01] }),
                     1,
-                    randomHexColor(),
+                    null,
                     true
                 )
             );
@@ -195,19 +196,6 @@ export default class {
             a.deformation = new Mapping({ from: [0], to: [0] });
             a.movement = 0;
         });
-    }
-    addCell(pos, shape, color) {
-        const cell = new Ellipsoid(
-            pos,
-            Math.cbrt(shape.determinant()),
-            new Mapping({ from: [0], to: [0] }),
-            new Mapping({ from: [0], to: [0] }),
-            0,
-            color || randomHexColor(),
-            true
-        );
-        cell.shape = shape.clone();
-        this.cells.push(cell);
     }
     volumeFraction(n, border) {
         this.axons.forEach(axon => axon.computeCollisionTree(0));
