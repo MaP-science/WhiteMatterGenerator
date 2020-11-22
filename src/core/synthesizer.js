@@ -3,7 +3,7 @@ import THREE from "./three.js";
 import Axon from "./axon.js";
 import Ellipsoid from "./ellipsoid.js";
 import Mapping from "./mapping.js";
-import { randomPosition, projectOntoCube, shuffle, addMatrix3 } from "./helperFunctions.js";
+import { randomPosition, shuffle, addMatrix3 } from "./helperFunctions.js";
 import plyParser from "./plyParser";
 const {
     Vector3,
@@ -39,12 +39,15 @@ export default class {
         this.updateState = { name: "ready" };
         this.focus = null;
         (config.axons || []).forEach(axon => {
-            this.addAxon(
-                new Vector3(...axon.position),
-                new Vector3(...axon.direction),
-                axon.maxDiameter / 2,
-                axon.color,
-                axon.gFactor
+            this.axons.push(
+                new Axon(
+                    new Vector3(...axon.position),
+                    new Vector3(...axon.direction),
+                    axon.color,
+                    axon.gFactor,
+                    axon.maxDiameter / 2,
+                    this
+                )
             );
             const a = this.axons[this.axons.length - 1];
             if (!axon.ellipsoids) return;
@@ -141,21 +144,17 @@ export default class {
     }
     addAxonsRandomly(axonCount, gFactor) {
         for (let i = 0; i < axonCount; ++i)
-            this.addAxon(
-                randomPosition().multiplyScalar(this.voxelSize),
-                randomPosition(),
-                0.1 + Math.random() * 10,
-                undefined,
-                gFactor
+            this.axons.push(
+                new Axon(
+                    randomPosition().multiplyScalar(this.voxelSize),
+                    randomPosition(),
+                    0.1 + Math.random() * 10,
+                    undefined,
+                    gFactor,
+                    this
+                )
             );
         console.log("Total number of axons: " + this.axons.length);
-    }
-    addAxon(pos, dir, r, color, gFactor) {
-        const a = projectOntoCube(pos, dir, this.voxelSize);
-        const b = projectOntoCube(pos, dir.clone().negate(), this.voxelSize);
-        this.axons.push(
-            new Axon(a, b, r, this.deformation, this.minDiameter, this.ellipsoidDensity, this.voxelSize, color, gFactor)
-        );
     }
     addCellsRandomly(cellCount) {
         for (let i = 0; i < cellCount; ++i) {

@@ -1,7 +1,7 @@
 import THREE from "./three.js";
 import Ellipsoid from "./ellipsoid.js";
 import plyParser from "../core/plyParser";
-import { hexColorToVector, applyColor, addMatrix3, randomHexColor } from "./helperFunctions.js";
+import { hexColorToVector, applyColor, addMatrix3, randomHexColor, projectOntoCube } from "./helperFunctions.js";
 
 const {
     Vector3,
@@ -66,11 +66,11 @@ const getOverlap = (a, b, minDist, maxOverlap) => {
 };
 
 export default class {
-    constructor(start, end, radius, deformation, minDiameter, ellipsoidDensity, voxelSize, color, gFactor = 1) {
-        this.start = start.clone();
-        this.end = end.clone();
-        this.gFactor = gFactor;
-        this.radius = radius / gFactor;
+    constructor(pos, dir, radius, color, gFactor, { deformation, minDiameter, ellipsoidDensity, voxelSize }) {
+        this.start = projectOntoCube(pos, dir, voxelSize);
+        this.end = projectOntoCube(pos, dir.clone().negate(), voxelSize);
+        this.gFactor = gFactor || 1;
+        this.radius = radius / this.gFactor;
         this.ellipsoidDensity = ellipsoidDensity;
         this.voxelSize = voxelSize;
         this.deformation = deformation;
@@ -78,8 +78,8 @@ export default class {
         this.color = color || randomHexColor();
         this.meshes = [];
         this.ellipsoids = [
-            new Ellipsoid(start, this.radius, deformation, minDiameter, 1, color, false),
-            new Ellipsoid(end, this.radius, deformation, minDiameter, 1, color, false)
+            new Ellipsoid(this.start, this.radius, deformation, minDiameter, 1, this.color, false),
+            new Ellipsoid(this.end, this.radius, deformation, minDiameter, 1, this.color, false)
         ];
         this.redistribute();
     }
