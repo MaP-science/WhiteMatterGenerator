@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Vector3, PerspectiveCamera, WebGLRenderer } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
 import {
     Grid,
     Paper,
@@ -25,11 +23,7 @@ import {
     Switch
 } from "@material-ui/core";
 import download from "in-browser-download";
-
-import plyParser from "../core/plyParser";
 import Synthesizer from "../core/synthesizer";
-
-const round2Decimals = n => Math.round(n * 100) / 100;
 
 const useStyles = makeStyles(theme => ({
     gridItem: {
@@ -138,11 +132,7 @@ export default props => {
             if (!name) return;
             geoms.forEach((geom, i) =>
                 download(
-                    plyParser(geom, {
-                        binary: exportBinary,
-                        includeColors: !exportSimple,
-                        includeNormals: !exportSimple
-                    }),
+                    selectedItem.object.toPLY(exportBinary, exportSimple, i),
                     name.replace(/@type/g, i === 0 ? "myelin" : "axon").replace(/@color/g, selectedItem.object.color)
                 )
             );
@@ -500,17 +490,17 @@ export default props => {
                                                         </TableRow>
                                                         <TableRow>
                                                             <TableCell>
-                                                                {round2Decimals(100 * (volumeFraction || [0, 0])[0])}%
+                                                                {(100 * (volumeFraction || [0, 0])[0]).toFixed(2)}%
                                                             </TableCell>
                                                             <TableCell>
-                                                                {round2Decimals(100 * (volumeFraction || [0, 0])[1])}%
+                                                                {(100 * (volumeFraction || [0, 0])[1]).toFixed(2)}%
                                                             </TableCell>
                                                             <TableCell>
-                                                                {round2Decimals(
+                                                                {(
                                                                     100 *
-                                                                        ((volumeFraction || [0, 0])[0] +
-                                                                            (volumeFraction || [0, 0])[1])
-                                                                )}
+                                                                    ((volumeFraction || [0, 0])[0] +
+                                                                        (volumeFraction || [0, 0])[1])
+                                                                ).toFixed(2)}
                                                                 %
                                                             </TableCell>
                                                         </TableRow>
@@ -623,23 +613,7 @@ export default props => {
                                                             const name = window.prompt("File name", "axons.ply");
                                                             if (!name) return;
                                                             download(
-                                                                plyParser(
-                                                                    BufferGeometryUtils.mergeBufferGeometries(
-                                                                        [
-                                                                            synthesizer.axons.map(a =>
-                                                                                a.meshes.map(mesh => mesh.geometry)
-                                                                            ),
-                                                                            synthesizer.cells.map(c => c.mesh.geometry)
-                                                                        ]
-                                                                            .flat()
-                                                                            .flat()
-                                                                    ),
-                                                                    {
-                                                                        binary: exportBinary,
-                                                                        includeColors: !exportSimple,
-                                                                        includeNormals: !exportSimple
-                                                                    }
-                                                                ),
+                                                                synthesizer.toPLY(exportBinary, exportSimple),
                                                                 name
                                                             );
                                                         }}>
@@ -664,22 +638,14 @@ export default props => {
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
                                                                 const axon = synthesizer.axons[i];
                                                                 await download(
-                                                                    plyParser(axon.meshes[0].geometry, {
-                                                                        binary: exportBinary,
-                                                                        includeColors: !exportSimple,
-                                                                        includeNormals: !exportSimple
-                                                                    }),
+                                                                    axon.toPLY(exportBinary, exportSimple, 0),
                                                                     name
                                                                         .replace(/@type/g, "myelin")
                                                                         .replace(/@index/g, i)
                                                                         .replace(/@color/g, axon.color)
                                                                 );
                                                                 await download(
-                                                                    plyParser(axon.meshes[1].geometry, {
-                                                                        binary: exportBinary,
-                                                                        includeColors: !exportSimple,
-                                                                        includeNormals: !exportSimple
-                                                                    }),
+                                                                    axon.toPLY(exportBinary, exportSimple, 1),
                                                                     name
                                                                         .replace(/@type/g, "axon")
                                                                         .replace(/@index/g, i)
@@ -691,11 +657,7 @@ export default props => {
                                                             for (let i = 0; i < synthesizer.cells.length; ++i) {
                                                                 const cell = synthesizer.cells[i];
                                                                 await download(
-                                                                    plyParser(cell.getGeometry(), {
-                                                                        binary: exportBinary,
-                                                                        includeColors: !exportSimple,
-                                                                        includeNormals: !exportSimple
-                                                                    }),
+                                                                    cell.toPLY(exportBinary, exportSimple),
                                                                     name
                                                                         .replace(/@type/g, "cell")
                                                                         .replace(/@index/g, i)

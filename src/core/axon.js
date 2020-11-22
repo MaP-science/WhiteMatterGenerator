@@ -1,7 +1,6 @@
 import THREE from "./three.js";
-
 import Ellipsoid from "./ellipsoid.js";
-
+import plyParser from "../core/plyParser";
 import { hexColorToVector, applyColor, addMatrix3 } from "./helperFunctions.js";
 
 const {
@@ -308,5 +307,12 @@ export default class {
         });
         scene.add(mesh);
         this.mesh = [mesh];
+    }
+    toPLY(binary, simple, i) {
+        return plyParser(this.meshes[i].geometry, {
+            binary: binary,
+            includeColors: !simple,
+            includeNormals: !simple
+        });
     }
 }

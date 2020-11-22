@@ -1,5 +1,6 @@
 import THREE from "./three.js";
 import { v4 } from "uuid";
+import plyParser from "../core/plyParser";
 import {
     mat3ToMat4,
     randomDirection,
@@ -136,5 +137,12 @@ export default class {
     crossSectionDiameter(axis) {
         axis.normalize();
         return 2 * Math.sqrt(this.shape.determinant() / extremum(this.shape, axis).dot(axis));
+    }
+    toPLY(binary, simple) {
+        return plyParser(this.mesh.geometry, {
+            binary: binary,
+            includeColors: !simple,
+            includeNormals: !simple
+        });
     }
 }

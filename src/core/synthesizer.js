@@ -1,8 +1,10 @@
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
 import THREE from "./three.js";
 import Axon from "./axon.js";
 import Ellipsoid from "./ellipsoid.js";
 import Mapping from "./mapping.js";
 import { randomPosition, projectOntoCube, shuffle, randomHexColor, addMatrix3 } from "./helperFunctions.js";
+import plyParser from "./plyParser";
 const {
     Vector3,
     Matrix3,
@@ -102,6 +104,20 @@ export default class {
                 color: cell.color
             }))
         };
+    }
+    toPLY(binary, simple) {
+        return plyParser(
+            BufferGeometryUtils.mergeBufferGeometries(
+                [this.axons.map(a => a.meshes.map(mesh => mesh.geometry)), this.cells.map(c => c.mesh.geometry)]
+                    .flat()
+                    .flat()
+            ),
+            {
+                binary: binary,
+                includeColors: !simple,
+                includeNormals: !simple
+            }
+        );
     }
     keepInVoxel() {
         this.axons.forEach(axon => axon.keepInVoxel());
