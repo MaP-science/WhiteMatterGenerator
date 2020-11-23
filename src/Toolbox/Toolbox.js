@@ -24,6 +24,7 @@ import {
 } from "@material-ui/core";
 import download from "in-browser-download";
 import Synthesizer from "../core/synthesizer";
+import { useWindowSize } from "@react-hook/window-size";
 
 const useStyles = makeStyles(theme => ({
     gridItem: {
@@ -32,10 +33,10 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const width = window.innerWidth * 0.55;
-const height = window.innerHeight * 0.9;
-
 export default props => {
+    const [windowWidth, windowHeight] = useWindowSize();
+    const width = windowWidth * 0.55;
+    const height = windowHeight * 0.9;
     const fov = 75;
     const classes = useStyles();
     const mount = useRef();
@@ -80,7 +81,8 @@ export default props => {
     const [border, setBorder] = useState(0);
     const [gFactor, setGFactor] = useState(0.7);
     useEffect(() => {
-        if (!mount.current) return;
+        const mc = mount.current;
+        if (!mc) return;
         // Camera
         const cam = new PerspectiveCamera(fov, width / height, 0.1, 1000);
         cam.position.set(50, 50, 50);
@@ -90,7 +92,7 @@ export default props => {
         const ren = new WebGLRenderer({ antialias: true });
         ren.setClearColor("#000000");
         ren.setSize(width, height);
-        mount.current.appendChild(ren.domElement);
+        mc.appendChild(ren.domElement);
         setRenderer(ren);
         // Controls
         const ctrls = new OrbitControls(cam, ren.domElement);
@@ -98,8 +100,12 @@ export default props => {
         ctrls.dampingFactor = 0.5;
         setControls(ctrls);
         // Animate
-        window.setInterval(() => setFrame(frame => frame + 1), 1000 / 30);
-    }, [mount]);
+        const t = window.setInterval(() => setFrame(frame => frame + 1), 1000 / 30);
+        return () => {
+            window.clearInterval(t);
+            mc.removeChild(ren.domElement);
+        };
+    }, [mount, width, height]);
 
     useEffect(() => {
         if (!selectItem) return;
@@ -143,7 +149,19 @@ export default props => {
             renderer.domElement.removeEventListener("mousemove", mousemove);
             renderer.domElement.removeEventListener("click", click);
         };
-    }, [synthesizer, renderer, camera, viewModeAxon, selectItem, selectedItem, resolution, exportBinary, exportSimple]);
+    }, [
+        synthesizer,
+        renderer,
+        camera,
+        viewModeAxon,
+        selectItem,
+        selectedItem,
+        resolution,
+        exportBinary,
+        exportSimple,
+        width,
+        height
+    ]);
 
     useEffect(() => {
         if (controls) controls.update();
