@@ -364,6 +364,7 @@ export default props => {
                                                             )
                                                         );
                                                         setEllipsoidDensity(value);
+                                                        setUpdateState(s.updateState);
                                                     }}>
                                                     Change
                                                 </Button>
