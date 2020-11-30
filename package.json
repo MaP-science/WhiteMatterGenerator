@@ -4,20 +4,20 @@
     "private": true,
     "type": "module",
     "dependencies": {
-        "@material-ui/core": "^4.11.0",
+        "@material-ui/core": "^4.11.1",
         "@material-ui/icons": "^4.9.1",
         "@react-hook/window-size": "^3.0.7",
-        "@testing-library/jest-dom": "^4.2.4",
-        "@testing-library/react": "^9.3.2",
-        "@testing-library/user-event": "^7.1.2",
+        "@testing-library/jest-dom": "^5.11.6",
+        "@testing-library/react": "^11.2.2",
+        "@testing-library/user-event": "^12.2.2",
         "command-line-args": "^5.1.1",
         "fmin": "0.0.2",
         "gh-pages": "^3.1.0",
         "in-browser-download": "^2.0.0",
-        "react": "^16.13.1",
-        "react-dom": "^16.13.1",
+        "react": "^16.14.0",
+        "react-dom": "^16.14.0",
         "react-router-dom": "^5.2.0",
-        "react-scripts": "3.4.1",
+        "react-scripts": "4.0.1",
         "save-file": "^2.3.1",
         "three": "^0.117.1",
         "three-orbit-controls": "^82.1.0",
@@ -33,7 +33,10 @@
         "lint": "esw -w --clear"
     },
     "eslintConfig": {
-        "extends": "react-app"
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
     },
     "browserslist": {
         "production": [
