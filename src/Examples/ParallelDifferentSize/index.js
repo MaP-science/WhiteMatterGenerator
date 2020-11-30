@@ -6,13 +6,13 @@ import imgEllipsoids from "./ellipsoids.png";
 import imgPipesSide from "./pipesSide.png";
 import imgPipesFront from "./pipesFront.png";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     img: {
         width: 400
     }
 }));
 
-export default props => {
+export default () => {
     const classes = useStyles();
     return (
         <>

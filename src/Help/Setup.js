@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export default props => (
+export default () => (
     <>
         <p>The first phase is the setup phase. Here you can specify:</p>
         <ul>

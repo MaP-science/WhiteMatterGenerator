@@ -1,6 +1,6 @@
 import React from "react";
 
-export default props => (
+export default () => (
     <>
         If you just want to try out the toolbox and see that it works try out the following:
         <ul>

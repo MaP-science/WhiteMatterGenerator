@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export default props => {
+export default () => {
     const [windowWidth, windowHeight] = useWindowSize();
     const width = windowWidth * 0.55;
     const height = windowHeight * 0.9;
@@ -124,7 +124,7 @@ export default props => {
             up.multiplyScalar(y);
             setSelectedItem(synthesizer.point(camera.position, forward.clone().add(right).add(up)));
         };
-        const click = e => {
+        const click = () => {
             if (!selectedItem) return;
             const geoms =
                 selectedItem.type === "axon"

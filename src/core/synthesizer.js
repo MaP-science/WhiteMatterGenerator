@@ -127,7 +127,7 @@ export default class {
         });
         shuffle(pairs);
         pairs.forEach(pair => pair[0].collision(pair[1], minDist, maxOverlap));
-        this.axons.forEach((a, i) =>
+        this.axons.forEach(a =>
             a.ellipsoids.forEach(ellipsoid => this.cells.forEach(c => ellipsoid.collision(c, minDist, maxOverlap)))
         );
     }
@@ -173,7 +173,7 @@ export default class {
             );
         }
         const maxOverlap = 0.0001;
-        this.cells.forEach((a, i) => a.grow(1));
+        this.cells.forEach(a => a.grow(1));
         for (let mo = 1; mo > maxOverlap; ) {
             this.cells.forEach((a, i) => {
                 this.cells.forEach((b, j) => {
@@ -182,16 +182,16 @@ export default class {
                 });
             });
             mo = 0;
-            this.cells.forEach((a, i) => a.keepInVoxel(this.voxelSize));
+            this.cells.forEach(a => a.keepInVoxel(this.voxelSize));
             this.cells.forEach((a, i) => {
                 this.cells.forEach((b, j) => {
                     if (i >= j) return;
                     mo = Math.max(mo, a.getOverlap(b, 0, mo));
                 });
             });
-            this.cells.forEach((a, i) => a.grow(-0.05));
+            this.cells.forEach(a => a.grow(-0.05));
         }
-        this.cells.forEach((a, i) => {
+        this.cells.forEach(a => {
             a.deformation = new Mapping({ from: [0], to: [0] });
             a.movement = 0;
         });
@@ -244,7 +244,7 @@ export default class {
                 this.collision(minDist, maxOverlap);
                 this.updateState.name = "getOverlap";
                 break;
-            case "getOverlap":
+            case "getOverlap": {
                 const mo = this.getOverlap(minDist, maxOverlap * 0.999);
                 console.log("Max overlap: " + mo);
                 if (mo < maxOverlap) {
@@ -255,11 +255,13 @@ export default class {
                 if (this.updateState.progress === 100) this.updateState = { name: "volumeFraction", progress: 0 };
                 else this.updateState.name = "keepInVoxel";
                 break;
-            case "volumeFraction":
+            }
+            case "volumeFraction": {
                 const [avf, cvf] = this.volumeFraction(20, border);
                 console.log(`Volume fraction: ${100 * avf} % + ${100 * cvf} % = ${100 * (avf + cvf)} %`);
                 this.updateState = { name: "ready", volumeFraction: [avf, cvf] };
                 break;
+            }
             default:
                 this.updateState = { name: "ready" };
                 break;

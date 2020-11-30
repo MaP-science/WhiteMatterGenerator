@@ -5,25 +5,23 @@ import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import Menu from "./Menu";
 import config from "./config";
 
-export default props => {
-    return (
-        <>
-            <CssBaseline />
-            <BrowserRouter>
-                <Route
-                    path="*"
-                    component={props => (
-                        <Menu {...props}>
-                            <Switch>
-                                {config.map((c, i) => (
-                                    <Route key={i} path={`${c.path}`} component={c.component} />
-                                ))}
-                                <Redirect exact from="*" to={`${config[0].path}`} />
-                            </Switch>
-                        </Menu>
-                    )}
-                />
-            </BrowserRouter>
-        </>
-    );
-};
+export default () => (
+    <>
+        <CssBaseline />
+        <BrowserRouter>
+            <Route
+                path="*"
+                component={props => (
+                    <Menu {...props}>
+                        <Switch>
+                            {config.map((c, i) => (
+                                <Route key={i} path={`${c.path}`} component={c.component} />
+                            ))}
+                            <Redirect exact from="*" to={`${config[0].path}`} />
+                        </Switch>
+                    </Menu>
+                )}
+            />
+        </BrowserRouter>
+    </>
+);

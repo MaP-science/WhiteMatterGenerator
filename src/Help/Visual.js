@@ -1,6 +1,6 @@
 import React from "react";
 
-export default props => (
+export default () => (
     <>
         In the "Visual" pane you can specify how the generated substrate should be displayed:
         <ul>

@@ -1,6 +1,6 @@
 import React from "react";
 
-export default props => (
+export default () => (
     <>
         In the "After setup" pane you can specify:
         <ul>

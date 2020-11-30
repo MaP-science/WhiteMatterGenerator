@@ -40,7 +40,7 @@ const inputExample = {
     ]
 };
 
-export default props => {
+export default () => {
     const content = JSON.stringify(inputExample, null, 4);
     return (
         <>

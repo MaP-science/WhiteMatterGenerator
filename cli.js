@@ -1,9 +1,6 @@
 import commandLineArgs from "command-line-args";
 import fs from "fs";
 import Synthesizer from "./src/core/synthesizer.js";
-import Mapping from "./src/core/mapping.js";
-import THREE from "./src/core/three.js";
-const { Vector3, Matrix3 } = THREE;
 
 const optionDefinitions = [
     { name: "src", type: String, defaultOption: true },

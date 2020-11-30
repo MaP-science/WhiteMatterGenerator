@@ -125,7 +125,7 @@ export default class {
         const dLength = length / (ellipsoidCount - 1);
         let d = 0;
         let index = 0;
-        this.ellipsoids = [...Array(ellipsoidCount)].map((_, i) => {
+        this.ellipsoids = [...Array(ellipsoidCount)].map(() => {
             while (index + 2 < this.ellipsoids.length) {
                 const l = this.ellipsoids[index].pos
                     .clone()
