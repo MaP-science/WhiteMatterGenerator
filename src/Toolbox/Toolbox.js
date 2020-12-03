@@ -49,6 +49,7 @@ export default () => {
     const [frame, setFrame] = useState(0);
     const [viewModeVoxel, setViewModeVoxel] = useState("all");
     const [viewModeAxon, setViewModeAxon] = useState("ellipsoids");
+    const [viewSizes, setViewSizes] = useState(false);
     const [resolution, setResolution] = useState(32);
     const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
@@ -176,7 +177,16 @@ export default () => {
             return setAutomaticGrowth(false);
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
         if (updateState.name === "getOverlap")
-            setScene(synthesizer.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(border)));
+            setScene(
+                synthesizer.draw(
+                    viewModeVoxel,
+                    viewModeAxon,
+                    viewModeCell,
+                    Number(resolution),
+                    Number(border),
+                    viewSizes
+                )
+            );
         let gc = growCount;
         if (
             updateState.name === "ready" &&
@@ -232,7 +242,9 @@ export default () => {
             setAxonCount(data.axons.length);
             setCellCount(data.cells.length);
             setSynthesizer(s);
-            setScene(s.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(data.border)));
+            setScene(
+                s.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(data.border), viewSizes)
+            );
             setUpdateState(s.updateState);
             setVolumeFraction(0);
             setGrowCountTarget(0);
@@ -314,7 +326,8 @@ export default () => {
                                                         viewModeAxon,
                                                         viewModeCell,
                                                         Number(resolution),
-                                                        Number(border)
+                                                        Number(border),
+                                                        viewSizes
                                                     )
                                                 );
                                                 setUpdateState(s.updateState);
@@ -378,7 +391,8 @@ export default () => {
                                                                 viewModeAxon,
                                                                 viewModeCell,
                                                                 Number(resolution),
-                                                                Number(border)
+                                                                Number(border),
+                                                                viewSizes
                                                             )
                                                         );
                                                         setEllipsoidDensity(value);
@@ -488,7 +502,8 @@ export default () => {
                                                             viewModeAxon,
                                                             viewModeCell,
                                                             Number(resolution),
-                                                            Number(b)
+                                                            Number(b),
+                                                            viewSizes
                                                         )
                                                     );
                                                 }}
@@ -556,7 +571,8 @@ export default () => {
                                                                     viewModeAxon,
                                                                     viewModeCell,
                                                                     Number(resolution),
-                                                                    Number(border)
+                                                                    Number(border),
+                                                                    viewSizes
                                                                 )
                                                             );
                                                         }}>
@@ -583,7 +599,8 @@ export default () => {
                                                                     vm,
                                                                     viewModeCell,
                                                                     Number(res),
-                                                                    Number(border)
+                                                                    Number(border),
+                                                                    viewSizes
                                                                 )
                                                             );
                                                         }}>
@@ -606,7 +623,8 @@ export default () => {
                                                                     viewModeAxon,
                                                                     vm,
                                                                     Number(resolution),
-                                                                    Number(border)
+                                                                    Number(border),
+                                                                    viewSizes
                                                                 )
                                                             );
                                                         }}>
@@ -614,6 +632,31 @@ export default () => {
                                                         <MenuItem value="all">show</MenuItem>
                                                     </Select>
                                                 </FormControl>
+                                            </ListItem>
+                                            <ListItem>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            checked={viewSizes}
+                                                            onChange={e => {
+                                                                const vs = e.target.checked;
+                                                                setViewSizes(vs);
+                                                                setScene(
+                                                                    synthesizer.draw(
+                                                                        viewModeVoxel,
+                                                                        viewModeAxon,
+                                                                        viewModeCell,
+                                                                        Number(resolution),
+                                                                        Number(border),
+                                                                        vs
+                                                                    )
+                                                                );
+                                                            }}
+                                                            color="primary"
+                                                        />
+                                                    }
+                                                    label="Size color codes"
+                                                />
                                             </ListItem>
                                         </List>
                                     </Paper>
@@ -700,7 +743,7 @@ export default () => {
                                                         control={
                                                             <Switch
                                                                 checked={exportBinary}
-                                                                onChange={() => setExportBinary(!exportBinary)}
+                                                                onChange={e => setExportBinary(e.target.value)}
                                                                 color="primary"
                                                             />
                                                         }
@@ -712,7 +755,7 @@ export default () => {
                                                         control={
                                                             <Switch
                                                                 checked={exportSimple}
-                                                                onChange={() => setExportSimple(!exportSimple)}
+                                                                onChange={e => setExportSimple(e.target.value)}
                                                                 color="primary"
                                                             />
                                                         }

@@ -9,9 +9,10 @@ import {
     extremum,
     hexColorToVector,
     addMatrix3,
-    randomHexColor
+    randomHexColor,
+    valueToColor
 } from "./helperFunctions.js";
-const { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial } = THREE;
+const { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial, BufferGeometry } = THREE;
 
 export default class {
     constructor(pos, radius, deformation, minDiameter, movement, color, generateMesh) {
@@ -24,7 +25,7 @@ export default class {
         this.id = v4();
         this.color = color || randomHexColor();
         this.axisCache = {};
-        if (generateMesh) this.mesh = new Mesh(this.getGeometry(), new MeshToonMaterial({ color: this.color }));
+        if (generateMesh) this.mesh = new Mesh(this.getGeometry(false), new MeshToonMaterial({ color: this.color }));
     }
     boundingBox(minDist) {
         const x = extremum(this.shape, new Vector3(1, 0, 0)).dot(new Vector3(1, 0, 0));
@@ -112,24 +113,34 @@ export default class {
         const avg = Math.cbrt(this.shape.determinant());
         this.shape = addMatrix3(this.shape.multiplyScalar(1 - w), new Matrix3().multiplyScalar(w * avg));
     }
-    draw(scene, cloneMesh) {
-        this.mesh.geometry = this.getGeometry();
+    getColor(viewSizes, minAndMaxDiameter) {
+        return viewSizes ? valueToColor(this.diameter(), minAndMaxDiameter) : hexColorToVector(this.color);
+    }
+    draw(scene, generateMesh, viewSizes, minAndMaxDiameter) {
+        const g = this.getGeometry(viewSizes, minAndMaxDiameter);
+        if (generateMesh)
+            this.mesh = new Mesh(g, new MeshToonMaterial({ color: this.getColor(viewSizes, minAndMaxDiameter) }));
+        this.mesh.geometry = g;
         this.mesh.matrixAutoUpdate = false;
         this.mesh.matrix = this.getMatrix4();
         this.mesh.updateMatrix();
-        scene.add(cloneMesh ? this.mesh.clone() : this.mesh);
+        scene.add(this.mesh);
         return this.mesh;
     }
     getMatrix4() {
         return mat3ToMat4(this.shape).setPosition(this.pos);
     }
-    getGeometry() {
+    getGeometry(viewSizes, minAndMaxDiameter) {
         const geom = new SphereGeometry(1, 16, 16).applyMatrix4(this.getMatrix4());
         geom.computeVertexNormals();
-        geom.faces.forEach(
-            face => (face.vertexColors = new Array(3).fill(true).map(() => hexColorToVector(this.color)))
-        );
-        return geom;
+        const color = this.getColor(viewSizes, minAndMaxDiameter);
+        geom.faces.forEach(face => (face.vertexColors = new Array(3).fill(true).map(() => color)));
+        const bg = new BufferGeometry().fromGeometry(geom);
+        delete bg.attributes.uv;
+        return bg;
+    }
+    diameter() {
+        return 2 * Math.cbrt(this.shape.determinant());
     }
     crossSectionDiameter(axis) {
         axis.normalize();

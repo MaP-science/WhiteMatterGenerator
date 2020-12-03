@@ -268,10 +268,10 @@ export default class {
         }
         return this.updateState;
     }
-    generatePipes(scene, resolution) {
+    generatePipes(scene, resolution, viewSizes, minAndMaxDiameter) {
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
-            axon.generatePipes(scene, resolution);
+            axon.generatePipes(scene, resolution, viewSizes, minAndMaxDiameter);
         });
         return scene;
     }
@@ -287,32 +287,41 @@ export default class {
         const size = this.voxelSize - 2 * border;
         if (size > 0) scene.add(wireframeCube(size));
     }
-    drawAxons(scene, mode, resolution) {
+    drawAxons(scene, mode, viewSizes, minAndMaxDiameter, resolution) {
         switch (mode) {
             case "skeleton":
-                this.axons.forEach(axon => axon.generateSkeleton(scene));
+                this.axons.forEach(axon => axon.generateSkeleton(scene, viewSizes, minAndMaxDiameter));
                 break;
             case "pipes":
-                this.generatePipes(scene, resolution);
+                this.generatePipes(scene, resolution, viewSizes, minAndMaxDiameter);
                 break;
             case "ellipsoids": {
-                this.axons.forEach(axon => axon.draw(scene));
+                this.axons.forEach(axon => axon.draw(scene, viewSizes, minAndMaxDiameter));
                 break;
             }
             default:
                 break;
         }
     }
-    drawCells(scene, mode) {
+    drawCells(scene, mode, viewSizes, minAndMaxDiameter) {
         if (mode === "none") return;
-        this.cells.forEach(cell => cell.draw(scene));
+        this.cells.forEach(cell => cell.draw(scene, true, viewSizes, minAndMaxDiameter));
     }
-    draw(voxelMode, axonMode, cellMode, resolution, border) {
+    getMinAndMaxDiameter() {
+        const dAxons = this.axons.map(a => a.getMinAndMaxDiameter());
+        const dCells = this.cells.map(c => c.diameter());
+        return {
+            min: Math.min(...dAxons.map(d => d.min), ...dCells),
+            max: Math.max(...dAxons.map(d => d.max), ...dCells)
+        };
+    }
+    draw(voxelMode, axonMode, cellMode, resolution, border, viewSizes) {
         const scene = new Scene();
         this.drawLight(scene);
         this.drawVoxels(scene, voxelMode, border);
-        this.drawCells(scene, cellMode);
-        this.drawAxons(scene, axonMode, resolution);
+        const minAndMaxDiameter = this.getMinAndMaxDiameter();
+        this.drawCells(scene, cellMode, viewSizes, minAndMaxDiameter);
+        this.drawAxons(scene, axonMode, viewSizes, minAndMaxDiameter, resolution);
         return scene;
     }
     point(camPos, cursorDir) {

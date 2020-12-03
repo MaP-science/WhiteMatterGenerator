@@ -1,7 +1,14 @@
 import THREE from "./three.js";
 import Ellipsoid from "./ellipsoid.js";
 import plyParser from "../core/plyParser";
-import { hexColorToVector, applyColor, addMatrix3, randomHexColor, projectOntoCube } from "./helperFunctions.js";
+import {
+    hexColorToVector,
+    applyColor,
+    addMatrix3,
+    randomHexColor,
+    projectOntoCube,
+    valueToColor
+} from "./helperFunctions.js";
 
 const {
     Vector3,
@@ -15,7 +22,8 @@ const {
     DoubleSide,
     Geometry,
     Face3,
-    InstancedMesh
+    InstancedMesh,
+    BufferAttribute
 } = THREE;
 
 const computeCollisionTree = (ellipsoids, minDist) => {
@@ -101,6 +109,16 @@ export default class {
     getOverlap(axon, minDist, maxOverlap) {
         return getOverlap(this.collisionTree, axon.collisionTree, minDist, maxOverlap);
     }
+    getMinAndMaxDiameter() {
+        const d = this.ellipsoids.map((e, i) =>
+            e.crossSectionDiameter(
+                this.ellipsoids[Math.min(i + 1, this.ellipsoids.length - 1)].pos
+                    .clone()
+                    .sub(this.ellipsoids[Math.max(i - 1, 0)].pos)
+            )
+        );
+        return { min: Math.min(...d), max: Math.max(...d) };
+    }
     grow(amount) {
         this.ellipsoids.forEach(ellipsoid => ellipsoid.grow(amount));
     }
@@ -180,7 +198,7 @@ export default class {
             return dist > distMax ? p : pMax;
         }, undefined);
     }
-    generatePipe(gFactor, resolution, closed) {
+    generatePipe(gFactor, resolution, closed, viewSizes, minAndMaxDiameter) {
         const getSP = (pos, dir, i, scale) => {
             const shape = this.ellipsoids[i].shape;
             this.ellipsoids[i].shape = shape.clone().multiplyScalar(scale);
@@ -229,15 +247,39 @@ export default class {
         geom.vertices = verts.flat();
         geom.faces = verts
             .slice(0, verts.length - 1)
-            .map((verti, i) =>
-                verti.map((vertij, j) => {
+            .map((verti, i) => {
+                const c0 = viewSizes
+                    ? valueToColor(
+                          this.ellipsoids[i].crossSectionDiameter(
+                              this.ellipsoids[Math.min(i + 1, this.ellipsoids.length - 1)].pos
+                                  .clone()
+                                  .sub(this.ellipsoids[Math.max(i - 1, 0)].pos)
+                          ),
+                          minAndMaxDiameter
+                      )
+                    : hexColorToVector(this.color);
+                const c1 = viewSizes
+                    ? valueToColor(
+                          this.ellipsoids[i + 1].crossSectionDiameter(
+                              this.ellipsoids[Math.min(i + 2, this.ellipsoids.length - 1)].pos
+                                  .clone()
+                                  .sub(this.ellipsoids[Math.max(i, 0)].pos)
+                          ),
+                          minAndMaxDiameter
+                      )
+                    : hexColorToVector(this.color);
+                return verti.map((vertij, j) => {
                     const i00 = i * resolution + j;
                     const i01 = i * resolution + ((j + 1) % resolution);
                     const i10 = (i + 1) * resolution + j;
                     const i11 = (i + 1) * resolution + ((j + 1) % resolution);
-                    return [new Face3(i00, i01, i10), new Face3(i10, i01, i11)];
-                })
-            )
+                    const a = new Face3(i00, i01, i10);
+                    const b = new Face3(i10, i01, i11);
+                    a.vertexColors = [c0, c0, c1];
+                    b.vertexColors = [c1, c0, c1];
+                    return [a, b];
+                });
+            })
             .flat()
             .flat();
         if (closed) {
@@ -261,30 +303,41 @@ export default class {
             });
         }
         geom.computeVertexNormals();
-        geom.faces.forEach(
-            face => (face.vertexColors = new Array(3).fill(true).map(() => hexColorToVector(this.color)))
-        );
         return new Mesh(
             new BufferGeometry().fromGeometry(geom),
             new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
         );
     }
-    generatePipes(scene, resolution) {
-        const outer = this.generatePipe(1, resolution);
-        const inner = this.generatePipe(this.gFactor, resolution);
+    generatePipes(scene, resolution, viewSizes, minAndMaxDiameter) {
+        const outer = this.generatePipe(1, resolution, false, viewSizes, minAndMaxDiameter);
+        const inner = this.generatePipe(this.gFactor, resolution, false, viewSizes, minAndMaxDiameter);
         scene.add(outer);
         scene.add(inner);
         this.meshes = [outer, inner];
     }
-    generateSkeleton(scene) {
-        const mesh = new Line(
-            applyColor(new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos)), this.color),
-            new LineBasicMaterial({ vertexColors: VertexColors, side: DoubleSide })
-        );
+    generateSkeleton(scene, viewSizes, minAndMaxDiameter) {
+        let geometry = new BufferGeometry().setFromPoints(this.ellipsoids.map(ellipsoid => ellipsoid.pos));
+        if (viewSizes) {
+            const colors = this.ellipsoids
+                .map((e, i) =>
+                    valueToColor(
+                        e.crossSectionDiameter(
+                            this.ellipsoids[Math.min(i + 1, this.ellipsoids.length - 1)].pos
+                                .clone()
+                                .sub(this.ellipsoids[Math.max(i - 1, 0)].pos)
+                        ),
+                        minAndMaxDiameter
+                    ).toArray()
+                )
+                .flat();
+            geometry.setAttribute("color", new BufferAttribute(new Float32Array(colors), 3));
+        } else geometry = applyColor(geometry, this.color);
+        const mesh = new Line(geometry, new LineBasicMaterial({ vertexColors: VertexColors, side: DoubleSide }));
         this.meshes = [mesh];
         scene.add(mesh);
     }
-    draw(scene) {
+    draw(scene, viewSizes, minAndMaxDiameter) {
+        if (viewSizes) return this.ellipsoids.map(e => e.draw(scene, true, viewSizes, minAndMaxDiameter));
         const geom = applyColor(new SphereBufferGeometry(1, 16, 16), this.color);
         const material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide });
         const mesh = new InstancedMesh(geom, material, this.ellipsoids.length);

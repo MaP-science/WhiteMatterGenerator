@@ -108,9 +108,11 @@ export const applyColor = (geometry, color) => {
     const col = hexColorToVector(color);
     return geometry.setAttribute(
         "color",
-        new BufferAttribute(
-            new Float32Array(Array(geometry.attributes.position.count).fill([col.r, col.g, col.b]).flat()),
-            3
-        )
+        new BufferAttribute(new Float32Array(Array(geometry.attributes.position.count).fill(col.toArray()).flat()), 3)
     );
+};
+
+export const valueToColor = (value, { min, max }) => {
+    const v = (value - min) / (max - min);
+    return new Color(1 - v, 0, v);
 };
