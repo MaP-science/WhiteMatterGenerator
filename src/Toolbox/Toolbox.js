@@ -124,7 +124,7 @@ export default () => {
             const up = right.clone().cross(forward).normalize();
             right.multiplyScalar(x);
             up.multiplyScalar(y);
-            setSelectedItem(synthesizer.point(camera.position, forward.clone().add(right).add(up)));
+            setSelectedItem(synthesizer.point(camera.position, forward.clone().add(right).add(up), viewSizes));
         };
         const click = () => {
             if (!selectedItem) return;
@@ -133,7 +133,7 @@ export default () => {
                     ? selectedItem.object.meshes.map(mesh => mesh.geometry)
                     : [selectedItem.object.mesh.geometry];
             synthesizer.focus = null;
-            synthesizer.deselectAll();
+            synthesizer.deselectAll(viewSizes);
             setSelectedItem(null);
             setSelectItem(false);
             const name = window.prompt("File name", (selectedItem.type === "axon" ? "@type" : "cell") + "_@color.ply");
@@ -162,7 +162,8 @@ export default () => {
         exportBinary,
         exportSimple,
         width,
-        height
+        height,
+        viewSizes
     ]);
 
     useEffect(() => {
@@ -254,8 +255,6 @@ export default () => {
         reader.readAsText(inputFile);
         setInputFile(null);
     }, [inputFile, viewModeVoxel, viewModeAxon, resolution, viewModeCell, border]);
-
-    const minAndMaxDiameter = viewSizes ? synthesizer.getMinAndMaxDiameter() : {};
 
     return (
         <>
@@ -776,7 +775,13 @@ export default () => {
                 </Grid>
                 <Grid item xs={5}>
                     <div ref={mount} />
-                    {viewSizes && <SizeScale width={width} min={minAndMaxDiameter.min} max={minAndMaxDiameter.max} />}
+                    {viewSizes && (
+                        <SizeScale
+                            width={width}
+                            min={synthesizer.minAndMaxDiameter.min}
+                            max={synthesizer.minAndMaxDiameter.max}
+                        />
+                    )}
                 </Grid>
             </Grid>
         </>
