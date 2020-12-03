@@ -18,6 +18,7 @@
         "react-dom": "^16.14.0",
         "react-router-dom": "^5.2.0",
         "react-scripts": "4.0.1",
+        "react-vis": "^1.11.7",
         "save-file": "^2.3.1",
         "three": "^0.117.1",
         "three-orbit-controls": "^82.1.0",

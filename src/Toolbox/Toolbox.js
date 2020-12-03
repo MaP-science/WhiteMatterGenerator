@@ -25,6 +25,7 @@ import {
 import download from "in-browser-download";
 import Synthesizer from "../core/synthesizer";
 import { useWindowSize } from "@react-hook/window-size";
+import SizeScale from "./SizeScale";
 
 const useStyles = makeStyles(theme => ({
     gridItem: {
@@ -253,6 +254,9 @@ export default () => {
         reader.readAsText(inputFile);
         setInputFile(null);
     }, [inputFile, viewModeVoxel, viewModeAxon, resolution, viewModeCell, border]);
+
+    const minAndMaxDiameter = viewSizes ? synthesizer.getMinAndMaxDiameter() : {};
+
     return (
         <>
             <Grid container item xs={11}>
@@ -770,7 +774,10 @@ export default () => {
                         )}
                     </Grid>
                 </Grid>
-                <Grid item xs={5} ref={mount} />
+                <Grid item xs={5}>
+                    <div ref={mount} />
+                    {viewSizes && <SizeScale width={width} min={minAndMaxDiameter.min} max={minAndMaxDiameter.max} />}
+                </Grid>
             </Grid>
         </>
     );
