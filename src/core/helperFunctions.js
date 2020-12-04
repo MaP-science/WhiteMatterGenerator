@@ -112,7 +112,6 @@ export const applyColor = (geometry, color) => {
     );
 };
 
-export const valueToColor = (value, { min, max }) => {
-    const v = (value - min) / (max - min);
-    return new Color(1 - v, 0, v);
-};
+export const scaledValueToColor = v => new Color().setHSL((1 - v) * (2 / 3), 1, 0.5);
+
+export const valueToColor = (value, { min, max }) => scaledValueToColor((value - min) / (max - min));

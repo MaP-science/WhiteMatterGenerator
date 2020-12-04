@@ -254,7 +254,7 @@ export default class {
                               this.ellipsoids[Math.min(i + 1, this.ellipsoids.length - 1)].pos
                                   .clone()
                                   .sub(this.ellipsoids[Math.max(i - 1, 0)].pos)
-                          ),
+                          ) * this.gFactor,
                           minAndMaxDiameter
                       )
                     : hexColorToVector(this.color);
@@ -264,7 +264,7 @@ export default class {
                               this.ellipsoids[Math.min(i + 2, this.ellipsoids.length - 1)].pos
                                   .clone()
                                   .sub(this.ellipsoids[Math.max(i, 0)].pos)
-                          ),
+                          ) * this.gFactor,
                           minAndMaxDiameter
                       )
                     : hexColorToVector(this.color);
@@ -325,7 +325,7 @@ export default class {
                             this.ellipsoids[Math.min(i + 1, this.ellipsoids.length - 1)].pos
                                 .clone()
                                 .sub(this.ellipsoids[Math.max(i - 1, 0)].pos)
-                        ),
+                        ) * this.gFactor,
                         minAndMaxDiameter
                     ).toArray()
                 )
