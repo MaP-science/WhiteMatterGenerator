@@ -16,17 +16,12 @@
         "build": "npx babel src --out-dir dist",
         "cli": "babel-node cli.js"
     },
-    "eslintConfig": {
-        "extends": [
-            "react-app",
-            "react-app/jest"
-        ]
-    },
     "devDependencies": {
         "@babel/cli": "^7.12.8",
         "@babel/core": "^7.12.9",
         "@babel/node": "^7.12.6",
         "@babel/preset-env": "^7.12.7",
+        "babel-eslint": "^10.1.0",
         "eslint": "^7.14.0",
         "eslint-watch": "^7.0.0"
     }
