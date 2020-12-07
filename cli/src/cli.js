@@ -1,6 +1,8 @@
+#!/usr/bin/env node
+
 import commandLineArgs from "command-line-args";
 import fs from "fs";
-import Synthesizer from "./src/core/synthesizer.js";
+import { Synthesizer } from "@axon-generator-toolbox/core/dist/index.js";
 
 const optionDefinitions = [
     { name: "src", type: String, defaultOption: true },

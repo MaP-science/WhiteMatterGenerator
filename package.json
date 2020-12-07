@@ -2,7 +2,6 @@
     "name": "axon-generator-toolbox",
     "version": "0.1.0",
     "private": true,
-    "type": "module",
     "dependencies": {
         "@material-ui/core": "^4.11.1",
         "@material-ui/icons": "^4.9.1",
@@ -22,7 +21,8 @@
         "save-file": "^2.3.1",
         "three": "^0.117.1",
         "three-orbit-controls": "^82.1.0",
-        "uuid": "^8.2.0"
+        "uuid": "^8.2.0",
+        "@axon-generator-toolbox/core": "file:./core"
     },
     "scripts": {
         "predeploy": "npm run build",
@@ -31,7 +31,9 @@
         "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "lint": "esw -w --clear"
+        "lint": "esw -w --clear",
+        "cli": "babel-node cli.js",
+        "cli-build": "npx babel src --out-dir dist"
     },
     "eslintConfig": {
         "extends": [
@@ -52,6 +54,10 @@
         ]
     },
     "devDependencies": {
+        "@babel/cli": "^7.12.8",
+        "@babel/core": "^7.12.9",
+        "@babel/node": "^7.12.6",
+        "@babel/preset-env": "^7.12.7",
         "eslint": "^7.14.0",
         "eslint-watch": "^7.0.0"
     }

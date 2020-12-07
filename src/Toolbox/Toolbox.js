@@ -23,7 +23,7 @@ import {
     Switch
 } from "@material-ui/core";
 import download from "in-browser-download";
-import Synthesizer from "../core/synthesizer";
+import { Synthesizer } from "@axon-generator-toolbox/core";
 import { useWindowSize } from "@react-hook/window-size";
 import SizeScale from "./SizeScale";
 

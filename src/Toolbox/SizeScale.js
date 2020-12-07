@@ -1,13 +1,13 @@
 import React from "react";
 import Legend from "./Legend";
 import "../../node_modules/react-vis/dist/style.css";
-import { scaledValueToColor } from "../core/helperFunctions";
+import { helperFunctions } from "@axon-generator-toolbox/core";
 
 export default props => {
     const n = 100;
     const colors = Array(n)
         .fill(true)
-        .map((_, i) => "#" + scaledValueToColor(i / (n - 1)).getHexString());
+        .map((_, i) => "#" + helperFunctions.scaledValueToColor(i / (n - 1)).getHexString());
     return (
         <Legend
             width={props.width}

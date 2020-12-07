@@ -1,6 +1,6 @@
 import THREE from "./three.js";
 import { v4 } from "uuid";
-import plyParser from "../core/plyParser";
+import plyParser from "./plyParser.js";
 import {
     mat3ToMat4,
     randomDirection,

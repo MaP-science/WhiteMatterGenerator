@@ -1,10 +1,10 @@
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
 import THREE from "./three.js";
 import Axon from "./axon.js";
 import Ellipsoid from "./ellipsoid.js";
 import Mapping from "./mapping.js";
 import { randomPosition, shuffle, addMatrix3 } from "./helperFunctions.js";
-import plyParser from "./plyParser";
+import plyParser from "./plyParser.js";
 const {
     Vector3,
     Matrix3,

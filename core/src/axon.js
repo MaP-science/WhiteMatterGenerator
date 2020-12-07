@@ -1,6 +1,6 @@
 import THREE from "./three.js";
 import Ellipsoid from "./ellipsoid.js";
-import plyParser from "../core/plyParser";
+import plyParser from "./plyParser.js";
 import {
     hexColorToVector,
     applyColor,
