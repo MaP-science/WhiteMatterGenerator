@@ -249,7 +249,6 @@ export default class {
                 break;
             case "getOverlap": {
                 const mo = this.getOverlap(minDist, maxOverlap * 0.999);
-                console.log("Max overlap: " + mo);
                 if (mo < maxOverlap) {
                     this.updateState = { name: "volumeFraction", progress: 0 };
                     break;
@@ -261,7 +260,6 @@ export default class {
             }
             case "volumeFraction": {
                 const [avf, cvf] = this.volumeFraction(20, border);
-                console.log(`Volume fraction: ${100 * avf} % + ${100 * cvf} % = ${100 * (avf + cvf)} %`);
                 this.updateState = { name: "ready", volumeFraction: [avf, cvf] };
                 this.computeMinAndMaxDiameter();
                 break;
@@ -362,8 +360,6 @@ export default class {
         });
         this.cells.forEach(cell => {
             if (cell === (this.focus || {}).object) return;
-            console.log(this.focus);
-            console.log(cell.mesh.uuid);
             cell.mesh.material = new MeshToonMaterial({ color: cell.getColor(viewSizes, this.minAndMaxDiameter) });
         });
     }

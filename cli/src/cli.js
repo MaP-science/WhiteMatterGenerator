@@ -41,13 +41,31 @@ const outputDir = argv.file.substring(0, argv.file.lastIndexOf("/")) + "/output"
 
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
-for (let i = 0; ; ++i) {
+const colWidth = 20;
+
+console.log(
+    ["Iterations", "Axon volume (%)", "Cell volume (%)", "Total volume (%)"].map(s => s.padEnd(colWidth, " ")).join("")
+);
+
+for (let i = 0; ; ) {
     do synthesizer.update(growSpeed, contractSpeed, 0.01, 0.0001, 0);
     while (synthesizer.updateState?.name !== "ready");
     const config = { growSpeed: growSpeed, contractSpeed: contractSpeed, border: border, ...synthesizer.toJSON() };
     fs.writeFileSync(`${outputDir}/config_output_${i + 1}.json`, JSON.stringify(config, null, 4));
-    const volumeFraction = synthesizer.updateState.volumeFraction[0] + synthesizer.updateState.volumeFraction[1];
-    if (volumeFraction >= argv.volumeFraction / 100) {
+    const [vfa, vfc] = synthesizer.updateState.volumeFraction;
+    const vf = vfa + vfc;
+    ++i;
+    console.log(
+        [
+            `${i} / ${argv.iterations}`,
+            (100 * vfa).toFixed(2),
+            (100 * vfc).toFixed(2),
+            `${(100 * vf).toFixed(2)} / ${argv.volumeFraction}`
+        ]
+            .map(s => s.padEnd(colWidth, " "))
+            .join("")
+    );
+    if (vf >= argv.volumeFraction / 100) {
         console.log("Target volume fraction reached");
         break;
     }
