@@ -5,13 +5,13 @@
     "main": "dist/cli.js",
     "dependencies": {
         "@axon-generator-toolbox/core": "file:../core",
-        "command-line-args": "^5.1.1",
         "fmin": "0.0.2",
         "gh-pages": "^3.1.0",
         "save-file": "^2.3.1",
         "three": "^0.117.1",
         "three-orbit-controls": "^82.1.0",
-        "uuid": "^8.2.0"
+        "uuid": "^8.2.0",
+        "yargs": "^16.2.0"
     },
     "scripts": {
         "lint": "esw -w --clear",
