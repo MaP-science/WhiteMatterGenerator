@@ -24,6 +24,13 @@ var { argv } = require("yargs")
         describe: "Stop simulation when this volume fraction has been reached (number between 0 and 100)",
         type: "number",
         nargs: 1
+    })
+    .option("l", {
+        alias: "logFile",
+        default: "log.txt",
+        describe: "Log file",
+        type: "string",
+        nargs: 1
     });
 
 import fs from "fs";
@@ -41,9 +48,16 @@ const outputDir = argv.file.substring(0, argv.file.lastIndexOf("/")) + "/output"
 
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
+let logs = "";
+const log = s => {
+    console.log(s);
+    logs += s + "\n";
+    fs.writeFileSync(`${outputDir}/${argv.logFile}`, logs);
+};
+
 const colWidth = 20;
 
-console.log(
+log(
     ["Iterations", "Axon volume (%)", "Cell volume (%)", "Total volume (%)"].map(s => s.padEnd(colWidth, " ")).join("")
 );
 
@@ -55,7 +69,7 @@ for (let i = 0; ; ) {
     const [vfa, vfc] = synthesizer.updateState.volumeFraction;
     const vf = vfa + vfc;
     ++i;
-    console.log(
+    log(
         [
             `${i} / ${argv.iterations}`,
             (100 * vfa).toFixed(2),
