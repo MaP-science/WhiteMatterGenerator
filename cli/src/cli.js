@@ -2,8 +2,8 @@
 
 var { argv } = require("yargs")
     .scriptName("axon-generator-toolbox")
-    .usage("Usage: $0 -f file [-i iterations]")
-    .example("$0 -f config.json -i 10")
+    .usage("Usage: $0 -f file [-i iterations] [-v volumeFraction]")
+    .example("$0 -f config.json -i 10 -v 70")
     .option("f", {
         alias: "file",
         describe: "Config file",
@@ -15,6 +15,13 @@ var { argv } = require("yargs")
         alias: "iterations",
         default: 10,
         describe: "Number of iterations",
+        type: "number",
+        nargs: 1
+    })
+    .option("v", {
+        alias: "volumeFraction",
+        default: 100,
+        describe: "Stop simulation when this volume fraction has been reached (number between 0 and 100)",
         type: "number",
         nargs: 1
     });
@@ -34,9 +41,18 @@ const outputDir = argv.file.substring(0, argv.file.lastIndexOf("/")) + "/output"
 
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
-for (let i = 0; i < argv.iterations; ++i) {
+for (let i = 0; ; ++i) {
     do synthesizer.update(growSpeed, contractSpeed, 0.01, 0.0001, 0);
-    while ((synthesizer.updateState || {}).name !== "ready");
+    while (synthesizer.updateState?.name !== "ready");
     const config = { growSpeed: growSpeed, contractSpeed: contractSpeed, border: border, ...synthesizer.toJSON() };
     fs.writeFileSync(`${outputDir}/config_output_${i + 1}.json`, JSON.stringify(config, null, 4));
+    const volumeFraction = synthesizer.updateState.volumeFraction[0] + synthesizer.updateState.volumeFraction[1];
+    if (volumeFraction >= argv.volumeFraction / 100) {
+        console.log("Target volume fraction reached");
+        break;
+    }
+    if (i === argv.iterations) {
+        console.log("Number of max iterations reached");
+        break;
+    }
 }
