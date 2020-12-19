@@ -3,7 +3,7 @@
 var { argv } = require("yargs")
     .scriptName("axon-generator-toolbox")
     .usage("Usage: $0 -f file [-i iterations] [-v volumeFraction]")
-    .example("$0 -f config.json -i 10 -v 70")
+    .example("$0 -f config.json -i 10 -o 5 -v 70 -l log.txt")
     .option("f", {
         alias: "file",
         describe: "Config file",
@@ -15,6 +15,13 @@ var { argv } = require("yargs")
         alias: "iterations",
         default: 10,
         describe: "Number of iterations",
+        type: "number",
+        nargs: 1
+    })
+    .option("o", {
+        alias: "outputInterval",
+        default: 1,
+        describe: "Save output to file every o'th iteration",
         type: "number",
         nargs: 1
     })
@@ -65,10 +72,10 @@ for (let i = 0; ; ) {
     do synthesizer.update(growSpeed, contractSpeed, 0.01, 0.0001, 0);
     while (synthesizer.updateState?.name !== "ready");
     const config = { growSpeed: growSpeed, contractSpeed: contractSpeed, border: border, ...synthesizer.toJSON() };
-    fs.writeFileSync(`${outputDir}/config_output_${i + 1}.json`, JSON.stringify(config, null, 4));
     const [vfa, vfc] = synthesizer.updateState.volumeFraction;
     const vf = vfa + vfc;
     ++i;
+    if (i % argv.o === 0) fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(config, null, 4));
     log(
         [
             `${i} / ${argv.iterations}`,
