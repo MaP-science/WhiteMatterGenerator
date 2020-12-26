@@ -49,7 +49,7 @@ export default () => {
             <pre>{content}</pre>
             and save the file as e.g. "config.json" (or click{" "}
             <button onClick={() => download(content, "config.json")}>here</button> to download the file). Click the
-            "Upload" button and select the file. This should initialize a red and a green axon and a blue cell in the
+            "Upload" button and select the file. This should initialize a red and a green axon and a blue cell at the
             specified positions.
             <br />
             <Link to="/help/setup">Click here to see a description of the input file format.</Link>

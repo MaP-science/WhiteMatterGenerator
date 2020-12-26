@@ -20,9 +20,10 @@ export default () => (
             </li>
         </ul>
         <p>
-            After specifying these value you can either turn on automatic growth which will perform grow steps until the
-            volume fraction has reached a specified value, or you can click the "Perform 1 grow step" button to perform
-            just 1 step at a time.
+            After specifying these values you have 3 options: 1: You can turn on automatic growth which will perform
+            grow steps until the volume fraction has reached a specified value. 2: You can click the "Perform 1 grow
+            step" button to perform just 1 step at a time. 3: You can click the "Perform x grow steps" button to perform
+            a specific number of grow steps.
         </p>
         <p>
             Below the two buttons the estimated volume fractions will be displayed. These fractions are estimated by

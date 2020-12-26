@@ -46,7 +46,8 @@ export default () => (
                 </ul>
             </li>
         </ul>
-        Clicking the "Export" button will export the currently displayed scene in PLY format. Clicking the "Export
-        single axon" button and then clicking on an axon will export that axon in PLY format.
+        Clicking the "Export as single file" button will export the currently displayed scene in PLY format. Clicking
+        the "Export as multiple files" button will export all elements as individual PLY files. Clicking the "Export
+        single element" button and then clicking on an axon or a cell will export only that element in PLY format.
     </>
 );
