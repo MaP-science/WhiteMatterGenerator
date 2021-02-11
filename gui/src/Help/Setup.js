@@ -42,7 +42,7 @@ export default () => (
                 number should be between 0 and 1.
             </li>
             <li>
-                <b>mapFromDiameterToDeformationFactor</b> (object) - This map determines how much the axons' ellipsoids
+                <b>mapFromDiameterToDeformationFactor</b>* (object) - This map determines how much the axons' ellipsoids
                 should deform as opposed to change position when a collision occurs. It maps from the current diameter
                 of the ellipsoid (axon + myelin) to the deformation factor, which is a number between 0 and 1. A
                 deformation factor of 0 means that the ellipsoid can't be deformed at all and will always be a perfect
@@ -59,7 +59,7 @@ export default () => (
                 </ul>
             </li>
             <li>
-                <b>mapFromMaxDiameterToMinDiameter</b> (object) - This map determines the minimum diameter an ellipsoid
+                <b>mapFromMaxDiameterToMinDiameter</b>* (object) - This map determines the minimum diameter an ellipsoid
                 can have (axon + myelin) given its maximum diameter (axon + myelin). The values defining the map will be
                 linearly interpolated.
                 <ul>
@@ -115,6 +115,25 @@ export default () => (
                         <b>color</b> (string) - Color code of the cell. E.g. "#ffffff" to make it white.
                     </li>
                 </ul>
+            </li>
+        </ul>
+        <p>
+            * A map object contains two arrays of numbers: <b>from</b> and <b>to</b>. The lengths of these arrays can be
+            any number as long as they are the same. E.g. you can have <b>from</b>=[0,1,2,3] and <b>to</b>=[2,2,4,4].
+            Here both <b>from</b> and <b>to</b> have length 4. NB: the array lengths do not have anything to do with the
+            number of axons or cells.
+        </p>
+        <ul>
+            <li>
+                When a map is used the input is looked up in the <b>from</b> array and the corresponding value in the{" "}
+                <b>to</b> array is returned. E.g. if we use the example maps from before with an input of 2, the output
+                will be computed like this: [0,1,<b>2</b>,3] -> [2,2,<b>4</b>,4]. Hence the output will be 4.
+            </li>
+            <li>
+                If we provide a value that doesn't exist in the <b>from</b> array, linear interpolation will be used.
+                E.g. if we use the input value 1.5, the output will be the average of the two output values: [0,
+                <b>1</b>,<b>2</b>,3] -> [2,<b>2</b>,<b>4</b>,4]. Hence the output will be the average of 2 and 4, i.e.
+                3.
             </li>
         </ul>
         <Link to="/examples/input">Click here to see an example of an input file.</Link>
