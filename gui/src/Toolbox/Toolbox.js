@@ -746,7 +746,7 @@ export default () => {
                                                         control={
                                                             <Switch
                                                                 checked={exportBinary}
-                                                                onChange={e => setExportBinary(e.target.value)}
+                                                                onChange={e => setExportBinary(e.target.checked)}
                                                                 color="primary"
                                                             />
                                                         }
@@ -758,7 +758,7 @@ export default () => {
                                                         control={
                                                             <Switch
                                                                 checked={exportSimple}
-                                                                onChange={e => setExportSimple(e.target.value)}
+                                                                onChange={e => setExportSimple(e.target.checked)}
                                                                 color="primary"
                                                             />
                                                         }
