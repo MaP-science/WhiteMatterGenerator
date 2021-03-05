@@ -72,6 +72,11 @@ export default (geom, options) => {
                     options.includeColors ? colors[i].toArray().map(c => Math.floor(c * 255)) : []
                 ]
                     .flat()
+                    .map(v => v.toString())
+                    .map(v => {
+                        if (v.includes(".")) return v;
+                        return v + ".0";
+                    })
                     .join(" ")
             )
             .join("\n");
