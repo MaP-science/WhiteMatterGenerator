@@ -1,8 +1,9 @@
 import THREE from "./three.js";
 const { Vector3, Color, Geometry } = THREE;
+import { BufferGeometryUtils } from "./BufferGeometryUtils";
 
 export default (geom, options) => {
-    const geometry = new Geometry().fromBufferGeometry(geom);
+    const geometry = new Geometry().fromBufferGeometry(BufferGeometryUtils.mergeVertices(geom));
     const header = [
         `ply`,
         `format ${
