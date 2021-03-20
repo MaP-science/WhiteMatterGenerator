@@ -130,7 +130,9 @@ export default () => {
             if (!selectedItem) return;
             const geoms =
                 selectedItem.type === "axon"
-                    ? selectedItem.object.meshes.map(mesh => mesh.geometry)
+                    ? selectedItem.object.meshes
+                          .filter((_, i) => i !== 1 || Number(selectedItem.object.gFactor) !== 1)
+                          .map(mesh => mesh.geometry)
                     : [selectedItem.object.mesh.geometry];
             synthesizer.focus = null;
             synthesizer.deselectAll(viewSizes);
@@ -709,13 +711,14 @@ export default () => {
                                                                         .replace(/@index/g, i)
                                                                         .replace(/@color/g, axon.color)
                                                                 );
-                                                                await download(
-                                                                    axon.toPLY(exportBinary, exportSimple, 1),
-                                                                    name
-                                                                        .replace(/@type/g, "axon")
-                                                                        .replace(/@index/g, i)
-                                                                        .replace(/@color/g, axon.color)
-                                                                );
+                                                                if (Number(axon.gFactor) !== 1)
+                                                                    await download(
+                                                                        axon.toPLY(exportBinary, exportSimple, 1),
+                                                                        name
+                                                                            .replace(/@type/g, "axon")
+                                                                            .replace(/@index/g, i)
+                                                                            .replace(/@color/g, axon.color)
+                                                                    );
                                                                 await wait();
                                                             }
                                                             if (viewModeCell === "hide") return;
