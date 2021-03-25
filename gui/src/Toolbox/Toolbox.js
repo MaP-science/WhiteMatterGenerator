@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 export default () => {
     const [windowWidth, windowHeight] = useWindowSize();
     const width = windowWidth * 0.55;
-    const height = windowHeight * 0.9;
+    const height = windowHeight * 0.85;
     const fov = 75;
     const classes = useStyles();
     const mount = useRef();
@@ -57,11 +57,11 @@ export default () => {
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
     const [voxelSize, setVoxelSize] = useState(100);
     const [axonCount, setAxonCount] = useState(50);
-    const [ellipsoidDensity, setEllipsoidDensity] = useState(10);
+    const [ellipsoidDensity, setEllipsoidDensity] = useState(5);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
-    const [contractSpeed, setContractSpeed] = useState(0.1);
-    const [minDist, setMinDist] = useState(0.01);
+    const [contractSpeed, setContractSpeed] = useState(1);
+    const [minDist, setMinDist] = useState(0.07);
     const inputFileRef = useRef();
     const [inputFile, setInputFile] = useState(null);
     const [updateState, setUpdateState] = useState({});
@@ -779,11 +779,28 @@ export default () => {
                 <Grid item xs={5}>
                     <div ref={mount} />
                     {viewSizes && (
-                        <SizeScale
-                            width={width}
-                            min={synthesizer.minAndMaxDiameter.min}
-                            max={synthesizer.minAndMaxDiameter.max}
-                        />
+                        <>
+                            {synthesizer.minAndMaxDiameterAxons && (
+                                <>
+                                    Myelin
+                                    <SizeScale
+                                        width={width}
+                                        min={synthesizer.minAndMaxDiameterAxons.min}
+                                        max={synthesizer.minAndMaxDiameterAxons.max}
+                                    />
+                                </>
+                            )}
+                            {synthesizer.minAndMaxDiameterCells && (
+                                <>
+                                    Cells
+                                    <SizeScale
+                                        width={width}
+                                        min={synthesizer.minAndMaxDiameterCells.min}
+                                        max={synthesizer.minAndMaxDiameterCells.max}
+                                    />
+                                </>
+                            )}
+                        </>
                     )}
                 </Grid>
             </Grid>

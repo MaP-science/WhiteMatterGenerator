@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@axon-generator-toolbox/core": "file:../core",
         "@material-ui/core": "^4.11.1",
         "@material-ui/icons": "^4.9.1",
         "@react-hook/window-size": "^3.0.7",
@@ -21,8 +22,7 @@
         "save-file": "^2.3.1",
         "three": "^0.117.1",
         "three-orbit-controls": "^82.1.0",
-        "uuid": "^8.2.0",
-        "@axon-generator-toolbox/core": "file:../core"
+        "uuid": "^8.2.0"
     },
     "scripts": {
         "predeploy": "npm run build",

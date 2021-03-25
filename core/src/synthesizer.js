@@ -279,7 +279,7 @@ export default class {
     generatePipes(scene, resolution, viewSizes) {
         this.axons.forEach((axon, i) => {
             console.log("Adding axon " + i);
-            axon.generatePipes(scene, resolution, viewSizes, this.minAndMaxDiameter);
+            axon.generatePipes(scene, resolution, viewSizes, this.minAndMaxDiameterAxons);
         });
         return scene;
     }
@@ -298,13 +298,13 @@ export default class {
     drawAxons(scene, mode, viewSizes, resolution) {
         switch (mode) {
             case "skeleton":
-                this.axons.forEach(axon => axon.generateSkeleton(scene, viewSizes, this.minAndMaxDiameter));
+                this.axons.forEach(axon => axon.generateSkeleton(scene, viewSizes, this.minAndMaxDiameterAxons));
                 break;
             case "pipes":
                 this.generatePipes(scene, resolution, viewSizes);
                 break;
             case "ellipsoids": {
-                this.axons.forEach(axon => axon.draw(scene, viewSizes, this.minAndMaxDiameter));
+                this.axons.forEach(axon => axon.draw(scene, viewSizes, this.minAndMaxDiameterAxons));
                 break;
             }
             default:
@@ -313,15 +313,25 @@ export default class {
     }
     drawCells(scene, mode, viewSizes) {
         if (mode === "none") return;
-        this.cells.forEach(cell => cell.draw(scene, true, viewSizes, this.minAndMaxDiameter));
+        this.cells.forEach(cell => cell.draw(scene, true, viewSizes, this.minAndMaxDiameterCells));
     }
     computeMinAndMaxDiameter() {
         const dAxons = this.axons.map(a => a.getMinAndMaxDiameter());
         const dCells = this.cells.map(c => c.diameter());
-        this.minAndMaxDiameter = {
-            min: Math.min(...dAxons.map(d => d.min), ...dCells),
-            max: Math.max(...dAxons.map(d => d.max), ...dCells)
-        };
+        this.minAndMaxDiameterAxons =
+            dAxons.length > 0
+                ? {
+                      min: Math.min(...dAxons.map(d => d.min)),
+                      max: Math.max(...dAxons.map(d => d.max))
+                  }
+                : undefined;
+        this.minAndMaxDiameterCells =
+            dCells.length > 0
+                ? {
+                      min: Math.min(...dCells),
+                      max: Math.max(...dCells)
+                  }
+                : undefined;
     }
     draw(voxelMode, axonMode, cellMode, resolution, border, viewSizes) {
         const scene = new Scene();
@@ -366,7 +376,7 @@ export default class {
         });
         this.cells.forEach(cell => {
             if (cell === (this.focus || {}).object) return;
-            cell.mesh.material = new MeshToonMaterial({ color: cell.getColor(viewSizes, this.minAndMaxDiameter) });
+            cell.mesh.material = new MeshToonMaterial({ color: cell.getColor(viewSizes, this.minAndMaxDiameterCells) });
         });
     }
 }
