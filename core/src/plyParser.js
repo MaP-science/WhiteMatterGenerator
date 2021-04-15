@@ -14,7 +14,7 @@ export default (geom, options) => {
         `property float y`,
         `property float z`,
         options.includeNormals ? "property float nx\nproperty float ny\nproperty float nz" : "",
-        options.includeColors ? "property float red\nproperty float green\nproperty float blue" : "",
+        options.includeColors ? "property uchar red\nproperty uchar green\nproperty uchar blue" : "",
         `element face ${geometry.faces.length}`,
         `property list uchar int vertex_index`,
         `end_header`
@@ -68,16 +68,16 @@ export default (geom, options) => {
         const vertexList = geometry.vertices
             .map((vertex, i) =>
                 [
-                    vertex.toArray(),
-                    options.includeNormals ? normals[i].toArray() : [],
+                    [vertex.toArray(), options.includeNormals ? normals[i].toArray() : []]
+                        .flat()
+                        .map(v => v.toString())
+                        .map(v => {
+                            if (v.includes(".")) return v;
+                            return v + ".0";
+                        }),
                     options.includeColors ? colors[i].toArray().map(c => Math.floor(c * 255)) : []
                 ]
                     .flat()
-                    .map(v => v.toString())
-                    .map(v => {
-                        if (v.includes(".")) return v;
-                        return v + ".0";
-                    })
                     .join(" ")
             )
             .join("\n");
