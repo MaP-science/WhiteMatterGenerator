@@ -104,15 +104,18 @@ const getConfig = () => ({
     ...synthesizer.toJSON()
 });
 
-const exportPly = i =>
+const exportPly = i => {
+    const outputDirPly = outputDir + `/ply_${i}`;
+    if (!fs.existsSync(outputDirPly)) fs.mkdirSync(outputDirPly);
     fs.writeFileSync(
-        `${outputDir}/ply_output_${i}.ply`,
+        `${outputDirPly}/axons.ply`,
         configToPly(getConfig(), {
             resolution: argv.resolution,
             exportBinary: argv.binary,
             exportSimple: argv.simple_mesh
         })
     );
+};
 
 exportPly(0);
 
