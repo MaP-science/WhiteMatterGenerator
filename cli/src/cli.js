@@ -97,23 +97,34 @@ log(
     ["Iterations", "Axon volume (%)", "Cell volume (%)", "Total volume (%)"].map(s => s.padEnd(colWidth, " ")).join("")
 );
 
-for (let i = 0; ; ) {
+const getConfig = () => ({
+    growSpeed: growSpeed,
+    contractSpeed: contractSpeed,
+    border: border,
+    ...synthesizer.toJSON()
+});
+
+const exportPly = i =>
+    fs.writeFileSync(
+        `${outputDir}/ply_output_${i}.ply`,
+        configToPly(getConfig(), {
+            resolution: argv.resolution,
+            exportBinary: argv.binary,
+            exportSimple: argv.simple_mesh
+        })
+    );
+
+exportPly(0);
+
+for (let i = 0; i < argv.iterations; ) {
     do synthesizer.update(growSpeed, contractSpeed, 0.01, 0.0001, 0);
     while (synthesizer.updateState?.name !== "ready");
-    const config = { growSpeed: growSpeed, contractSpeed: contractSpeed, border: border, ...synthesizer.toJSON() };
     const [vfa, vfc] = synthesizer.updateState.volumeFraction;
     const vf = vfa + vfc;
     ++i;
     if (i % argv.o === 0) {
-        fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(config, null, 4));
-        fs.writeFileSync(
-            `${outputDir}/ply_output_${i}.ply`,
-            configToPly(config, {
-                resolution: argv.resolution,
-                exportBinary: argv.binary,
-                exportSimple: argv.simple_mesh
-            })
-        );
+        fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(getConfig(), null, 4));
+        exportPly(i);
     }
     log(
         [
