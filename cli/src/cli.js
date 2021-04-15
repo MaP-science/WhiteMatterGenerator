@@ -62,9 +62,9 @@ const { argv } = require("yargs")
     })
     .option("e", {
         alias: "export_as",
-        default: false,
+        default: "single",
         describe: "PLY: Export as single or multiple files",
-        type: "boolean",
+        type: "string",
         nargs: 1
     });
 
@@ -107,14 +107,15 @@ const getConfig = () => ({
 const exportPly = i => {
     const outputDirPly = outputDir + `/ply_${i}`;
     if (!fs.existsSync(outputDirPly)) fs.mkdirSync(outputDirPly);
-    fs.writeFileSync(
-        `${outputDirPly}/axons.ply`,
-        configToPly(getConfig(), {
-            resolution: argv.resolution,
-            exportBinary: argv.binary,
-            exportSimple: argv.simple_mesh
-        })
-    );
+    const multiple = argv.export_as === "multiple";
+    const ply = configToPly(getConfig(), {
+        resolution: argv.resolution,
+        exportBinary: argv.binary,
+        exportSimple: argv.simple_mesh,
+        multiple: multiple
+    });
+    if (multiple) ply.forEach(file => fs.writeFileSync(`${outputDirPly}/${file.name}`, file.data));
+    else fs.writeFileSync(`${outputDirPly}/axons.ply`, ply);
 };
 
 exportPly(0);
