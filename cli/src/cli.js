@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-var { argv } = require("yargs")
+const { argv } = require("yargs")
     .scriptName("axon-generator-toolbox")
     .usage("Usage: $0 -f file [-i iterations] [-v volumeFraction]")
-    .example("$0 -f config.json -i 10 -o 5 -v 70 -l log.txt")
+    .example("$0 -f ./config.json -i 10 -o 5 -v 70 -l log.txt")
     .option("f", {
         alias: "file",
         describe: "Config file",
@@ -42,6 +42,7 @@ var { argv } = require("yargs")
 
 import fs from "fs";
 import { Synthesizer } from "@axon-generator-toolbox/core/dist/index.js";
+import configToPly from "./configToPly";
 
 const data = JSON.parse(fs.readFileSync(argv.file));
 
@@ -75,7 +76,13 @@ for (let i = 0; ; ) {
     const [vfa, vfc] = synthesizer.updateState.volumeFraction;
     const vf = vfa + vfc;
     ++i;
-    if (i % argv.o === 0) fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(config, null, 4));
+    if (i % argv.o === 0) {
+        fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(config, null, 4));
+        fs.writeFileSync(
+            `${outputDir}/ply_output_${i}.ply`,
+            configToPly(config, { resolution: 10, exportBinary: true, exportSimple: false })
+        );
+    }
     log(
         [
             `${i} / ${argv.iterations}`,
@@ -87,11 +94,11 @@ for (let i = 0; ; ) {
             .join("")
     );
     if (vf >= argv.volumeFraction / 100) {
-        console.log("Target volume fraction reached");
+        log("Target volume fraction reached");
         break;
     }
     if (i === argv.iterations) {
-        console.log("Number of max iterations reached");
+        log("Number of max iterations reached");
         break;
     }
 }
