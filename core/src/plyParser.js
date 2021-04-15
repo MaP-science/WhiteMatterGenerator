@@ -14,7 +14,7 @@ export default (geom, options) => {
         `property float y`,
         `property float z`,
         options.includeNormals ? "property float nx\nproperty float ny\nproperty float nz" : "",
-        options.includeColors ? "property uchar red\nproperty uchar green\nproperty uchar blue" : "",
+        options.includeColors ? "property float red\nproperty float green\nproperty float blue" : "",
         `element face ${geometry.faces.length}`,
         `property list uchar int vertex_index`,
         `end_header`
