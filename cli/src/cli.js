@@ -38,6 +38,34 @@ const { argv } = require("yargs")
         describe: "Log file",
         type: "string",
         nargs: 1
+    })
+    .option("r", {
+        alias: "resolution",
+        default: 32,
+        describe: "PLY: Axon resolution",
+        type: "number",
+        nargs: 1
+    })
+    .option("b", {
+        alias: "binary",
+        default: true,
+        describe: "PLY: Binary",
+        type: "boolean",
+        nargs: 1
+    })
+    .option("s", {
+        alias: "simple_mesh",
+        default: false,
+        describe: "PLY: Simple mesh",
+        type: "boolean",
+        nargs: 1
+    })
+    .option("e", {
+        alias: "export_as",
+        default: false,
+        describe: "PLY: Export as single or multiple files",
+        type: "boolean",
+        nargs: 1
     });
 
 import fs from "fs";
@@ -80,7 +108,11 @@ for (let i = 0; ; ) {
         fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(config, null, 4));
         fs.writeFileSync(
             `${outputDir}/ply_output_${i}.ply`,
-            configToPly(config, { resolution: 10, exportBinary: true, exportSimple: false })
+            configToPly(config, {
+                resolution: argv.resolution,
+                exportBinary: argv.binary,
+                exportSimple: argv.simple_mesh
+            })
         );
     }
     log(
