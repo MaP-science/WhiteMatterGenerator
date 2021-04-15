@@ -278,7 +278,6 @@ export default class {
     }
     generatePipes(scene, resolution, viewSizes) {
         this.axons.forEach((axon, i) => {
-            console.log("Adding axon " + i);
             axon.generatePipes(scene, resolution, viewSizes, this.minAndMaxDiameterAxons);
         });
         return scene;
