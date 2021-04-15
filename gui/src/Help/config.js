@@ -3,6 +3,7 @@ import Help from "./Help";
 import Setup from "./Setup";
 import AfterSetup from "./AfterSetup";
 import Visual from "./Visual";
+import Cli from "./Cli";
 
 export default {
     title: "Help",
@@ -23,6 +24,11 @@ export default {
             title: "Visual",
             path: "/visual",
             component: Visual
+        },
+        {
+            title: "CLI",
+            path: "/cli",
+            component: Cli
         }
     ]
 };
