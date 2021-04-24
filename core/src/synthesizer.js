@@ -1,10 +1,12 @@
-import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
-import THREE from "./three.js";
+import { addMatrix3, randomPosition, shuffle } from "./helperFunctions.js";
+
 import Axon from "./axon.js";
+import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
 import Ellipsoid from "./ellipsoid.js";
 import Mapping from "./mapping.js";
-import { randomPosition, shuffle, addMatrix3 } from "./helperFunctions.js";
+import THREE from "./three.js";
 import plyParser from "./plyParser.js";
+
 const {
     Vector3,
     Matrix3,
@@ -276,9 +278,9 @@ export default class {
         }
         return this.updateState;
     }
-    generatePipes(scene, resolution, viewSizes) {
-        this.axons.forEach((axon, i) => {
-            axon.generatePipes(scene, resolution, viewSizes, this.minAndMaxDiameterAxons);
+    generatePipes(scene, resolution, extended, viewSizes) {
+        this.axons.forEach(axon => {
+            axon.generatePipes(scene, resolution, extended, viewSizes, this.minAndMaxDiameterAxons);
         });
         return scene;
     }
@@ -294,13 +296,13 @@ export default class {
         const size = this.voxelSize - 2 * border;
         if (size > 0) scene.add(wireframeCube(size));
     }
-    drawAxons(scene, mode, viewSizes, resolution) {
+    drawAxons(scene, mode, viewSizes, resolution, extended) {
         switch (mode) {
             case "skeleton":
                 this.axons.forEach(axon => axon.generateSkeleton(scene, viewSizes, this.minAndMaxDiameterAxons));
                 break;
             case "pipes":
-                this.generatePipes(scene, resolution, viewSizes);
+                this.generatePipes(scene, resolution, extended, viewSizes);
                 break;
             case "ellipsoids": {
                 this.axons.forEach(axon => axon.draw(scene, viewSizes, this.minAndMaxDiameterAxons));
@@ -332,12 +334,12 @@ export default class {
                   }
                 : undefined;
     }
-    draw(voxelMode, axonMode, cellMode, resolution, border, viewSizes) {
+    draw(voxelMode, axonMode, cellMode, resolution, extended, border, viewSizes) {
         const scene = new Scene();
         this.drawLight(scene);
         this.drawVoxels(scene, voxelMode, border);
         this.drawCells(scene, cellMode, viewSizes);
-        this.drawAxons(scene, axonMode, viewSizes, resolution);
+        this.drawAxons(scene, axonMode, viewSizes, resolution, extended);
         return scene;
     }
     point(camPos, cursorDir, viewSizes) {

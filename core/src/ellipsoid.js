@@ -1,20 +1,22 @@
-import THREE from "./three.js";
-import { v4 } from "uuid";
-import plyParser from "./plyParser.js";
 import {
-    mat3ToMat4,
-    randomDirection,
+    addMatrix3,
     collisionAxis,
     deform,
     extremum,
     hexColorToVector,
-    addMatrix3,
+    mat3ToMat4,
+    randomDirection,
     randomHexColor,
     valueToColor
 } from "./helperFunctions.js";
+
+import THREE from "./three.js";
+import plyParser from "./plyParser.js";
+import { v4 } from "uuid";
+
 const { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial, BufferGeometry } = THREE;
 
-export default class {
+class Ellipsoid {
     constructor(pos, radius, deformation, minDiameter, movement, color, generateMesh) {
         this.pos = pos.clone();
         this.radius = radius;
@@ -26,6 +28,19 @@ export default class {
         this.color = color || randomHexColor();
         this.axisCache = {};
         if (generateMesh) this.mesh = new Mesh(this.getGeometry(false), new MeshToonMaterial({ color: this.color }));
+    }
+    clone() {
+        const result = new Ellipsoid(
+            this.pos,
+            this.radius,
+            this.deformation,
+            this.minDiameter,
+            this.movement,
+            this.color,
+            !!this.mesh
+        );
+        result.shape = this.shape;
+        return result;
     }
     boundingBox(minDist) {
         const x = extremum(this.shape, new Vector3(1, 0, 0)).dot(new Vector3(1, 0, 0));
@@ -154,3 +169,5 @@ export default class {
         });
     }
 }
+
+export default Ellipsoid;

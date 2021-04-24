@@ -1,31 +1,32 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Vector3, PerspectiveCamera, WebGLRenderer } from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
-    Grid,
-    Paper,
-    makeStyles,
-    TextField,
     Button,
+    FormControl,
+    FormControlLabel,
+    Grid,
+    InputAdornment,
+    InputLabel,
     List,
     ListItem,
+    MenuItem,
+    Paper,
+    Select,
+    Switch,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableRow,
-    FormControl,
-    InputLabel,
-    InputAdornment,
-    Select,
-    MenuItem,
-    FormControlLabel,
-    Switch
+    TextField,
+    makeStyles
 } from "@material-ui/core";
-import download from "in-browser-download";
-import { Synthesizer } from "@axon-generator-toolbox/core";
-import { useWindowSize } from "@react-hook/window-size";
+import { PerspectiveCamera, Vector3, WebGLRenderer } from "three";
+import React, { useEffect, useRef, useState } from "react";
+
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import SizeScale from "./SizeScale";
+import { Synthesizer } from "@axon-generator-toolbox/core";
+import download from "in-browser-download";
+import { useWindowSize } from "@react-hook/window-size";
 
 const useStyles = makeStyles(theme => ({
     gridItem: {
@@ -596,6 +597,14 @@ export default () => {
                                                                     ? window.prompt("Resolution", resolution)
                                                                     : resolution;
                                                             if (!res) return;
+                                                            const extended =
+                                                                vm === "pipes"
+                                                                    ? window.prompt(
+                                                                          'Extended axons - "yes"/"no"',
+                                                                          "no"
+                                                                      ) === "yes"
+                                                                    : false;
+                                                            if (!res) return;
                                                             setViewModeAxon(vm);
                                                             setResolution(res);
                                                             setScene(
@@ -604,6 +613,7 @@ export default () => {
                                                                     vm,
                                                                     viewModeCell,
                                                                     Number(res),
+                                                                    extended,
                                                                     Number(border),
                                                                     viewSizes
                                                                 )

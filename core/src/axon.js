@@ -1,14 +1,15 @@
-import THREE from "./three.js";
-import Ellipsoid from "./ellipsoid.js";
-import plyParser from "./plyParser.js";
 import {
-    hexColorToVector,
-    applyColor,
     addMatrix3,
-    randomHexColor,
+    applyColor,
+    hexColorToVector,
     projectOntoCube,
+    randomHexColor,
     valueToColor
 } from "./helperFunctions.js";
+
+import Ellipsoid from "./ellipsoid.js";
+import THREE from "./three.js";
+import plyParser from "./plyParser.js";
 
 const {
     Vector3,
@@ -71,6 +72,97 @@ const getOverlap = (a, b, minDist, maxOverlap) => {
         return getOverlap(b, a, minDist, maxOverlap);
     }
     return Math.max(getOverlap(b.a, a, minDist, maxOverlap), getOverlap(b.b, a, minDist, maxOverlap));
+};
+
+const generatePipe = (ellipsoids, color, gFactor, resolution, viewSizes, minAndMaxDiameter) => {
+    const getSP = (pos, dir, i, scale) => {
+        const shape = ellipsoids[i].shape;
+        ellipsoids[i].shape = shape.clone().multiplyScalar(scale);
+        const sp = ellipsoids[i].getSurfacePoint(pos, dir);
+        ellipsoids[i].shape = shape;
+        return sp;
+    };
+    const d = ellipsoids[ellipsoids.length - 1].pos.clone().sub(ellipsoids[0].pos);
+    d.normalize();
+    const x = new Vector3(1, 0, 0);
+    const y = new Vector3(0, 1, 0);
+    const cx = d.clone().cross(x);
+    const cy = d.clone().cross(y);
+    const a = cx.length() > cy.length() ? cx : cy;
+    a.normalize();
+    const b = d.clone().cross(a).normalize();
+    const verts = ellipsoids.map((ellipsoid, i) => {
+        return new Array(resolution).fill(true).map((r, j) => {
+            const angle = (2 * Math.PI * j) / resolution;
+            const dir = a
+                .clone()
+                .multiplyScalar(Math.cos(angle))
+                .add(b.clone().multiplyScalar(Math.sin(angle)));
+            let sp = getSP(ellipsoid.pos, dir, i, gFactor);
+            let dist = sp.clone().sub(ellipsoid.pos).dot(dir);
+            for (let i2 = i + 1; i2 < ellipsoids.length; ++i2) {
+                let sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
+                if (!sp2) break;
+                let dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
+                if (dist2 < dist) continue;
+                sp = sp2;
+                dist = dist2;
+            }
+            for (let i2 = i - 1; i2 >= 0; --i2) {
+                let sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
+                if (!sp2) break;
+                let dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
+                if (dist2 < dist) continue;
+                sp = sp2;
+                dist = dist2;
+            }
+            return sp;
+        });
+    });
+    const geom = new Geometry();
+    geom.vertices = verts.flat();
+    geom.faces = verts
+        .slice(0, verts.length - 1)
+        .map((verti, i) => {
+            const c0 = viewSizes
+                ? valueToColor(
+                      ellipsoids[i].crossSectionDiameter(
+                          ellipsoids[Math.min(i + 1, ellipsoids.length - 1)].pos
+                              .clone()
+                              .sub(ellipsoids[Math.max(i - 1, 0)].pos)
+                      ),
+                      minAndMaxDiameter
+                  )
+                : hexColorToVector(color);
+            const c1 = viewSizes
+                ? valueToColor(
+                      ellipsoids[i + 1].crossSectionDiameter(
+                          ellipsoids[Math.min(i + 2, ellipsoids.length - 1)].pos
+                              .clone()
+                              .sub(ellipsoids[Math.max(i, 0)].pos)
+                      ),
+                      minAndMaxDiameter
+                  )
+                : hexColorToVector(color);
+            return verti.map((vertij, j) => {
+                const i00 = i * resolution + j;
+                const i01 = i * resolution + ((j + 1) % resolution);
+                const i10 = (i + 1) * resolution + j;
+                const i11 = (i + 1) * resolution + ((j + 1) % resolution);
+                const a = new Face3(i00, i01, i10);
+                const b = new Face3(i10, i01, i11);
+                a.vertexColors = [c0, c0, c1];
+                b.vertexColors = [c1, c0, c1];
+                return [a, b];
+            });
+        })
+        .flat()
+        .flat();
+    geom.computeVertexNormals();
+    return new Mesh(
+        new BufferGeometry().fromGeometry(geom),
+        new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
+    );
 };
 
 export default class {
@@ -198,119 +290,33 @@ export default class {
             return dist > distMax ? p : pMax;
         }, undefined);
     }
-    generatePipe(gFactor, resolution, closed, viewSizes, minAndMaxDiameter) {
-        const getSP = (pos, dir, i, scale) => {
-            const shape = this.ellipsoids[i].shape;
-            this.ellipsoids[i].shape = shape.clone().multiplyScalar(scale);
-            const sp = this.ellipsoids[i].getSurfacePoint(pos, dir);
-            this.ellipsoids[i].shape = shape;
-            return sp;
-        };
-        const d = this.ellipsoids[this.ellipsoids.length - 1].pos.clone().sub(this.ellipsoids[0].pos);
-        d.normalize();
-        const x = new Vector3(1, 0, 0);
-        const y = new Vector3(0, 1, 0);
-        const cx = d.clone().cross(x);
-        const cy = d.clone().cross(y);
-        const a = cx.length() > cy.length() ? cx : cy;
-        a.normalize();
-        const b = d.clone().cross(a).normalize();
-        const verts = this.ellipsoids.map((ellipsoid, i) => {
-            return new Array(resolution).fill(true).map((r, j) => {
-                const angle = (2 * Math.PI * j) / resolution;
-                const dir = a
-                    .clone()
-                    .multiplyScalar(Math.cos(angle))
-                    .add(b.clone().multiplyScalar(Math.sin(angle)));
-                let sp = getSP(ellipsoid.pos, dir, i, gFactor);
-                let dist = sp.clone().sub(ellipsoid.pos).dot(dir);
-                for (let i2 = i + 1; i2 < this.ellipsoids.length; ++i2) {
-                    let sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
-                    if (!sp2) break;
-                    let dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
-                    if (dist2 < dist) continue;
-                    sp = sp2;
-                    dist = dist2;
-                }
-                for (let i2 = i - 1; i2 >= 0; --i2) {
-                    let sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
-                    if (!sp2) break;
-                    let dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
-                    if (dist2 < dist) continue;
-                    sp = sp2;
-                    dist = dist2;
-                }
-                return sp;
-            });
-        });
-        const geom = new Geometry();
-        geom.vertices = verts.flat();
-        geom.faces = verts
-            .slice(0, verts.length - 1)
-            .map((verti, i) => {
-                const c0 = viewSizes
-                    ? valueToColor(
-                          this.ellipsoids[i].crossSectionDiameter(
-                              this.ellipsoids[Math.min(i + 1, this.ellipsoids.length - 1)].pos
-                                  .clone()
-                                  .sub(this.ellipsoids[Math.max(i - 1, 0)].pos)
-                          ),
-                          minAndMaxDiameter
-                      )
-                    : hexColorToVector(this.color);
-                const c1 = viewSizes
-                    ? valueToColor(
-                          this.ellipsoids[i + 1].crossSectionDiameter(
-                              this.ellipsoids[Math.min(i + 2, this.ellipsoids.length - 1)].pos
-                                  .clone()
-                                  .sub(this.ellipsoids[Math.max(i, 0)].pos)
-                          ),
-                          minAndMaxDiameter
-                      )
-                    : hexColorToVector(this.color);
-                return verti.map((vertij, j) => {
-                    const i00 = i * resolution + j;
-                    const i01 = i * resolution + ((j + 1) % resolution);
-                    const i10 = (i + 1) * resolution + j;
-                    const i11 = (i + 1) * resolution + ((j + 1) % resolution);
-                    const a = new Face3(i00, i01, i10);
-                    const b = new Face3(i10, i01, i11);
-                    a.vertexColors = [c0, c0, c1];
-                    b.vertexColors = [c1, c0, c1];
-                    return [a, b];
-                });
-            })
-            .flat()
-            .flat();
-        if (closed) {
-            const index1 = geom.vertices.length;
-            geom.vertices.push(this.ellipsoids[0].pos.clone());
-            const index2 = geom.vertices.length;
-            geom.vertices.push(this.ellipsoids[this.ellipsoids.length - 1].pos.clone());
-            verts[0].forEach((v, i) => {
-                geom.faces.push(
-                    new Face3(verts[0].length - 1 - i, verts[0].length - 1 - ((i + 1) % verts[0].length), index1)
-                );
-            });
-            verts[verts.length - 1].forEach((v, i) => {
-                geom.faces.push(
-                    new Face3(
-                        (verts.length - 1) * resolution + i,
-                        (verts.length - 1) * resolution + ((i + 1) % verts[verts.length - 1].length),
-                        index2
-                    )
-                );
-            });
+    generatePipe(gFactor, resolution, extended, viewSizes, minAndMaxDiameter) {
+        if (!extended)
+            return generatePipe(this.ellipsoids, this.color, gFactor, resolution, viewSizes, minAndMaxDiameter);
+        const firstPos = this.ellipsoids[0].pos;
+        const lastPos = this.ellipsoids[this.ellipsoids.length - 1].pos;
+        const d = lastPos.clone().sub(firstPos).normalize();
+        const n = new Vector3(1, 0, 0).cross(d).normalize();
+        const ellipsoids = [];
+        for (let i = this.ellipsoids.length - 1; i > 1; --i) {
+            const e = this.ellipsoids[i].clone();
+            e.pos.sub(firstPos).applyAxisAngle(n, Math.PI).add(firstPos);
+            ellipsoids.push(e);
         }
-        geom.computeVertexNormals();
-        return new Mesh(
-            new BufferGeometry().fromGeometry(geom),
-            new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
-        );
+        for (let i = 0; i < this.ellipsoids.length; ++i) {
+            const e = this.ellipsoids[i].clone();
+            ellipsoids.push(e);
+        }
+        for (let i = this.ellipsoids.length - 1; i > 1; --i) {
+            const e = this.ellipsoids[i].clone();
+            e.pos.sub(lastPos).applyAxisAngle(n, Math.PI).add(lastPos);
+            ellipsoids.push(e);
+        }
+        return generatePipe(ellipsoids, this.color, gFactor, resolution, viewSizes, minAndMaxDiameter);
     }
-    generatePipes(scene, resolution, viewSizes, minAndMaxDiameter) {
-        const outer = this.generatePipe(1, resolution, false, viewSizes, minAndMaxDiameter);
-        const inner = this.generatePipe(this.gFactor, resolution, false, viewSizes, minAndMaxDiameter);
+    generatePipes(scene, resolution, extended, viewSizes, minAndMaxDiameter) {
+        const outer = this.generatePipe(1, resolution, extended, viewSizes, minAndMaxDiameter);
+        const inner = this.generatePipe(this.gFactor, resolution, extended, viewSizes, minAndMaxDiameter);
         scene.add(outer);
         scene.add(inner);
         this.meshes = [outer, inner];
