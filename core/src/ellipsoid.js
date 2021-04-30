@@ -29,6 +29,11 @@ class Ellipsoid {
         this.axisCache = {};
         if (generateMesh) this.mesh = new Mesh(this.getGeometry(false), new MeshToonMaterial({ color: this.color }));
     }
+    dispose() {
+        if (!this.mesh) return;
+        this.mesh.geometry.dispose();
+        this.mesh.material.dispose();
+    }
     clone() {
         const result = new Ellipsoid(
             this.pos,
@@ -162,7 +167,7 @@ class Ellipsoid {
         return 2 * Math.sqrt(this.shape.determinant() / extremum(this.shape, axis).dot(axis));
     }
     toPLY(binary, simple) {
-        return plyParser(this.mesh.geometry, {
+        return plyParser([this.mesh.geometry], {
             binary: binary,
             includeColors: !simple,
             includeNormals: !simple

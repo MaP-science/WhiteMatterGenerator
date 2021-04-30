@@ -89,6 +89,10 @@ export default class {
         });
         this.computeMinAndMaxDiameter();
     }
+    dispose() {
+        this.axons.forEach(axon => axon.dispose());
+        this.cells.forEach(cell => cell.dispose());
+    }
     toJSON() {
         return {
             voxelSize: this.voxelSize,
@@ -105,17 +109,16 @@ export default class {
     }
     toPLY(binary, simple) {
         return plyParser(
-            BufferGeometryUtils.mergeBufferGeometries(
-                [
-                    this.axons.map(a => {
-                        console.log(a.gFactor);
-                        return a.meshes.filter((_, i) => i !== 1 || Number(a.gFactor) !== 1).map(mesh => mesh.geometry);
-                    }),
-                    this.cells.map(c => c.mesh.geometry)
-                ]
-                    .flat()
-                    .flat()
-            ),
+            [
+                this.axons.map(a => {
+                    console.log(a.gFactor);
+                    return a.meshes.filter((_, i) => i !== 1 || Number(a.gFactor) !== 1).map(mesh => mesh.geometry);
+                }),
+                this.cells.map(c => c.mesh.geometry)
+            ]
+                .flat()
+                .flat()
+                .map(geom => BufferGeometryUtils.mergeVertices(geom)),
             {
                 binary: binary,
                 includeColors: !simple,

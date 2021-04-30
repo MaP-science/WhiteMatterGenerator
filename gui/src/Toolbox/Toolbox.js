@@ -107,6 +107,7 @@ export default () => {
         return () => {
             window.clearInterval(t);
             mc.removeChild(ren.domElement);
+            ren.renderLists.dispose();
         };
     }, [mount, width, height]);
 
@@ -236,6 +237,7 @@ export default () => {
         const reader = new FileReader();
         reader.onload = event => {
             const data = JSON.parse(event.target.result);
+            if (synthesizer) synthesizer.dispose();
             const s = new Synthesizer(data);
             setVoxelSize(data.voxelSize);
             setBorder(data.border || 0);
@@ -257,7 +259,7 @@ export default () => {
         };
         reader.readAsText(inputFile);
         setInputFile(null);
-    }, [inputFile, viewModeVoxel, viewModeAxon, resolution, viewModeCell, border]);
+    }, [inputFile, viewModeVoxel, viewModeAxon, resolution, viewModeCell, border, synthesizer]);
 
     return (
         <>
@@ -317,6 +319,7 @@ export default () => {
                                         <Button
                                             variant="contained"
                                             onClick={() => {
+                                                if (synthesizer) synthesizer.dispose();
                                                 const s = new Synthesizer({
                                                     voxelSize: voxelSize,
                                                     ellipsoidDensity: ellipsoidDensity,
@@ -389,6 +392,7 @@ export default () => {
                                                         if (!value) return;
                                                         const data = synthesizer.toJSON();
                                                         data.ellipsoidDensity = value;
+                                                        if (synthesizer) synthesizer.dispose();
                                                         const s = new Synthesizer(data);
                                                         setSynthesizer(s);
                                                         setScene(

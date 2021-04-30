@@ -27,6 +27,8 @@ const {
     BufferAttribute
 } = THREE;
 
+import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
+
 const computeCollisionTree = (ellipsoids, minDist) => {
     if (ellipsoids.length === 1)
         return {
@@ -159,10 +161,14 @@ const generatePipe = (ellipsoids, color, gFactor, resolution, viewSizes, minAndM
         .flat()
         .flat();
     geom.computeVertexNormals();
-    return new Mesh(
-        new BufferGeometry().fromGeometry(geom),
+    const bg = new BufferGeometry().fromGeometry(geom);
+    const result = new Mesh(
+        BufferGeometryUtils.mergeVertices(bg),
         new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
     );
+    geom.dispose();
+    bg.dispose();
+    return result;
 };
 
 export default class {
@@ -182,6 +188,13 @@ export default class {
             new Ellipsoid(this.end, this.radius, deformation, minDiameter, 1, this.color, false)
         ];
         this.redistribute();
+    }
+    dispose() {
+        this.ellipsoids.forEach(e => e.dispose());
+        this.meshes.forEach(mesh => {
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+        });
     }
     keepInVoxel() {
         this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));
@@ -319,6 +332,10 @@ export default class {
         const inner = this.generatePipe(this.gFactor, resolution, extended, viewSizes, minAndMaxDiameter);
         scene.add(outer);
         scene.add(inner);
+        this.meshes.forEach(mesh => {
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+        });
         this.meshes = [outer, inner];
     }
     generateSkeleton(scene, viewSizes, minAndMaxDiameter) {
@@ -339,6 +356,10 @@ export default class {
             geometry.setAttribute("color", new BufferAttribute(new Float32Array(colors), 3));
         } else geometry = applyColor(geometry, this.color);
         const mesh = new Line(geometry, new LineBasicMaterial({ vertexColors: VertexColors, side: DoubleSide }));
+        this.meshes.forEach(mesh => {
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+        });
         this.meshes = [mesh];
         scene.add(mesh);
     }
@@ -376,7 +397,7 @@ export default class {
         };
     }
     toPLY(binary, simple, i) {
-        return plyParser(this.meshes[i].geometry, {
+        return plyParser([this.meshes[i].geometry], {
             binary: binary,
             includeColors: !simple,
             includeNormals: !simple
