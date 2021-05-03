@@ -60,6 +60,13 @@ const { argv } = require("yargs")
         type: "boolean",
         nargs: 1
     })
+    .option("x", {
+        alias: "extend_axons",
+        default: false,
+        describe: "PLY: Extended axons",
+        type: "boolean",
+        nargs: 1
+    })
     .option("e", {
         alias: "export_as",
         default: "single",
@@ -112,6 +119,7 @@ const exportPly = i => {
         resolution: argv.resolution,
         exportBinary: argv.binary,
         exportSimple: argv.simple_mesh,
+        extended: argv.extend_axons,
         multiple: multiple
     });
     if (multiple) ply.forEach(file => fs.writeFileSync(`${outputDirPly}/${file.name}`, file.data));

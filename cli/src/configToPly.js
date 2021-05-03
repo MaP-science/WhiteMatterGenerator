@@ -3,7 +3,7 @@ import arrayBufferToBuffer from "arraybuffer-to-buffer";
 
 const configToSinglePly = (config, options) => {
     const synthesizer = new Synthesizer(config);
-    synthesizer.draw("none", "pipes", "all", options.resolution, 0, false);
+    synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
     const result = synthesizer.toPLY(options.exportBinary, options.exportSimple);
     if (options.exportBinary) return arrayBufferToBuffer(result);
     return result;
@@ -11,7 +11,7 @@ const configToSinglePly = (config, options) => {
 
 const configToMultiplePly = (config, options) => {
     const synthesizer = new Synthesizer(config);
-    synthesizer.draw("none", "pipes", "all", options.resolution, 0, false);
+    synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
 
     const result = [];
 
