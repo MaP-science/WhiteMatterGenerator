@@ -110,10 +110,9 @@ export default class {
     toPLY(binary, simple) {
         return plyParser(
             [
-                this.axons.map(a => {
-                    console.log(a.gFactor);
-                    return a.meshes.filter((_, i) => i !== 1 || Number(a.gFactor) !== 1).map(mesh => mesh.geometry);
-                }),
+                this.axons.map(a =>
+                    a.meshes.filter((_, i) => i !== 1 || Number(a.gFactor) !== 1).map(mesh => mesh.geometry)
+                ),
                 this.cells.map(c => c.mesh.geometry)
             ]
                 .flat()
