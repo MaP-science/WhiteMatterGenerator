@@ -133,7 +133,7 @@ const exportPly = i => {
     else fs.writeFileSync(`${outputDirPly}/axons.ply`, ply);
 };
 
-exportPly(0);
+if (argv.iterations === 0) exportPly(0);
 
 for (let i = 0; i < argv.iterations; ) {
     do synthesizer.update(growSpeed, contractSpeed, 0.01, 0.0001, 0);
@@ -141,7 +141,7 @@ for (let i = 0; i < argv.iterations; ) {
     const [vfa, vfc] = synthesizer.updateState.volumeFraction;
     const vf = vfa + vfc;
     ++i;
-    if (i % argv.o === 0) {
+    if (i % argv.outputInterval === 0 || i === argv.iterations) {
         fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(getConfig(), null, 4));
         exportPly(i);
     }
