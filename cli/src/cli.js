@@ -11,6 +11,13 @@ const { argv } = require("yargs")
         type: "string",
         nargs: 1
     })
+    .option("d", {
+        alias: "destination",
+        describe: "Output folder",
+        default: "./output",
+        type: "string",
+        nargs: 1
+    })
     .option("i", {
         alias: "iterations",
         default: 10,
@@ -87,7 +94,7 @@ const border = data.border;
 
 const synthesizer = new Synthesizer(data);
 
-const outputDir = argv.file.substring(0, argv.file.lastIndexOf("/")) + "/output";
+const outputDir = argv.destination;
 
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
