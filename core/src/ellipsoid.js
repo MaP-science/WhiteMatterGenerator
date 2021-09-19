@@ -47,22 +47,39 @@ class Ellipsoid {
         result.shape = this.shape;
         return result;
     }
-    boundingBox(minDist) {
+    boundingBoxD(minDist) {
         const x = extremum(this.shape, new Vector3(1, 0, 0)).dot(new Vector3(1, 0, 0));
         const y = extremum(this.shape, new Vector3(0, 1, 0)).dot(new Vector3(0, 1, 0));
         const z = extremum(this.shape, new Vector3(0, 0, 1)).dot(new Vector3(0, 0, 1));
-        const d = new Vector3(x + minDist / 2, y + minDist / 2, z + minDist / 2);
+        return new Vector3(x + minDist / 2, y + minDist / 2, z + minDist / 2);
+    }
+    boundingBox(minDist) {
+        const d = this.boundingBoxD(minDist);
         return new Box3(this.pos.clone().sub(d), this.pos.clone().add(d));
     }
     containsPoint(p) {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
     }
-    keepInVoxel(voxelSize) {
-        this.pos.fromArray(
-            this.pos
-                .toArray()
-                .map((v, i) => Math.min(Math.max(v, -voxelSize.getComponent(i) / 2), voxelSize.getComponent(i) / 2))
-        );
+    keepInVoxel(voxelSize, minDist, entireCell) {
+        if (entireCell) {
+            const bb = new Vector3().fromArray(
+                this.boundingBoxD(minDist)
+                    .toArray()
+                    .map(v => v + minDist / 2)
+            );
+            this.pos.fromArray(
+                this.pos.toArray().map((v, i) => {
+                    const s = voxelSize.getComponent(i) / 2 - bb.getComponent(i);
+                    return Math.min(Math.max(v, -s), s);
+                })
+            );
+        } else {
+            this.pos.fromArray(
+                this.pos
+                    .toArray()
+                    .map((v, i) => Math.min(Math.max(v, -voxelSize.getComponent(i) / 2), voxelSize.getComponent(i) / 2))
+            );
+        }
     }
     collision(ellipsoid, minDist, maxOverlap) {
         const d = ellipsoid.pos.clone().sub(this.pos);

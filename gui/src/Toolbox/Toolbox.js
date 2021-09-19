@@ -337,7 +337,7 @@ export default () => {
                                                     mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter
                                                 });
                                                 s.addAxonsRandomly(Number(axonCount), gFactor);
-                                                s.addCellsRandomly(Number(cellCount));
+                                                s.addCellsRandomly(Number(cellCount), minDist);
                                                 setSynthesizer(s);
                                                 setScene(
                                                     s.draw(

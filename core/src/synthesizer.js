@@ -125,8 +125,8 @@ export default class {
             }
         );
     }
-    keepInVoxel() {
-        this.axons.forEach(axon => axon.keepInVoxel());
+    keepInVoxel(minDist) {
+        this.axons.forEach(axon => axon.keepInVoxel(minDist));
     }
     collision(minDist, maxOverlap) {
         this.axons.forEach(a => a.computeCollisionTree(minDist));
@@ -168,7 +168,7 @@ export default class {
         this.computeMinAndMaxDiameter();
         console.log("Total number of axons: " + this.axons.length);
     }
-    addCellsRandomly(cellCount) {
+    addCellsRandomly(cellCount, minDist) {
         for (let i = 0; i < cellCount; ++i) {
             const p = randomPosition().multiply(this.voxelSize);
             const r = 2.5 + Math.random() * 7;
@@ -194,7 +194,7 @@ export default class {
                 });
             });
             mo = 0;
-            this.cells.forEach(a => a.keepInVoxel(this.voxelSize));
+            this.cells.forEach(c => c.keepInVoxel(this.voxelSize, minDist, true));
             this.cells.forEach((a, i) => {
                 this.cells.forEach((b, j) => {
                     if (i >= j) return;
@@ -250,7 +250,7 @@ export default class {
                 this.updateState = { name: "keepInVoxel", progress: 0 };
                 break;
             case "keepInVoxel":
-                this.keepInVoxel();
+                this.keepInVoxel(minDist);
                 this.updateState.name = "collision";
                 break;
             case "collision":

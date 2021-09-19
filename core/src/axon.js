@@ -196,9 +196,16 @@ export default class {
             mesh.material.dispose();
         });
     }
-    keepInVoxel() {
-        this.ellipsoids.forEach(ellipsoid => ellipsoid.keepInVoxel(this.voxelSize));
-        [this.ellipsoids[0], this.ellipsoids[this.ellipsoids.length - 1]].forEach(ellipsoid => {
+    keepInVoxel(minDist) {
+        const a = this.ellipsoids[0];
+        const b = this.ellipsoids[this.ellipsoids.length - 1];
+        this.ellipsoids.slice(1, this.ellipsoids.length - 1).forEach(ellipsoid => {
+            const axisLengthA = ellipsoid.getOverlap(a, minDist, 0);
+            const axisLengthB = ellipsoid.getOverlap(b, minDist, 0);
+            const entireCell = axisLengthA <= 0 && axisLengthB <= 0;
+            ellipsoid.keepInVoxel(this.voxelSize, minDist, entireCell);
+        });
+        [a, b].forEach(ellipsoid => {
             const max = Math.max(...ellipsoid.pos.toArray().map(Math.abs));
             ellipsoid.pos.fromArray(
                 ellipsoid.pos
