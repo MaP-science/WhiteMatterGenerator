@@ -201,7 +201,11 @@ export default class {
         [this.ellipsoids[0], this.ellipsoids[this.ellipsoids.length - 1]].forEach(ellipsoid => {
             const max = Math.max(...ellipsoid.pos.toArray().map(Math.abs));
             ellipsoid.pos.fromArray(
-                ellipsoid.pos.toArray().map(v => (Math.abs(v) === max ? (v = Math.sign(v) * (this.voxelSize / 2)) : v))
+                ellipsoid.pos
+                    .toArray()
+                    .map((v, i) =>
+                        Math.abs(v) === max ? (v = Math.sign(v) * (this.voxelSize.getComponent(i) / 2)) : v
+                    )
             );
         });
     }

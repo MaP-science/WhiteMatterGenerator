@@ -26,13 +26,13 @@ const {
 
 const wireframeCube = size =>
     new LineSegments(
-        new EdgesGeometry(new BoxGeometry(size, size, size)),
+        new EdgesGeometry(new BoxGeometry(size.x, size.y, size.z)),
         new LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
     );
 
 export default class {
     constructor(config) {
-        this.voxelSize = Number(config.voxelSize);
+        this.voxelSize = config.voxelSize;
         this.ellipsoidDensity = Number(config.ellipsoidDensity);
         this.deformation = new Mapping(config.mapFromDiameterToDeformationFactor);
         this.minDiameter = new Mapping(config.mapFromMaxDiameterToMinDiameter);
@@ -95,13 +95,13 @@ export default class {
     }
     toJSON() {
         return {
-            voxelSize: this.voxelSize,
+            voxelSize: this.voxelSize.toArray(),
             ellipsoidDensity: this.ellipsoidDensity,
             mapFromDiameterToDeformationFactor: this.deformation.toJSON(),
             mapFromMaxDiameterToMinDiameter: this.minDiameter.toJSON(),
             axons: this.axons.map(axon => axon.toJSON()),
             cells: this.cells.map(cell => ({
-                position: [cell.pos.x, cell.pos.y, cell.pos.z],
+                position: cell.pos.toArray(),
                 shape: cell.shape.elements,
                 color: cell.color
             }))
@@ -157,7 +157,7 @@ export default class {
         for (let i = 0; i < axonCount; ++i)
             this.axons.push(
                 new Axon(
-                    randomPosition().multiplyScalar(this.voxelSize),
+                    randomPosition().multiply(this.voxelSize),
                     randomPosition(),
                     0.1 + Math.random() * 10,
                     undefined,
@@ -170,7 +170,7 @@ export default class {
     }
     addCellsRandomly(cellCount) {
         for (let i = 0; i < cellCount; ++i) {
-            const p = randomPosition().multiplyScalar(this.voxelSize);
+            const p = randomPosition().multiply(this.voxelSize);
             const r = 2.5 + Math.random() * 7;
             this.cells.push(
                 new Ellipsoid(
@@ -219,7 +219,7 @@ export default class {
                     const p = new Vector3(i + 0.5, j + 0.5, k + 0.5)
                         .divideScalar(n)
                         .sub(new Vector3(0.5, 0.5, 0.5))
-                        .multiplyScalar(this.voxelSize - 2 * border);
+                        .multiply(new Vector3().fromArray(this.voxelSize.toArray().map(v => v - 2 * border)));
                     let inside = false;
                     this.axons.forEach(axon => {
                         if (axon.collisionTree.containsPoint(p)) inside = true;
@@ -295,7 +295,7 @@ export default class {
     drawVoxels(scene, mode, border) {
         if (mode === "none") return;
         scene.add(wireframeCube(this.voxelSize));
-        const size = this.voxelSize - 2 * border;
+        const size = new Vector3().fromArray(this.voxelSize.toArray().map(v => v - 2 * border));
         if (size > 0) scene.add(wireframeCube(size));
     }
     drawAxons(scene, mode, viewSizes, resolution, extended) {

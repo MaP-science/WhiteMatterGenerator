@@ -58,7 +58,11 @@ class Ellipsoid {
         return p.clone().sub(this.pos).applyMatrix3(new Matrix3().getInverse(this.shape)).length() < 1;
     }
     keepInVoxel(voxelSize) {
-        this.pos.fromArray(this.pos.toArray().map(v => Math.min(Math.max(v, -voxelSize / 2), voxelSize / 2)));
+        this.pos.fromArray(
+            this.pos
+                .toArray()
+                .map((v, i) => Math.min(Math.max(v, -voxelSize.getComponent(i) / 2), voxelSize.getComponent(i) / 2))
+        );
     }
     collision(ellipsoid, minDist, maxOverlap) {
         const d = ellipsoid.pos.clone().sub(this.pos);
