@@ -56,7 +56,7 @@ export default () => {
     const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
-    const [voxelSize, setVoxelSize] = useState(new Vector3(100, 100, 100));
+    const [voxelSize, setVoxelSize] = useState([100, 100, 100]);
     const [axonCount, setAxonCount] = useState(50);
     const [ellipsoidDensity, setEllipsoidDensity] = useState(5);
     const [cellCount, setCellCount] = useState(0);
@@ -238,8 +238,8 @@ export default () => {
         reader.onload = event => {
             const data = JSON.parse(event.target.result);
             data.voxelSize = isNaN(Number(data.voxelSize))
-                ? new Vector3(data.voxelSize)
-                : new Vector3(data.voxelSize, data.voxelSize, data.voxelSize);
+                ? data.voxelSize
+                : [data.voxelSize, data.voxelSize, data.voxelSize];
             if (synthesizer) synthesizer.dispose();
             const s = new Synthesizer(data);
             setVoxelSize(data.voxelSize);
@@ -287,11 +287,11 @@ export default () => {
                                                 InputProps={{
                                                     endAdornment: <InputAdornment position="start">µm</InputAdornment>
                                                 }}
-                                                value={voxelSize.getComponent(i)}
+                                                value={voxelSize[i]}
                                                 onChange={e => {
-                                                    const result = voxelSize.toArray();
+                                                    const result = [...voxelSize];
                                                     result[i] = Number(e.target.value);
-                                                    setVoxelSize(new Vector3().fromArray(result));
+                                                    setVoxelSize(result);
                                                 }}
                                             />
                                         ))}
