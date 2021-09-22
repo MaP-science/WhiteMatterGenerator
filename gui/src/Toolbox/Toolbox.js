@@ -295,6 +295,8 @@ export default () => {
                                                 }}
                                             />
                                         ))}
+                                    </ListItem>
+                                    <ListItem>
                                         <TextField
                                             type="number"
                                             label="Number of axons"
