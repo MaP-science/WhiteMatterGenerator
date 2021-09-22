@@ -65,7 +65,7 @@ class Ellipsoid {
             const bb = new Vector3().fromArray(
                 this.boundingBoxD(minDist)
                     .toArray()
-                    .map(v => v + minDist / 2)
+                    .map(v => v + minDist)
             );
             this.pos.fromArray(
                 this.pos.toArray().map((v, i) => {

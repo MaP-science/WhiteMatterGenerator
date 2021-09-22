@@ -206,12 +206,16 @@ export default class {
             ellipsoid.keepInVoxel(this.voxelSize, minDist, entireCell);
         });
         [a, b].forEach(ellipsoid => {
-            const max = Math.max(...ellipsoid.pos.toArray().map(Math.abs));
+            const min = Math.min(
+                ...ellipsoid.pos.toArray().map((v, i) => this.voxelSize.getComponent(i) / 2 - Math.abs(v))
+            );
             ellipsoid.pos.fromArray(
                 ellipsoid.pos
                     .toArray()
                     .map((v, i) =>
-                        Math.abs(v) === max ? (v = Math.sign(v) * (this.voxelSize.getComponent(i) / 2)) : v
+                        this.voxelSize.getComponent(i) / 2 - Math.abs(v) === min
+                            ? (v = Math.sign(v) * (this.voxelSize.getComponent(i) / 2))
+                            : v
                     )
             );
         });
