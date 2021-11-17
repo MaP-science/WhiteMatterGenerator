@@ -32,7 +32,10 @@ const wireframeCube = size =>
 
 export default class {
     constructor(config) {
-        this.voxelSize = new Vector3().fromArray(config.voxelSize);
+        this.voxelSize =
+            typeof config.voxelSize === "number"
+                ? new Vector3(config.voxelSize, config.voxelSize, config.voxelSize)
+                : new Vector3().fromArray(config.voxelSize);
         this.ellipsoidDensity = Number(config.ellipsoidDensity);
         this.deformation = new Mapping(config.mapFromDiameterToDeformationFactor);
         this.minDiameter = new Mapping(config.mapFromMaxDiameterToMinDiameter);
