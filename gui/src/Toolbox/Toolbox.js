@@ -189,6 +189,7 @@ export default () => {
                     viewModeAxon,
                     viewModeCell,
                     Number(resolution),
+                    false,
                     Number(border),
                     viewSizes
                 )
@@ -253,7 +254,15 @@ export default () => {
             setCellCount(data.cells.length);
             setSynthesizer(s);
             setScene(
-                s.draw(viewModeVoxel, viewModeAxon, viewModeCell, Number(resolution), Number(data.border), viewSizes)
+                s.draw(
+                    viewModeVoxel,
+                    viewModeAxon,
+                    viewModeCell,
+                    Number(resolution),
+                    false,
+                    Number(data.border),
+                    viewSizes
+                )
             );
             setUpdateState(s.updateState);
             setVolumeFraction(0);
@@ -347,6 +356,7 @@ export default () => {
                                                         viewModeAxon,
                                                         viewModeCell,
                                                         Number(resolution),
+                                                        false,
                                                         Number(border),
                                                         viewSizes
                                                     )
@@ -413,6 +423,7 @@ export default () => {
                                                                 viewModeAxon,
                                                                 viewModeCell,
                                                                 Number(resolution),
+                                                                false,
                                                                 Number(border),
                                                                 viewSizes
                                                             )
@@ -524,6 +535,7 @@ export default () => {
                                                             viewModeAxon,
                                                             viewModeCell,
                                                             Number(resolution),
+                                                            false,
                                                             Number(b),
                                                             viewSizes
                                                         )
@@ -593,6 +605,7 @@ export default () => {
                                                                     viewModeAxon,
                                                                     viewModeCell,
                                                                     Number(resolution),
+                                                                    false,
                                                                     Number(border),
                                                                     viewSizes
                                                                 )
@@ -654,6 +667,7 @@ export default () => {
                                                                     viewModeAxon,
                                                                     vm,
                                                                     Number(resolution),
+                                                                    false,
                                                                     Number(border),
                                                                     viewSizes
                                                                 )
@@ -678,6 +692,7 @@ export default () => {
                                                                         viewModeAxon,
                                                                         viewModeCell,
                                                                         Number(resolution),
+                                                                        false,
                                                                         Number(border),
                                                                         vs
                                                                     )

@@ -299,7 +299,7 @@ export default class {
         if (mode === "none") return;
         scene.add(wireframeCube(this.voxelSize));
         const size = new Vector3().fromArray(this.voxelSize.toArray().map(v => v - 2 * border));
-        if (size > 0) scene.add(wireframeCube(size));
+        if (border > 0) scene.add(wireframeCube(size));
     }
     drawAxons(scene, mode, viewSizes, resolution, extended) {
         switch (mode) {
