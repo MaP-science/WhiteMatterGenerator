@@ -564,15 +564,15 @@ export default () => {
                                                         </TableRow>
                                                         <TableRow>
                                                             <TableCell>
-                                                                {(volumeFraction || [0, 0])[0].toFixed(2)}
+                                                                {((volumeFraction || [0, 0])[0] || 0).toFixed(2)}
                                                             </TableCell>
                                                             <TableCell>
-                                                                {(volumeFraction || [0, 0])[1].toFixed(2)}
+                                                                {((volumeFraction || [0, 0])[1] || 0).toFixed(2)}
                                                             </TableCell>
                                                             <TableCell>
                                                                 {(
-                                                                    (volumeFraction || [0, 0])[0] +
-                                                                    (volumeFraction || [0, 0])[1]
+                                                                    ((volumeFraction || [0, 0])[0] || 0) +
+                                                                    ((volumeFraction || [0, 0])[1] || 0)
                                                                 ).toFixed(2)}
                                                             </TableCell>
                                                         </TableRow>
