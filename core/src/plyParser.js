@@ -38,7 +38,7 @@ export default (geoms, options) => {
         const output = new DataView(new ArrayBuffer(headerBin.length + vertexListLength + faceListLength));
         new Uint8Array(output.buffer).set(headerBin, 0);
         let offset = headerBin.length;
-        geoms.forEach((geom, j) => {
+        geoms.forEach(geom => {
             const g = getGeometry(geom);
             const colors = g.vertices.map(() => new Color(1, 1, 1));
             const normals = g.vertices.map(() => new Vector3(0, 0, 0));
@@ -68,7 +68,7 @@ export default (geoms, options) => {
             g.dispose();
         });
         let indexOffset = 0;
-        geoms.forEach((geom, j) => {
+        geoms.forEach(geom => {
             const g = getGeometry(geom);
             g.faces.forEach(f => {
                 output.setUint8(offset, 3);
