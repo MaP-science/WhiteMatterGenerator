@@ -1,5 +1,5 @@
 import { addMatrix3, randomPosition, shuffle } from "./helperFunctions.js";
-
+import random from "./random.js";
 import Axon from "./axon.js";
 import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
 import Ellipsoid from "./ellipsoid.js";
@@ -162,7 +162,7 @@ export default class {
                 new Axon(
                     randomPosition().multiply(this.voxelSize),
                     randomPosition(),
-                    0.1 + Math.random() * 10,
+                    0.1 + random() * 10,
                     undefined,
                     gFactor,
                     this
@@ -174,7 +174,7 @@ export default class {
     addCellsRandomly(cellCount, minDist) {
         for (let i = 0; i < cellCount; ++i) {
             const p = randomPosition().multiply(this.voxelSize);
-            const r = 2.5 + Math.random() * 7;
+            const r = 2.5 + random() * 7;
             this.cells.push(
                 new Ellipsoid(
                     p,

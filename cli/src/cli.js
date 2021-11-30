@@ -83,11 +83,13 @@ const { argv } = require("yargs")
     });
 
 import fs from "fs";
-import { Synthesizer } from "@axon-generator-toolbox/core/dist/index.js";
+import { Synthesizer, setRandomSeed } from "@axon-generator-toolbox/core/dist/index.js";
 import configToPly from "./configToPly";
 
 const data = JSON.parse(fs.readFileSync(argv.file));
 
+const randomSeed = data.randomSeed;
+setRandomSeed(randomSeed);
 const growSpeed = data.growSpeed;
 const contractSpeed = data.contractSpeed;
 const minimumDistance = data.minimumDistance;
@@ -115,6 +117,7 @@ log(
 );
 
 const getConfig = () => ({
+    randomSeed: randomSeed,
     growSpeed: growSpeed,
     contractSpeed: contractSpeed,
     minimumDistance: minimumDistance,

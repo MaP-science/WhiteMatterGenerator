@@ -6,7 +6,7 @@ import {
     randomHexColor,
     valueToColor
 } from "./helperFunctions.js";
-
+import random from "./random.js";
 import Ellipsoid from "./ellipsoid.js";
 import THREE from "./three.js";
 import plyParser from "./plyParser.js";
@@ -58,7 +58,7 @@ const collision = (a, b, minDist, maxOverlap) => {
     }
     const f1 = () => collision(b.a, a, minDist, maxOverlap);
     const f2 = () => collision(b.b, a, minDist, maxOverlap);
-    if (Math.random() < 0.5) {
+    if (random() < 0.5) {
         f1();
         f2();
     } else {

@@ -1,11 +1,12 @@
+import random from "./random.js";
 import THREE from "./three.js";
 import fmin from "fmin";
 const { Vector3, Matrix3, Matrix4, BufferAttribute, Color } = THREE;
 
-export const randomPosition = () => new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+export const randomPosition = () => new Vector3(random() - 0.5, random() - 0.5, random() - 0.5);
 
 export const randomDirection = () => {
-    const result = new Vector3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
+    const result = new Vector3(2 * random() - 1, 2 * random() - 1, 2 * random() - 1);
     if (result.length() < 0.00001) return randomDirection();
     return result.normalize();
 };
@@ -87,13 +88,13 @@ export const extremum = (shape, axis) => {
 
 export const shuffle = a => {
     for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
 };
 
-export const randomHexColor = () => "#" + Math.random().toString(16).substr(2, 6);
+export const randomHexColor = () => "#" + random().toString(16).substr(2, 6);
 
 export const hexColorToVector = color =>
     new Color(

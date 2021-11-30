@@ -24,7 +24,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import SizeScale from "./SizeScale";
-import { Synthesizer } from "@axon-generator-toolbox/core";
+import { Synthesizer, setRandomSeed } from "@axon-generator-toolbox/core";
 import download from "in-browser-download";
 import { useWindowSize } from "@react-hook/window-size";
 
@@ -56,6 +56,7 @@ export default () => {
     const [viewModeCell, setViewModeCell] = useState("all");
     const [volumeFraction, setVolumeFraction] = useState([]);
     const [volumeFractionTarget, setVolumeFractionTarget] = useState(null);
+    const [seed, setSeed] = useState(0);
     const [voxelSize, setVoxelSize] = useState([100, 100, 100]);
     const [axonCount, setAxonCount] = useState(50);
     const [ellipsoidDensity, setEllipsoidDensity] = useState(5);
@@ -243,6 +244,8 @@ export default () => {
                 : [data.voxelSize, data.voxelSize, data.voxelSize];
             if (synthesizer) synthesizer.dispose();
             const s = new Synthesizer(data);
+            setSeed(data.randomSeed || 0);
+            setRandomSeed(data.randomSeed || 0);
             setVoxelSize(data.voxelSize);
             setBorder(data.border || 0);
             setEllipsoidDensity(data.ellipsoidDensity);
@@ -366,6 +369,7 @@ export default () => {
                                                 setVolumeFraction(0);
                                                 setGrowCount(0);
                                                 setGrowCountTarget(0);
+                                                setRandomSeed(seed);
                                             }}>
                                             Initialize
                                         </Button>
@@ -377,6 +381,7 @@ export default () => {
                                                 variant="contained"
                                                 onClick={() => {
                                                     const config = {
+                                                        randomSeed: seed,
                                                         growSpeed: growSpeed,
                                                         contractSpeed: contractSpeed,
                                                         minimumDistance: minDist,
