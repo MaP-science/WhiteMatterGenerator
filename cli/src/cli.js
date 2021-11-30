@@ -90,6 +90,7 @@ const data = JSON.parse(fs.readFileSync(argv.file));
 
 const growSpeed = data.growSpeed;
 const contractSpeed = data.contractSpeed;
+const minimumDistance = data.minimumDistance;
 const border = data.border;
 
 const synthesizer = new Synthesizer(data);
@@ -114,6 +115,7 @@ log(
 const getConfig = () => ({
     growSpeed: growSpeed,
     contractSpeed: contractSpeed,
+    minimumDistance: minimumDistance,
     border: border,
     ...synthesizer.toJSON()
 });
@@ -136,7 +138,7 @@ const exportPly = i => {
 if (argv.iterations === 0) exportPly(0);
 
 for (let i = 0; i < argv.iterations; ) {
-    do synthesizer.update(growSpeed, contractSpeed, 0.01, 0.0001, 0);
+    do synthesizer.update(growSpeed, contractSpeed, minimumDistance, 0.0001, border);
     while (synthesizer.updateState?.name !== "ready");
     const [vfa, vfc] = synthesizer.updateState.volumeFraction;
     const vf = vfa + vfc;

@@ -248,6 +248,7 @@ export default () => {
             setEllipsoidDensity(data.ellipsoidDensity);
             setGrowSpeed(data.growSpeed);
             setContractSpeed(data.contractSpeed);
+            setMinDist(data.minimumDistance || 0.07);
             setMapFromDiameterToDeformationFactor(data.mapFromDiameterToDeformationFactor);
             setMapFromMaxDiameterToMinDiameter(data.mapFromMaxDiameterToMinDiameter);
             setAxonCount(data.axons.length);
@@ -378,6 +379,7 @@ export default () => {
                                                     const config = {
                                                         growSpeed: growSpeed,
                                                         contractSpeed: contractSpeed,
+                                                        minimumDistance: minDist,
                                                         border: border,
                                                         ...synthesizer.toJSON()
                                                     };
