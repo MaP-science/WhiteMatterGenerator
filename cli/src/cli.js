@@ -34,8 +34,8 @@ const { argv } = require("yargs")
     })
     .option("v", {
         alias: "volumeFraction",
-        default: 100,
-        describe: "Stop simulation when this volume fraction has been reached (number between 0 and 100)",
+        default: 1,
+        describe: "Stop simulation when this volume fraction has been reached (number between 0 and 1)",
         type: "number",
         nargs: 1
     })
@@ -109,7 +109,9 @@ const log = s => {
 const colWidth = 20;
 
 log(
-    ["Iterations", "Axon volume (%)", "Cell volume (%)", "Total volume (%)"].map(s => s.padEnd(colWidth, " ")).join("")
+    ["Iterations", "Axon volume fraction", "Cell volume fraction", "Total volume fraction"]
+        .map(s => s.padEnd(colWidth, " "))
+        .join("")
 );
 
 const getConfig = () => ({
@@ -144,17 +146,12 @@ for (let i = 0; i < argv.iterations; ) {
     const vf = vfa + vfc;
     ++i;
     log(
-        [
-            `${i} / ${argv.iterations}`,
-            (100 * vfa).toFixed(2),
-            (100 * vfc).toFixed(2),
-            `${(100 * vf).toFixed(2)} / ${argv.volumeFraction}`
-        ]
+        [`${i} / ${argv.iterations}`, vfa.toFixed(2), vfc.toFixed(2), `${vf.toFixed(2)} / ${argv.volumeFraction}`]
             .map(s => s.padEnd(colWidth, " "))
             .join("")
     );
     let done = false;
-    if (vf >= argv.volumeFraction / 100) {
+    if (vf >= argv.volumeFraction) {
         log("Target volume fraction reached");
         done = true;
     }

@@ -178,7 +178,7 @@ export default () => {
         if (
             automaticGrowth &&
             updateState.volumeFraction &&
-            100 * (updateState.volumeFraction[0] + updateState.volumeFraction[1]) >= volumeFractionTarget
+            updateState.volumeFraction[0] + updateState.volumeFraction[1] >= volumeFractionTarget
         )
             return setAutomaticGrowth(false);
         if (JSON.stringify(updateState) !== JSON.stringify(synthesizer.updateState)) return;
@@ -467,7 +467,7 @@ export default () => {
                                                     onClick={() => {
                                                         if (automaticGrowth) return setAutomaticGrowth(false);
                                                         const target = window.prompt(
-                                                            "Specify total volume fraction target in %"
+                                                            "Specify total volume fraction target"
                                                         );
                                                         if (!target) return;
                                                         setVolumeFractionTarget(target);
@@ -484,8 +484,7 @@ export default () => {
                                                             onChange={e =>
                                                                 setVolumeFractionTarget(Number(e.target.value))
                                                             }
-                                                        />{" "}
-                                                        %
+                                                        />
                                                     </>
                                                 ) : (
                                                     <>
@@ -560,18 +559,16 @@ export default () => {
                                                         </TableRow>
                                                         <TableRow>
                                                             <TableCell>
-                                                                {(100 * (volumeFraction || [0, 0])[0]).toFixed(2)}%
+                                                                {(volumeFraction || [0, 0])[0].toFixed(2)}
                                                             </TableCell>
                                                             <TableCell>
-                                                                {(100 * (volumeFraction || [0, 0])[1]).toFixed(2)}%
+                                                                {(volumeFraction || [0, 0])[1].toFixed(2)}
                                                             </TableCell>
                                                             <TableCell>
                                                                 {(
-                                                                    100 *
-                                                                    ((volumeFraction || [0, 0])[0] +
-                                                                        (volumeFraction || [0, 0])[1])
+                                                                    (volumeFraction || [0, 0])[0] +
+                                                                    (volumeFraction || [0, 0])[1]
                                                                 ).toFixed(2)}
-                                                                %
                                                             </TableCell>
                                                         </TableRow>
                                                     </TableBody>

@@ -25,7 +25,7 @@ export default () => {
                 Config file
             </Button>
             <Typography>
-                Using this file and setting the volume fraction target to 80%, the following result is obtained:
+                Using this file and setting the volume fraction target to 0.8, the following result is obtained:
             </Typography>
             <img src={imgEllipsoids} className={classes.img} alt="ellipsoids" />
             <Typography>Switching to the pipe display mode the result is:</Typography>

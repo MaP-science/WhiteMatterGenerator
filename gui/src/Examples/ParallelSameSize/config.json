@@ -3,6 +3,7 @@
     "ellipsoidDensity": 5,
     "growSpeed": 0.05,
     "contractSpeed": 0.01,
+    "minimumDistance": 0.07,
     "mapFromDiameterToDeformationFactor": {
         "from": [
             0,
