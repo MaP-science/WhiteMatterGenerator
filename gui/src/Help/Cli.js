@@ -25,7 +25,8 @@ export default () => (
         <Code>nvm install --lts</Code>
         <p>Then you should be able to install the CLI by running the command:</p>
         <Code>
-            npm i -g https://axon-generator-toolbox:axon2020dtu@github.com/Peulicke/axon-generator-toolbox-cli.git
+            npm i -g
+            https://axon-generator-toolbox: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@github.com/Peulicke/axon-generator-toolbox-cli.git
         </Code>
         <p>Now, you can run the CLI using the command:</p>
         <Code>axon-generator-toolbox</Code>
