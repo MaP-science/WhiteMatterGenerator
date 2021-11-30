@@ -141,10 +141,6 @@ for (let i = 0; i < argv.iterations; ) {
     const [vfa, vfc] = synthesizer.updateState.volumeFraction;
     const vf = vfa + vfc;
     ++i;
-    if (i % argv.outputInterval === 0 || i === argv.iterations) {
-        fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(getConfig(), null, 4));
-        exportPly(i);
-    }
     log(
         [
             `${i} / ${argv.iterations}`,
@@ -155,12 +151,18 @@ for (let i = 0; i < argv.iterations; ) {
             .map(s => s.padEnd(colWidth, " "))
             .join("")
     );
+    let done = false;
     if (vf >= argv.volumeFraction / 100) {
         log("Target volume fraction reached");
-        break;
+        done = true;
     }
     if (i === argv.iterations) {
         log("Number of max iterations reached");
-        break;
+        done = true;
     }
+    if (i % argv.outputInterval === 0 || done) {
+        fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(getConfig(), null, 4));
+        exportPly(i);
+    }
+    if (done) break;
 }
