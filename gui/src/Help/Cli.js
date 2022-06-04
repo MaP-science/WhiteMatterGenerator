@@ -26,7 +26,7 @@ export default () => (
         <p>Then you should be able to install the CLI by running the command:</p>
         <Code>
             npm i -g
-            https://axon-generator-toolbox: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@github.com/Peulicke/axon-generator-toolbox-cli.git
+            https://axon-generator-toolbox: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@github.com/Peulicke/axon-generator-toolbox-cli.git
         </Code>
         <p>Now, you can run the CLI using the command:</p>
         <Code>axon-generator-toolbox</Code>
