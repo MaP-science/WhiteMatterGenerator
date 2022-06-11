@@ -146,10 +146,16 @@ class Ellipsoid {
         return r.clone().add(x).applyMatrix3(this.shape).add(this.pos);
     }
     grow(amount) {
-        this.shape = addMatrix3(
-            this.shape.multiplyScalar(1 - amount),
-            new Matrix3().multiplyScalar(this.radius * amount)
-        );
+        if (amount >= 0)
+            this.shape = addMatrix3(
+                this.shape.multiplyScalar(1 - amount),
+                new Matrix3().multiplyScalar(this.radius * amount)
+            );
+        else
+            this.shape = addMatrix3(
+                this.shape.multiplyScalar(1 + amount),
+                new Matrix3().multiplyScalar((-amount * this.minDiameter.map(this.radius * 2)) / 2)
+            );
         const w = 0.2;
         const avg = Math.cbrt(this.shape.determinant());
         this.shape = addMatrix3(this.shape.multiplyScalar(1 - w), new Matrix3().multiplyScalar(w * avg));
