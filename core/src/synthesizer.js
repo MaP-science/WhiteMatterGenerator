@@ -2,7 +2,7 @@ import { addMatrix3, randomPosition, shuffle } from "./helperFunctions.js";
 import random from "./random.js";
 import Axon from "./axon.js";
 import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
-import Ellipsoid from "./ellipsoid.js";
+import createEllipsoid from "./ellipsoid.js";
 import createMapping from "./mapping.js";
 import THREE from "./three.js";
 import plyParser from "./plyParser.js";
@@ -78,7 +78,7 @@ export default class {
         });
         (config.cells || []).forEach(c => {
             const shape = new Matrix3().set(...c.shape);
-            const cell = new Ellipsoid(
+            const cell = createEllipsoid(
                 new Vector3(...c.position),
                 Math.cbrt(shape.determinant()),
                 createMapping({ from: [0], to: [0] }),
@@ -176,7 +176,7 @@ export default class {
             const p = randomPosition().multiply(this.voxelSize);
             const r = 2.5 + random() * 7;
             this.cells.push(
-                new Ellipsoid(
+                createEllipsoid(
                     p,
                     r,
                     createMapping({ from: [0, 1], to: [0, 0] }),

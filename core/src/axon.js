@@ -7,7 +7,7 @@ import {
     valueToColor
 } from "./helperFunctions.js";
 import random from "./random.js";
-import Ellipsoid from "./ellipsoid.js";
+import createEllipsoid from "./ellipsoid.js";
 import THREE from "./three.js";
 import plyParser from "./plyParser.js";
 
@@ -184,8 +184,8 @@ export default class {
         this.color = color || randomHexColor();
         this.meshes = [];
         this.ellipsoids = [
-            new Ellipsoid(this.start, this.radius, deformation, minDiameter, 1, this.color, false),
-            new Ellipsoid(this.end, this.radius, deformation, minDiameter, 1, this.color, false)
+            createEllipsoid(this.start, this.radius, deformation, minDiameter, 1, this.color, false),
+            createEllipsoid(this.end, this.radius, deformation, minDiameter, 1, this.color, false)
         ];
         this.redistribute();
     }
@@ -279,7 +279,7 @@ export default class {
                     .clone()
                     .sub(this.ellipsoids[index + 1].pos)
                     .length();
-            const e = new Ellipsoid(
+            const e = createEllipsoid(
                 this.ellipsoids[index].pos
                     .clone()
                     .multiplyScalar(1 - w)
