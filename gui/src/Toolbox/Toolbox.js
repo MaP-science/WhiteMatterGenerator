@@ -24,7 +24,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import SizeScale from "./SizeScale";
-import { Synthesizer, setRandomSeed } from "@axon-generator-toolbox/core";
+import { createSynthesizer, setRandomSeed } from "@axon-generator-toolbox/core";
 import download from "in-browser-download";
 import { useWindowSize } from "@react-hook/window-size";
 
@@ -243,7 +243,7 @@ export default () => {
                 ? data.voxelSize
                 : [data.voxelSize, data.voxelSize, data.voxelSize];
             if (synthesizer) synthesizer.dispose();
-            const s = new Synthesizer(data);
+            const s = createSynthesizer(data);
             setSeed(data.randomSeed || 0);
             setRandomSeed(data.randomSeed || 0);
             setVoxelSize(data.voxelSize);
@@ -345,7 +345,7 @@ export default () => {
                                             variant="contained"
                                             onClick={() => {
                                                 if (synthesizer) synthesizer.dispose();
-                                                const s = new Synthesizer({
+                                                const s = createSynthesizer({
                                                     voxelSize: voxelSize,
                                                     ellipsoidDensity: ellipsoidDensity,
                                                     mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
@@ -422,7 +422,7 @@ export default () => {
                                                         const data = synthesizer.toJSON();
                                                         data.ellipsoidDensity = value;
                                                         if (synthesizer) synthesizer.dispose();
-                                                        const s = new Synthesizer(data);
+                                                        const s = createSynthesizer(data);
                                                         setSynthesizer(s);
                                                         setScene(
                                                             s.draw(

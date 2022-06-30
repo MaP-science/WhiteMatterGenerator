@@ -83,7 +83,7 @@ const { argv } = require("yargs")
     });
 
 import fs from "fs";
-import { Synthesizer, setRandomSeed } from "@axon-generator-toolbox/core/dist/index.js";
+import { createSynthesizer, setRandomSeed } from "@axon-generator-toolbox/core/dist/index.js";
 import configToPly from "./configToPly";
 
 const data = JSON.parse(fs.readFileSync(argv.file));
@@ -95,7 +95,7 @@ const contractSpeed = data.contractSpeed;
 const minimumDistance = data.minimumDistance;
 const border = data.border;
 
-const synthesizer = new Synthesizer(data);
+const synthesizer = createSynthesizer(data);
 
 const outputDir = argv.destination;
 
