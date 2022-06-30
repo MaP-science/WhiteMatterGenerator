@@ -1,9 +1,9 @@
 import { addMatrix3, randomPosition, shuffle } from "./helperFunctions.js";
 import random from "./random.js";
-import Axon from "./axon.js";
+import createAxon from "./axon.js";
 import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
-import Ellipsoid from "./ellipsoid.js";
-import Mapping from "./mapping.js";
+import createEllipsoid from "./ellipsoid.js";
+import createMapping from "./mapping.js";
 import THREE from "./three.js";
 import plyParser from "./plyParser.js";
 
@@ -37,15 +37,15 @@ const createSynthesizer = config => {
             ? new Vector3(config.voxelSize, config.voxelSize, config.voxelSize)
             : new Vector3().fromArray(config.voxelSize);
     synthesizer.ellipsoidDensity = Number(config.ellipsoidDensity);
-    synthesizer.deformation = new Mapping(config.mapFromDiameterToDeformationFactor);
-    synthesizer.minDiameter = new Mapping(config.mapFromMaxDiameterToMinDiameter);
+    synthesizer.deformation = createMapping(config.mapFromDiameterToDeformationFactor);
+    synthesizer.minDiameter = createMapping(config.mapFromMaxDiameterToMinDiameter);
     synthesizer.axons = [];
     synthesizer.cells = [];
     synthesizer.updateState = { name: "ready" };
     synthesizer.focus = null;
     (config.axons || []).forEach(axon => {
         synthesizer.axons.push(
-            new Axon(
+            createAxon(
                 new Vector3(...axon.position),
                 new Vector3(...axon.direction),
                 axon.maxDiameter / 2,
@@ -98,11 +98,11 @@ const createSynthesizer = config => {
 
     (config.cells || []).forEach(c => {
         const shape = new Matrix3().set(...c.shape);
-        const cell = new Ellipsoid(
+        const cell = createEllipsoid(
             new Vector3(...c.position),
             Math.cbrt(shape.determinant()),
-            new Mapping({ from: [0], to: [0] }),
-            new Mapping({ from: [0], to: [0] }),
+            createMapping({ from: [0], to: [0] }),
+            createMapping({ from: [0], to: [0] }),
             0,
             c.color,
             true
@@ -181,7 +181,7 @@ const createSynthesizer = config => {
     const addAxonsRandomly = (axonCount, gFactor) => {
         for (let i = 0; i < axonCount; ++i)
             synthesizer.axons.push(
-                new Axon(
+                createAxon(
                     randomPosition().multiply(synthesizer.voxelSize),
                     randomPosition(),
                     0.1 + random() * 10,
@@ -198,11 +198,11 @@ const createSynthesizer = config => {
             const p = randomPosition().multiply(synthesizer.voxelSize);
             const r = 2.5 + random() * 7;
             synthesizer.cells.push(
-                new Ellipsoid(
+                createEllipsoid(
                     p,
                     r,
-                    new Mapping({ from: [0, 1], to: [0, 0] }),
-                    new Mapping({ from: [0, 1], to: [0, 0.01] }),
+                    createMapping({ from: [0, 1], to: [0, 0] }),
+                    createMapping({ from: [0, 1], to: [0, 0.01] }),
                     1,
                     null,
                     true
@@ -229,7 +229,7 @@ const createSynthesizer = config => {
             synthesizer.cells.forEach(a => a.grow(-0.05));
         }
         synthesizer.cells.forEach(a => {
-            a.deformation = new Mapping({ from: [0], to: [0] });
+            a.deformation = createMapping({ from: [0], to: [0] });
             a.movement = 0;
         });
         computeMinAndMaxDiameter();
