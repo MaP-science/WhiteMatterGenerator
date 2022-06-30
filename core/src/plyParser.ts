@@ -1,9 +1,15 @@
-import THREE from "./three.js";
-const { Vector3, Color, Geometry } = THREE;
+import { Vector3, Color, Geometry, BufferGeometry } from "three";
 
-const getGeometry = geom => new Geometry().fromBufferGeometry(geom);
+const getGeometry = (geom: BufferGeometry) => new Geometry().fromBufferGeometry(geom);
 
-export default (geoms, options) => {
+type Options = {
+    binary: boolean;
+    littleEndian: boolean;
+    includeNormals: boolean;
+    includeColors: boolean;
+};
+
+export default (geoms: BufferGeometry[], options: Options) => {
     let verticesLength = 0;
     let facesLength = 0;
     for (let i = 0; i < geoms.length; ++i) {
@@ -61,7 +67,7 @@ export default (geoms, options) => {
                     });
                 if (options.includeColors)
                     colors[i].toArray().forEach(v => {
-                        output.setUint8(offset, Math.floor(v * 255), options.littleEndian);
+                        output.setUint8(offset, Math.floor(v * 255));
                         offset += 1;
                     });
             });
@@ -84,8 +90,8 @@ export default (geoms, options) => {
         return output.buffer;
     } else {
         let indexOffset = 0;
-        let vertexList = [];
-        let faceList = [];
+        let vertexList: string[][] = [];
+        let faceList: string[][] = [];
         geoms.forEach(geom => {
             const g = getGeometry(geom);
             const colors = g.vertices.map(() => new Color(1, 1, 1));
