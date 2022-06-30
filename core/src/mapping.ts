@@ -3,15 +3,17 @@ type Vec2 = {
     y: number;
 };
 
+export type MappingJSON = {
+    from: number[];
+    to: number[];
+};
+
 export type Mapping = {
     values: Vec2[];
     valuesInverse: Vec2[];
     map: (x: number) => number;
     mapInverse: (x: number) => number;
-    toJSON: () => {
-        from: number[];
-        to: number[];
-    };
+    toJSON: () => MappingJSON;
 };
 
 const map1 = (x: number, v1: Vec2, v2: Vec2) => v1.y + ((v2.y - v1.y) * (x - v1.x)) / (v2.x - v1.x);

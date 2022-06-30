@@ -10,37 +10,82 @@ import {
     DirectionalLight,
     MeshPhongMaterial,
     MeshToonMaterial,
-    VertexColors,
     Color,
-    DoubleSide
+    DoubleSide,
+    Geometry,
+    BufferGeometry
 } from "three";
 import { addMatrix3, randomPosition, shuffle } from "./helperFunctions";
 import random from "./random";
-import createAxon from "./axon";
+import createAxon, { Axon, AxonJSON } from "./axon";
 import { BufferGeometryUtils } from "./BufferGeometryUtils";
-import createEllipsoid from "./ellipsoid";
-import createMapping from "./mapping";
+import createEllipsoid, { Ellipsoid, CellJSON } from "./ellipsoid";
+import createMapping, { Mapping, MappingJSON } from "./mapping";
 import plyParser from "./plyParser";
 
-const wireframeCube = size =>
+const wireframeCube = (size: Vector3) =>
     new LineSegments(
         new EdgesGeometry(new BoxGeometry(size.x, size.y, size.z)),
         new LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
     );
 
-const createSynthesizer = config => {
-    const synthesizer = {};
-    synthesizer.voxelSize =
-        typeof config.voxelSize === "number"
-            ? new Vector3(config.voxelSize, config.voxelSize, config.voxelSize)
-            : new Vector3().fromArray(config.voxelSize);
-    synthesizer.ellipsoidDensity = Number(config.ellipsoidDensity);
-    synthesizer.deformation = createMapping(config.mapFromDiameterToDeformationFactor);
-    synthesizer.minDiameter = createMapping(config.mapFromMaxDiameterToMinDiameter);
-    synthesizer.axons = [];
-    synthesizer.cells = [];
-    synthesizer.updateState = { name: "ready" };
-    synthesizer.focus = null;
+type SynthesizerJSON = {
+    voxelSize: number[];
+    ellipsoidDensity: number;
+    mapFromDiameterToDeformationFactor: MappingJSON;
+    mapFromMaxDiameterToMinDiameter: MappingJSON;
+    axons: AxonJSON[];
+    cells: CellJSON[];
+};
+
+type UpdateState = {
+    name: string;
+    progress: number;
+    volumeFraction?: [number, number];
+};
+
+type Focus = {
+    type: string;
+    object: Axon | Ellipsoid | null;
+};
+
+const isAxon = (type: string, object: Axon | Ellipsoid | null): object is Axon => type === "axon";
+
+interface SynthesizerState {
+    voxelSize: Vector3;
+    ellipsoidDensity: number;
+    deformation: Mapping;
+    minDiameter: Mapping;
+    axons: Axon[];
+    cells: Ellipsoid[];
+    updateState: UpdateState;
+    focus: Focus;
+    minAndMaxDiameterAxons: { min: number; max: number };
+    minAndMaxDiameterCells: { min: number; max: number };
+}
+
+const createSynthesizer = (config: SynthesizerJSON) => {
+    const synthesizer: SynthesizerState = {
+        voxelSize:
+            typeof config.voxelSize === "number"
+                ? new Vector3(config.voxelSize, config.voxelSize, config.voxelSize)
+                : new Vector3().fromArray(config.voxelSize),
+        ellipsoidDensity: Number(config.ellipsoidDensity),
+        deformation: createMapping(config.mapFromDiameterToDeformationFactor),
+        minDiameter: createMapping(config.mapFromMaxDiameterToMinDiameter),
+        axons: [],
+        cells: [],
+        updateState: {
+            name: "ready",
+            progress: 0
+        },
+        focus: {
+            type: "",
+            object: null
+        },
+        minAndMaxDiameterAxons: { min: 0, max: 0 },
+        minAndMaxDiameterCells: { min: 0, max: 0 }
+    };
     (config.axons || []).forEach(axon => {
         synthesizer.axons.push(
             createAxon(
@@ -64,11 +109,11 @@ const createSynthesizer = config => {
                 .add(new Vector3(...axon.ellipsoids[index + 1].position).clone().multiplyScalar(w));
             e.shape = addMatrix3(
                 new Matrix3()
-                    .set(...axon.ellipsoids[index].shape)
+                    .fromArray(axon.ellipsoids[index].shape)
                     .clone()
                     .multiplyScalar(1 - w),
                 new Matrix3()
-                    .set(...axon.ellipsoids[index + 1].shape)
+                    .fromArray(axon.ellipsoids[index + 1].shape)
                     .clone()
                     .multiplyScalar(w)
             );
@@ -78,24 +123,18 @@ const createSynthesizer = config => {
     const computeMinAndMaxDiameter = () => {
         const dAxons = synthesizer.axons.map(a => a.getMinAndMaxDiameter());
         const dCells = synthesizer.cells.map(c => c.diameter());
-        synthesizer.minAndMaxDiameterAxons =
-            dAxons.length > 0
-                ? {
-                      min: Math.min(...dAxons.map(d => d.min)),
-                      max: Math.max(...dAxons.map(d => d.max))
-                  }
-                : undefined;
-        synthesizer.minAndMaxDiameterCells =
-            dCells.length > 0
-                ? {
-                      min: Math.min(...dCells),
-                      max: Math.max(...dCells)
-                  }
-                : undefined;
+        synthesizer.minAndMaxDiameterAxons = {
+            min: Math.min(...dAxons.map(d => d.min)),
+            max: Math.max(...dAxons.map(d => d.max))
+        };
+        synthesizer.minAndMaxDiameterCells = {
+            min: Math.min(...dCells),
+            max: Math.max(...dCells)
+        };
     };
 
     (config.cells || []).forEach(c => {
-        const shape = new Matrix3().set(...c.shape);
+        const shape = new Matrix3().fromArray(c.shape);
         const cell = createEllipsoid(
             new Vector3(...c.position),
             Math.cbrt(shape.determinant()),
@@ -128,30 +167,32 @@ const createSynthesizer = config => {
             }))
         };
     };
-    const toPLY = (binary, simple) => {
+    const toPLY = (binary: boolean, simple: boolean) => {
         return plyParser(
             [
                 synthesizer.axons.map(a =>
                     a.meshes.filter((_, i) => i !== 1 || Number(a.gFactor) !== 1).map(mesh => mesh.geometry)
                 ),
-                synthesizer.cells.map(c => c.mesh.geometry)
+                synthesizer.cells.map(c => c.mesh?.geometry || new BufferGeometry())
             ]
                 .flat()
                 .flat()
+                .map(geom => (geom instanceof Geometry ? new BufferGeometry().fromGeometry(geom) : geom))
                 .map(geom => BufferGeometryUtils.mergeVertices(geom)),
             {
                 binary: binary,
                 includeColors: !simple,
-                includeNormals: !simple
+                includeNormals: !simple,
+                littleEndian: false
             }
         );
     };
-    const keepInVoxel = minDist => {
+    const keepInVoxel = (minDist: number) => {
         synthesizer.axons.forEach(axon => axon.keepInVoxel(minDist));
     };
-    const collision = (minDist, maxOverlap) => {
+    const collision = (minDist: number, maxOverlap: number) => {
         synthesizer.axons.forEach(a => a.computeCollisionTree(minDist));
-        const pairs = [];
+        const pairs: Axon[][] = [];
         synthesizer.axons.forEach((a, i) => {
             synthesizer.axons.forEach((b, j) => {
                 if (i < j) pairs.push(shuffle([a, b]));
@@ -165,7 +206,7 @@ const createSynthesizer = config => {
             )
         );
     };
-    const getOverlap = (minDist, maxOverlap) => {
+    const getOverlap = (minDist: number, maxOverlap: number) => {
         let result = maxOverlap;
         synthesizer.axons.forEach(a => a.computeCollisionTree(minDist));
         synthesizer.axons.forEach((a, i) => {
@@ -176,7 +217,7 @@ const createSynthesizer = config => {
         });
         return result;
     };
-    const addAxonsRandomly = (axonCount, gFactor) => {
+    const addAxonsRandomly = (axonCount: number, gFactor: number) => {
         for (let i = 0; i < axonCount; ++i)
             synthesizer.axons.push(
                 createAxon(
@@ -191,7 +232,7 @@ const createSynthesizer = config => {
         computeMinAndMaxDiameter();
         console.log("Total number of axons: " + synthesizer.axons.length);
     };
-    const addCellsRandomly = (cellCount, minDist) => {
+    const addCellsRandomly = (cellCount: number, minDist: number) => {
         for (let i = 0; i < cellCount; ++i) {
             const p = randomPosition().multiply(synthesizer.voxelSize);
             const r = 2.5 + random() * 7;
@@ -202,7 +243,7 @@ const createSynthesizer = config => {
                     createMapping({ from: [0, 1], to: [0, 0] }),
                     createMapping({ from: [0, 1], to: [0, 0.01] }),
                     1,
-                    null,
+                    undefined,
                     true
                 )
             );
@@ -232,7 +273,7 @@ const createSynthesizer = config => {
         });
         computeMinAndMaxDiameter();
     };
-    const volumeFraction = (n, border) => {
+    const volumeFraction = (n: number, border: number) => {
         synthesizer.axons.forEach(axon => axon.computeCollisionTree(0));
         let axonCount = 0;
         let cellCount = 0;
@@ -258,14 +299,14 @@ const createSynthesizer = config => {
         }
         return [axonCount / (n * n * n), cellCount / (n * n * n)];
     };
-    const update = (growSpeed, contractSpeed, minDist, maxOverlap, border) => {
+    const update = (growSpeed: number, contractSpeed: number, minDist: number, maxOverlap: number, border: number) => {
         switch (synthesizer.updateState.name) {
             case "ready":
-                synthesizer.updateState = { name: "grow" };
+                synthesizer.updateState = { name: "grow", progress: 0 };
                 break;
             case "grow":
                 synthesizer.axons.forEach(axon => axon.grow(growSpeed));
-                synthesizer.updateState = { name: "contract" };
+                synthesizer.updateState = { name: "contract", progress: 0 };
                 break;
             case "contract":
                 for (let i = 0; i < contractSpeed; ++i)
@@ -294,35 +335,35 @@ const createSynthesizer = config => {
             }
             case "volumeFraction": {
                 const [avf, cvf] = volumeFraction(20, border);
-                synthesizer.updateState = { name: "ready", volumeFraction: [avf, cvf] };
+                synthesizer.updateState = { name: "ready", progress: 0, volumeFraction: [avf, cvf] };
                 computeMinAndMaxDiameter();
                 break;
             }
             default:
-                synthesizer.updateState = { name: "ready" };
+                synthesizer.updateState = { name: "ready", progress: 0 };
                 break;
         }
         return synthesizer.updateState;
     };
-    const generatePipes = (scene, resolution, extended, viewSizes) => {
+    const generatePipes = (scene: Scene, resolution: number, extended: boolean, viewSizes: boolean) => {
         synthesizer.axons.forEach(axon => {
             axon.generatePipes(scene, resolution, extended, viewSizes, synthesizer.minAndMaxDiameterAxons);
         });
         return scene;
     };
-    const drawLight = scene => {
+    const drawLight = (scene: Scene) => {
         scene.add(new AmbientLight(0xffffff, 0.4));
         const light = new DirectionalLight(0xffffff, 0.4);
         light.position.set(0, 1, 0);
         scene.add(light);
     };
-    const drawVoxels = (scene, mode, border) => {
+    const drawVoxels = (scene: Scene, mode: string, border: number) => {
         if (mode === "none") return;
         scene.add(wireframeCube(synthesizer.voxelSize));
         const size = new Vector3().fromArray(synthesizer.voxelSize.toArray().map(v => v - 2 * border));
         if (border > 0) scene.add(wireframeCube(size));
     };
-    const drawAxons = (scene, mode, viewSizes, resolution, extended) => {
+    const drawAxons = (scene: Scene, mode: string, viewSizes: boolean, resolution: number, extended: boolean) => {
         switch (mode) {
             case "skeleton":
                 synthesizer.axons.forEach(axon =>
@@ -340,20 +381,31 @@ const createSynthesizer = config => {
                 break;
         }
     };
-    const drawCells = (scene, mode, viewSizes) => {
+    const drawCells = (scene: Scene, mode: string) => {
         if (mode === "none") return;
-        synthesizer.cells.forEach(cell => cell.draw(scene, true, viewSizes, synthesizer.minAndMaxDiameterCells));
+        synthesizer.cells.forEach(cell => cell.draw(scene, true, synthesizer.minAndMaxDiameterCells));
     };
-    const draw = (voxelMode, axonMode, cellMode, resolution, extended, border, viewSizes) => {
+    const draw = (
+        voxelMode: string,
+        axonMode: string,
+        cellMode: string,
+        resolution: number,
+        extended: boolean,
+        border: number,
+        viewSizes: boolean
+    ) => {
         const scene = new Scene();
         drawLight(scene);
         drawVoxels(scene, voxelMode, border);
-        drawCells(scene, cellMode, viewSizes);
+        drawCells(scene, cellMode);
         drawAxons(scene, axonMode, viewSizes, resolution, extended);
         return scene;
     };
-    const point = (camPos, cursorDir, viewSizes) => {
-        let result = null;
+    const point = (camPos: Vector3, cursorDir: Vector3) => {
+        let result: Focus = {
+            type: "",
+            object: null
+        };
         let minDist = 10000000;
         const pos = camPos.clone().add(cursorDir.clone().multiplyScalar(1000000));
         const dir = cursorDir.clone().negate();
@@ -370,28 +422,29 @@ const createSynthesizer = config => {
                 minDist = dist;
                 result = item;
             });
-        if (minDist < 100000 && (synthesizer.focus || {}).object === result.object) return synthesizer.focus;
-        if ((result || {}).type === "axon")
+        if (minDist < 100000 && synthesizer.focus.object === result.object) return synthesizer.focus;
+        if (isAxon(result.type, result.object))
             result.object.meshes.forEach(
                 mesh => (mesh.material = new MeshPhongMaterial({ color: new Color(0xffffff), side: DoubleSide }))
             );
         synthesizer.focus = result;
-        if ((((synthesizer.focus || {}).object || {}).mesh || {}).material)
-            synthesizer.focus.object.mesh.material = new MeshToonMaterial({ color: new Color(0xffffff) });
-        deselectAll(viewSizes);
+        const mesh = (synthesizer.focus.object as Ellipsoid)?.mesh;
+        if (mesh?.material) mesh.material = new MeshToonMaterial({ color: new Color(0xffffff) });
+        deselectAll();
         return synthesizer.focus;
     };
-    const deselectAll = viewSizes => {
+    const deselectAll = () => {
         synthesizer.axons.forEach(axon => {
             if (axon === (synthesizer.focus || {}).object) return;
             axon.meshes.forEach(
-                mesh => (mesh.material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide }))
+                mesh => (mesh.material = new MeshPhongMaterial({ vertexColors: true, side: DoubleSide }))
             );
         });
         synthesizer.cells.forEach(cell => {
-            if (cell === (synthesizer.focus || {}).object) return;
+            if (cell === synthesizer.focus.object) return;
+            if (!cell.mesh) return;
             cell.mesh.material = new MeshToonMaterial({
-                color: cell.getColor(viewSizes, synthesizer.minAndMaxDiameterCells)
+                color: cell.getColor(synthesizer.minAndMaxDiameterCells)
             });
         });
     };

@@ -86,7 +86,7 @@ export const extremum = (shape: Matrix3, axis: Vector3) => {
     return a.applyMatrix3(shape);
 };
 
-export const shuffle = (a: number[]) => {
+export const shuffle = <T>(a: T[]) => {
     for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];

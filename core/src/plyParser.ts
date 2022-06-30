@@ -90,8 +90,8 @@ export default (geoms: BufferGeometry[], options: Options) => {
         return output.buffer;
     } else {
         let indexOffset = 0;
-        let vertexList: string[][] = [];
-        let faceList: string[][] = [];
+        const vertexList: string[][] = [];
+        const faceList: string[][] = [];
         geoms.forEach(geom => {
             const g = getGeometry(geom);
             const colors = g.vertices.map(() => new Color(1, 1, 1));

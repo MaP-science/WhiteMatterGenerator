@@ -26,12 +26,16 @@ import {
 import plyParser from "./plyParser";
 import { Mapping } from "./mapping";
 
-export type EllipsoidJSON = {
+export interface EllipsoidJSON {
     position: number[];
     shape: number[];
     axonDiameter: number;
     myelinDiameter: number;
-};
+}
+
+export interface CellJSON extends EllipsoidJSON {
+    color: string;
+}
 
 interface EllipsoidState {
     pos: Vector3;
@@ -70,7 +74,7 @@ const createEllipsoid = (
     deformation: Mapping,
     minDiameter: Mapping,
     movement: number,
-    color: string,
+    color: string | undefined,
     generateMesh: boolean
 ): Ellipsoid => {
     const ellipsoid: EllipsoidState = {
@@ -145,7 +149,7 @@ const createEllipsoid = (
             ell.pos.add(r);
             return;
         }
-        let [axisLength, axis] = collisionAxis(
+        const [axisLength, axis] = collisionAxis(
             ellipsoid.pos,
             ellipsoid.shape,
             ell.pos,
@@ -154,8 +158,8 @@ const createEllipsoid = (
             maxOverlap
         );
         ellipsoid.axisCache[ell.id] = axis;
-        axisLength += minDist;
-        if (axisLength < 0) return;
+        let axisLengthNew = axisLength + minDist;
+        if (axisLengthNew < 0) return;
         const ratio = ell.radius / ellipsoid.radius;
         // Collision resolution
         // Update shape
@@ -165,20 +169,20 @@ const createEllipsoid = (
         const delta2 = (ell.deformation.map(c2 * 2) / (c2 * 2)) * Math.min(1 / ratio, 1);
         const mu1 = ellipsoid.minDiameter.map(ellipsoid.radius * 2) / (c1 * 2);
         const mu2 = ell.minDiameter.map(ell.radius * 2) / (c2 * 2);
-        const s1 = Math.max(-axisLength * delta1, mu1 - 1);
-        const s2 = Math.max(-axisLength * delta2, mu2 - 1);
+        const s1 = Math.max(-axisLengthNew * delta1, mu1 - 1);
+        const s2 = Math.max(-axisLengthNew * delta2, mu2 - 1);
         deform(ellipsoid.shape, axis, s1);
         deform(ell.shape, axis, s2);
-        axisLength += s1 * c1 + s2 * c2;
+        axisLengthNew += s1 * c1 + s2 * c2;
         // Update position
         const m1 = ellipsoid.movement * ratio;
         const m2 = ell.movement;
-        const w = axisLength / (m1 + m2);
+        const w = axisLengthNew / (m1 + m2);
         ellipsoid.pos.sub(axis.clone().multiplyScalar(m1 * w));
         ell.pos.add(axis.clone().multiplyScalar(m2 * w));
     };
     const getOverlap = (ell: Ellipsoid, minDist: number, maxOverlap: number) => {
-        let [axisLength, axis] = collisionAxis(
+        const [axisLength, axis] = collisionAxis(
             ellipsoid.pos,
             ellipsoid.shape,
             ell.pos,

@@ -123,17 +123,17 @@ const generatePipeUtil = (
             let sp = getSP(ellipsoid.pos, dir, i, gFactor);
             let dist = sp.clone().sub(ellipsoid.pos).dot(dir);
             for (let i2 = i + 1; i2 < ellipsoids.length; ++i2) {
-                let sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
+                const sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
                 if (!sp2) break;
-                let dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
+                const dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
                 if (dist2 < dist) continue;
                 sp = sp2;
                 dist = dist2;
             }
             for (let i2 = i - 1; i2 >= 0; --i2) {
-                let sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
+                const sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
                 if (!sp2) break;
-                let dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
+                const dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
                 if (dist2 < dist) continue;
                 sp = sp2;
                 dist = dist2;
@@ -191,7 +191,7 @@ const generatePipeUtil = (
     return result;
 };
 
-type AxonJSON = {
+export type AxonJSON = {
     position: number[];
     direction: number[];
     maxDiameter: number;
@@ -215,7 +215,7 @@ interface AxonState {
     collisionTree: CollisionTree;
 }
 
-interface Axon extends AxonState {
+export interface Axon extends AxonState {
     dispose: () => void;
     keepInVoxel: (minDist: number) => void;
     computeCollisionTree: (minDist: number) => void;
@@ -251,7 +251,7 @@ const createAxon = (
     pos: Vector3,
     dir: Vector3,
     radius: number,
-    color: string,
+    color: string | undefined,
     gFactor: number,
     {
         deformation,
