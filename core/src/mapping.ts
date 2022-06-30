@@ -3,7 +3,7 @@ type Vec2 = {
     y: number;
 };
 
-type Mapping = {
+export type Mapping = {
     values: Vec2[];
     valuesInverse: Vec2[];
     map: (x: number) => number;
