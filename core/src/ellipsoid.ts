@@ -1,4 +1,16 @@
-import { Vector3, Matrix3, Box3, SphereGeometry, Mesh, MeshToonMaterial, Geometry, BufferGeometry, Scene } from "three";
+import {
+    Vector3,
+    Matrix3,
+    Matrix4,
+    Box3,
+    SphereGeometry,
+    Mesh,
+    MeshToonMaterial,
+    Geometry,
+    BufferGeometry,
+    Scene,
+    Color
+} from "three";
 import { v4 } from "uuid";
 import {
     addMatrix3,
@@ -14,7 +26,14 @@ import {
 import plyParser from "./plyParser.js";
 import { Mapping } from "./mapping";
 
-type Ellipsoid = {
+export type EllipsoidJSON = {
+    position: number[];
+    shape: number[];
+    axonDiameter: number;
+    myelinDiameter: number;
+};
+
+interface EllipsoidState {
     pos: Vector3;
     radius: number;
     deformation: Mapping;
@@ -25,7 +44,25 @@ type Ellipsoid = {
     color: string;
     axisCache: { [id: string]: Vector3 };
     mesh?: Mesh;
-};
+}
+
+export interface Ellipsoid extends EllipsoidState {
+    dispose: () => void;
+    clone: () => Ellipsoid;
+    boundingBox: (minDist: number) => Box3;
+    containsPoint: (p: Vector3) => boolean;
+    keepInVoxel: (voxelSize: Vector3, minDist: number, entireCell: boolean) => void;
+    collision: (ell: Ellipsoid, minDist: number, maxOverlap: number) => void;
+    getOverlap: (ell: Ellipsoid, minDist: number, maxOverlap: number) => number;
+    getSurfacePoint: (pos: Vector3, dir: Vector3) => Vector3;
+    grow: (amount: number) => void;
+    getColor: (minAndMaxDiameter: { min: number; max: number } | null) => Color;
+    draw: (scene: Scene, generateMesh: boolean, minAndMaxDiameter: { min: number; max: number }) => Mesh | undefined;
+    getMatrix4: () => Matrix4;
+    diameter: () => number;
+    crossSectionDiameter: (axis: Vector3) => number;
+    toPLY: (binary: boolean, simple: boolean) => string | ArrayBuffer;
+}
 
 const createEllipsoid = (
     pos: Vector3,
@@ -35,8 +72,8 @@ const createEllipsoid = (
     movement: number,
     color: string,
     generateMesh: boolean
-) => {
-    const ellipsoid: Ellipsoid = {
+): Ellipsoid => {
+    const ellipsoid: EllipsoidState = {
         pos: pos.clone(),
         radius,
         deformation,
@@ -159,8 +196,7 @@ const createEllipsoid = (
         d.normalize();
         const r = p.clone().sub(d.clone().multiplyScalar(d.dot(p)));
         const rLen = r.length();
-        if (rLen > 1) return undefined;
-        const x = d.multiplyScalar(Math.sqrt(1 - rLen ** 2));
+        const x = d.multiplyScalar(Math.sqrt(Math.max(1 - rLen ** 2, 0)));
         return r.clone().add(x).applyMatrix3(ellipsoid.shape).add(ellipsoid.pos);
     };
     const grow = (amount: number) => {
@@ -199,7 +235,7 @@ const createEllipsoid = (
     const draw = (scene: Scene, generateMesh: boolean, minAndMaxDiameter: { min: number; max: number }) => {
         const g = getGeometry(minAndMaxDiameter);
         if (generateMesh) ellipsoid.mesh = new Mesh(g, new MeshToonMaterial({ color: getColor(minAndMaxDiameter) }));
-        if (!ellipsoid.mesh) return;
+        if (!ellipsoid.mesh) return undefined;
         ellipsoid.mesh.geometry = g;
         ellipsoid.mesh.matrixAutoUpdate = false;
         ellipsoid.mesh.matrix = getMatrix4();

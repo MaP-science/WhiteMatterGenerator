@@ -1,35 +1,43 @@
 import {
-    addMatrix3,
-    applyColor,
-    hexColorToVector,
-    projectOntoCube,
-    randomHexColor,
-    valueToColor
-} from "./helperFunctions.js";
-import random from "./random.js";
-import createEllipsoid from "./ellipsoid.js";
-import THREE from "./three.js";
-import plyParser from "./plyParser.js";
-
-const {
     Vector3,
+    Box3,
     MeshPhongMaterial,
     LineBasicMaterial,
     BufferGeometry,
     Line,
     Mesh,
     SphereBufferGeometry,
-    VertexColors,
     DoubleSide,
     Geometry,
     Face3,
     InstancedMesh,
-    BufferAttribute
-} = THREE;
+    BufferAttribute,
+    Scene
+} from "three";
+import {
+    addMatrix3,
+    applyColor,
+    hexColorToVector,
+    projectOntoCube,
+    randomHexColor,
+    valueToColor
+} from "./helperFunctions";
+import random from "./random";
+import createEllipsoid from "./ellipsoid";
+import plyParser from "./plyParser";
+import { BufferGeometryUtils } from "./BufferGeometryUtils";
+import { Ellipsoid, EllipsoidJSON } from "./ellipsoid";
+import { Mapping } from "./mapping";
 
-import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
+type CollisionTree = {
+    a?: CollisionTree;
+    b?: CollisionTree;
+    ellipsoid?: Ellipsoid;
+    aabb: Box3;
+    containsPoint: (p: Vector3) => boolean;
+};
 
-const computeCollisionTree = (ellipsoids, minDist) => {
+const computeCollisionTree = (ellipsoids: Ellipsoid[], minDist: number): CollisionTree => {
     if (ellipsoids.length === 1)
         return {
             ellipsoid: ellipsoids[0],
@@ -50,14 +58,18 @@ const computeCollisionTree = (ellipsoids, minDist) => {
     };
 };
 
-const collision = (a, b, minDist, maxOverlap) => {
+const collision = (a: CollisionTree, b: CollisionTree, minDist: number, maxOverlap: number): void => {
     if (!a.aabb.intersectsBox(b.aabb)) return;
     if (b.ellipsoid) {
         if (a.ellipsoid) return a.ellipsoid.collision(b.ellipsoid, minDist, maxOverlap);
         return collision(b, a, minDist, maxOverlap);
     }
-    const f1 = () => collision(b.a, a, minDist, maxOverlap);
-    const f2 = () => collision(b.b, a, minDist, maxOverlap);
+    const f1 = () => {
+        if (b.a) collision(b.a, a, minDist, maxOverlap);
+    };
+    const f2 = () => {
+        if (b.b) collision(b.b, a, minDist, maxOverlap);
+    };
     if (random() < 0.5) {
         f1();
         f2();
@@ -67,17 +79,25 @@ const collision = (a, b, minDist, maxOverlap) => {
     }
 };
 
-const getOverlap = (a, b, minDist, maxOverlap) => {
+const getOverlap = (a: CollisionTree, b: CollisionTree, minDist: number, maxOverlap: number): number => {
     if (!a.aabb.intersectsBox(b.aabb)) return 0;
     if (b.ellipsoid) {
         if (a.ellipsoid) return a.ellipsoid.getOverlap(b.ellipsoid, minDist, maxOverlap);
         return getOverlap(b, a, minDist, maxOverlap);
     }
+    if (!b.a || !b.b) return 0;
     return Math.max(getOverlap(b.a, a, minDist, maxOverlap), getOverlap(b.b, a, minDist, maxOverlap));
 };
 
-const generatePipeUtil = (ellipsoids, color, gFactor, resolution, viewSizes, minAndMaxDiameter) => {
-    const getSP = (pos, dir, i, scale) => {
+const generatePipeUtil = (
+    ellipsoids: Ellipsoid[],
+    color: string,
+    gFactor: number,
+    resolution: number,
+    viewSizes: boolean,
+    minAndMaxDiameter: { min: number; max: number }
+) => {
+    const getSP = (pos: Vector3, dir: Vector3, i: number, scale: number) => {
         const shape = ellipsoids[i].shape;
         ellipsoids[i].shape = shape.clone().multiplyScalar(scale);
         const sp = ellipsoids[i].getSurfacePoint(pos, dir);
@@ -164,15 +184,83 @@ const generatePipeUtil = (ellipsoids, color, gFactor, resolution, viewSizes, min
     const bg = new BufferGeometry().fromGeometry(geom);
     const result = new Mesh(
         BufferGeometryUtils.mergeVertices(bg),
-        new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide })
+        new MeshPhongMaterial({ vertexColors: true, side: DoubleSide })
     );
     geom.dispose();
     bg.dispose();
     return result;
 };
 
-const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter, ellipsoidDensity, voxelSize }) => {
-    const axon = {
+type AxonJSON = {
+    position: number[];
+    direction: number[];
+    maxDiameter: number;
+    color: string;
+    gFactor: number;
+    ellipsoids: EllipsoidJSON[];
+};
+
+interface AxonState {
+    start: Vector3;
+    end: Vector3;
+    gFactor: number;
+    ellipsoidDensity: number;
+    voxelSize: Vector3;
+    deformation: Mapping;
+    minDiameter: Mapping;
+    color: string;
+    meshes: (Mesh | Line)[];
+    radius: number;
+    ellipsoids: Ellipsoid[];
+    collisionTree: CollisionTree;
+}
+
+interface Axon extends AxonState {
+    dispose: () => void;
+    keepInVoxel: (minDist: number) => void;
+    computeCollisionTree: (minDist: number) => void;
+    collision: (ax: Axon, minDist: number, maxOverlap: number) => void;
+    getOverlap: (ax: Axon, minDist: number, maxOverlap: number) => number;
+    getMinAndMaxDiameter: () => { min: number; max: number };
+    grow: (amount: number) => void;
+    contract: (amount: number) => void;
+    redistribute: () => void;
+    getLength: () => number;
+    getSurfacePoint: (pos: Vector3, dir: Vector3) => Vector3 | undefined;
+    generatePipe: (
+        gFactor: number,
+        resolution: number,
+        extended: boolean,
+        viewSizes: boolean,
+        minAndMaxDiameter: { min: number; max: number }
+    ) => Mesh;
+    generatePipes: (
+        scene: Scene,
+        resolution: number,
+        extended: boolean,
+        viewSizes: boolean,
+        minAndMaxDiameter: { min: number; max: number }
+    ) => void;
+    generateSkeleton: (scene: Scene, viewSizes: boolean, minAndMaxDiameter: { min: number; max: number }) => void;
+    draw: (scene: Scene, viewSizes: boolean, minAndMaxDiameter: { min: number; max: number }) => void;
+    toJSON: () => AxonJSON;
+    toPLY: (binary: boolean, simple: boolean, i: number) => string | ArrayBuffer;
+}
+
+const createAxon = (
+    pos: Vector3,
+    dir: Vector3,
+    radius: number,
+    color: string,
+    gFactor: number,
+    {
+        deformation,
+        minDiameter,
+        ellipsoidDensity,
+        voxelSize
+    }: { deformation: Mapping; minDiameter: Mapping; ellipsoidDensity: number; voxelSize: Vector3 }
+): Axon => {
+    const axon: AxonState = {
         start: projectOntoCube(pos, dir, voxelSize),
         end: projectOntoCube(pos, dir.clone().negate(), voxelSize),
         gFactor: gFactor || 1,
@@ -181,9 +269,15 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
         deformation,
         minDiameter,
         color: color || randomHexColor(),
-        meshes: []
+        meshes: [],
+        radius: radius,
+        ellipsoids: [],
+        collisionTree: {
+            aabb: new Box3(new Vector3(0, 0, 0), new Vector3(0, 0, 0)),
+            containsPoint: () => false
+        }
     };
-    axon.radius = radius / axon.gFactor;
+    axon.radius /= axon.gFactor;
     axon.ellipsoids = [
         createEllipsoid(axon.start, axon.radius, deformation, minDiameter, 1, axon.color, false),
         createEllipsoid(axon.end, axon.radius, deformation, minDiameter, 1, axon.color, false)
@@ -192,10 +286,10 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
         axon.ellipsoids.forEach(e => e.dispose());
         axon.meshes.forEach(mesh => {
             mesh.geometry.dispose();
-            mesh.material.dispose();
+            [mesh.material].flat().map(m => m.dispose());
         });
     };
-    const keepInVoxel = minDist => {
+    const keepInVoxel = (minDist: number) => {
         const a = axon.ellipsoids[0];
         const b = axon.ellipsoids[axon.ellipsoids.length - 1];
         axon.ellipsoids.slice(1, axon.ellipsoids.length - 1).forEach(ellipsoid => {
@@ -229,7 +323,7 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
         );
         return { min: Math.min(...d), max: Math.max(...d) };
     };
-    const grow = amount => {
+    const grow = (amount: number) => {
         axon.ellipsoids.forEach(ellipsoid => ellipsoid.grow(amount));
     };
     const redistribute = () => {
@@ -274,7 +368,7 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
             return e;
         });
     };
-    const contract = amount => {
+    const contract = (amount: number) => {
         for (let i = 1; i + 1 < axon.ellipsoids.length; ++i) {
             const c = axon.ellipsoids[i + 1].pos
                 .clone()
@@ -298,8 +392,8 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
                 .length();
         return result;
     };
-    const getSurfacePoint = (pos, dir) => {
-        return axon.ellipsoids.reduce((pMax, ellipsoid) => {
+    const getSurfacePoint = (pos: Vector3, dir: Vector3) => {
+        return axon.ellipsoids.reduce((pMax: Vector3 | undefined, ellipsoid: Ellipsoid) => {
             const p = ellipsoid.getSurfacePoint(pos, dir);
             if (!pMax) return p;
             const distMax = pMax.clone().sub(pos).dot(dir);
@@ -308,7 +402,13 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
             return dist > distMax ? p : pMax;
         }, undefined);
     };
-    const generatePipe = (gFactor, resolution, extended, viewSizes, minAndMaxDiameter) => {
+    const generatePipe = (
+        gFactor: number,
+        resolution: number,
+        extended: boolean,
+        viewSizes: boolean,
+        minAndMaxDiameter: { min: number; max: number }
+    ) => {
         if (!extended)
             return generatePipeUtil(axon.ellipsoids, axon.color, gFactor, resolution, viewSizes, minAndMaxDiameter);
         const firstPos = axon.ellipsoids[0].pos;
@@ -332,18 +432,24 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
         }
         return generatePipeUtil(ellipsoids, axon.color, gFactor, resolution, viewSizes, minAndMaxDiameter);
     };
-    const generatePipes = (scene, resolution, extended, viewSizes, minAndMaxDiameter) => {
+    const generatePipes = (
+        scene: Scene,
+        resolution: number,
+        extended: boolean,
+        viewSizes: boolean,
+        minAndMaxDiameter: { min: number; max: number }
+    ) => {
         const outer = generatePipe(1, resolution, extended, viewSizes, minAndMaxDiameter);
         const inner = generatePipe(axon.gFactor, resolution, extended, viewSizes, minAndMaxDiameter);
         scene.add(outer);
         scene.add(inner);
         axon.meshes.forEach(mesh => {
             mesh.geometry.dispose();
-            mesh.material.dispose();
+            [mesh.material].flat().map(m => m.dispose());
         });
         axon.meshes = [outer, inner];
     };
-    const generateSkeleton = (scene, viewSizes, minAndMaxDiameter) => {
+    const generateSkeleton = (scene: Scene, viewSizes: boolean, minAndMaxDiameter: { min: number; max: number }) => {
         let geometry = new BufferGeometry().setFromPoints(axon.ellipsoids.map(ellipsoid => ellipsoid.pos));
         if (viewSizes) {
             const colors = axon.ellipsoids
@@ -360,24 +466,24 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
                 .flat();
             geometry.setAttribute("color", new BufferAttribute(new Float32Array(colors), 3));
         } else geometry = applyColor(geometry, axon.color);
-        const mesh = new Line(geometry, new LineBasicMaterial({ vertexColors: VertexColors, side: DoubleSide }));
+        const mesh = new Line(geometry, new LineBasicMaterial({ vertexColors: true, side: DoubleSide }));
         axon.meshes.forEach(mesh => {
             mesh.geometry.dispose();
-            mesh.material.dispose();
+            [mesh.material].flat().map(m => m.dispose());
         });
         axon.meshes = [mesh];
         scene.add(mesh);
     };
-    const draw = (scene, viewSizes, minAndMaxDiameter) => {
-        if (viewSizes) return axon.ellipsoids.map(e => e.draw(scene, true, viewSizes, minAndMaxDiameter));
+    const draw = (scene: Scene, viewSizes: boolean, minAndMaxDiameter: { min: number; max: number }) => {
+        if (viewSizes) return axon.ellipsoids.map(e => e.draw(scene, true, minAndMaxDiameter));
         const geom = applyColor(new SphereBufferGeometry(1, 16, 16), axon.color);
-        const material = new MeshPhongMaterial({ vertexColors: VertexColors, side: DoubleSide });
+        const material = new MeshPhongMaterial({ vertexColors: true, side: DoubleSide });
         const mesh = new InstancedMesh(geom, material, axon.ellipsoids.length);
         axon.ellipsoids.forEach((ellipsoid, i) => {
             mesh.setMatrixAt(i, ellipsoid.getMatrix4());
         });
         scene.add(mesh);
-        axon.mesh = [mesh];
+        axon.meshes = [mesh];
     };
     const toJSON = () => {
         return {
@@ -401,22 +507,27 @@ const createAxon = (pos, dir, radius, color, gFactor, { deformation, minDiameter
             })
         };
     };
-    const toPLY = (binary, simple, i) => {
-        return plyParser([axon.meshes[i].geometry], {
+    const toPLY = (binary: boolean, simple: boolean, i: number) => {
+        const geometry = axon.meshes[i].geometry;
+        const geom = geometry instanceof Geometry ? new BufferGeometry().fromGeometry(geometry) : geometry;
+        return plyParser([geom], {
             binary: binary,
             includeColors: !simple,
-            includeNormals: !simple
+            includeNormals: !simple,
+            littleEndian: false
         });
     };
     redistribute();
     return Object.assign(axon, {
         dispose,
         keepInVoxel,
-        computeCollisionTree: minDist => {
+        computeCollisionTree: (minDist: number) => {
             axon.collisionTree = computeCollisionTree(axon.ellipsoids, minDist);
         },
-        collision: (ax, minDist, maxOverlap) => collision(axon.collisionTree, ax.collisionTree, minDist, maxOverlap),
-        getOverlap: (ax, minDist, maxOverlap) => getOverlap(axon.collisionTree, ax.collisionTree, minDist, maxOverlap),
+        collision: (ax: Axon, minDist: number, maxOverlap: number) =>
+            collision(axon.collisionTree, ax.collisionTree, minDist, maxOverlap),
+        getOverlap: (ax: Axon, minDist: number, maxOverlap: number) =>
+            getOverlap(axon.collisionTree, ax.collisionTree, minDist, maxOverlap),
         getMinAndMaxDiameter,
         grow,
         contract,
