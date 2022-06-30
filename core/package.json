@@ -13,17 +13,21 @@
         "uuid": "^8.2.0"
     },
     "scripts": {
-        "lint": "esw -w --clear",
-        "build": "npx babel src --out-dir dist",
-        "cli": "babel-node cli.js"
+        "build": "tsc -p .",
+        "cli": "babel-node cli.js",
+        "lint": "esw -w --clear --ext ts,.tsx,.test.ts",
+        "type-check": "tsc-watch"
     },
     "devDependencies": {
         "@babel/cli": "^7.12.8",
         "@babel/core": "^7.12.9",
         "@babel/node": "^7.12.6",
         "@babel/preset-env": "^7.12.7",
+        "@types/seedrandom": "^3.0.2",
         "babel-eslint": "^10.1.0",
         "eslint": "^7.14.0",
-        "eslint-watch": "^7.0.0"
+        "eslint-watch": "^7.0.0",
+        "tsc-watch": "^4.6.2",
+        "typescript": "^4.7.4"
     }
 }
