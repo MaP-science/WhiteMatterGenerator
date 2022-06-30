@@ -1,9 +1,9 @@
-#!/usr/bin/env node
+import yargs from "yargs";
 
-const { argv } = require("yargs")
+const { argv } = yargs
     .scriptName("axon-generator-toolbox")
     .usage("Usage: $0 -f file [-i iterations] [-v volumeFraction]")
-    .example("$0 -f ./config.json -i 10 -o 5 -v 70 -l log.txt")
+    .example([["$0 -f ./config.json -i 10 -o 5 -v 70 -l log.txt"]])
     .option("f", {
         alias: "file",
         describe: "Config file",
@@ -83,10 +83,10 @@ const { argv } = require("yargs")
     });
 
 import fs from "fs";
-import { createSynthesizer, setRandomSeed } from "@axon-generator-toolbox/core/dist/index.js";
+import { createSynthesizer, setRandomSeed } from "../../core/src/index";
 import configToPly from "./configToPly";
 
-const data = JSON.parse(fs.readFileSync(argv.file));
+const data = JSON.parse(fs.readFileSync(argv.file, "utf-8"));
 
 const randomSeed = data.randomSeed;
 setRandomSeed(randomSeed);

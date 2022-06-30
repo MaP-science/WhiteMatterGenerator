@@ -2,7 +2,8 @@
     "name": "@axon-generator-toolbox/core",
     "version": "1.0.0",
     "private": true,
-    "main": "dist",
+    "main": "src/index.ts",
+    "type": "module",
     "dependencies": {
         "fmin": "0.0.2",
         "gh-pages": "^3.1.0",

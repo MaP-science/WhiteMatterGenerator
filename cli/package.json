@@ -2,9 +2,9 @@
     "name": "@axon-generator-toolbox/cli",
     "version": "1.0.0",
     "private": true,
-    "main": "dist/cli.js",
+    "main": "dist/cli/src/index.js",
     "dependencies": {
-        "@axon-generator-toolbox/core": "file:../core",
+        "@axon-generator-toolbox/core": "*",
         "arraybuffer-to-buffer": "^0.0.7",
         "fmin": "0.0.2",
         "gh-pages": "^3.1.0",
@@ -15,19 +15,24 @@
         "yargs": "^16.2.0"
     },
     "scripts": {
-        "lint": "esw -w --clear",
-        "build": "npx babel src --out-dir dist"
+        "build": "tsc -p .",
+        "lint": "esw -w --clear --ext ts,.tsx,.test.ts",
+        "type-check": "tsc-watch"
     },
     "devDependencies": {
         "@babel/cli": "^7.12.8",
         "@babel/core": "^7.12.9",
         "@babel/node": "^7.12.6",
         "@babel/preset-env": "^7.12.7",
+        "@types/node": "^18.0.0",
+        "@types/yargs": "^17.0.10",
         "babel-eslint": "^10.1.0",
         "eslint": "^7.14.0",
-        "eslint-watch": "^7.0.0"
+        "eslint-watch": "^7.0.0",
+        "tsc-watch": "^4.6.2",
+        "typescript": "^4.7.4"
     },
     "bin": {
-        "axon-generator-toolbox": "dist/cli.js"
+        "axon-generator-toolbox": "dist/index.js"
     }
 }

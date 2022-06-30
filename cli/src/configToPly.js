@@ -1,4 +1,4 @@
-import { createSynthesizer } from "@axon-generator-toolbox/core/dist/index.js";
+import { createSynthesizer } from "../../core/src/index";
 import arrayBufferToBuffer from "arraybuffer-to-buffer";
 
 const configToSinglePly = (config, options) => {

@@ -1,13 +1,4 @@
-import { addMatrix3, randomPosition, shuffle } from "./helperFunctions.js";
-import random from "./random.js";
-import createAxon from "./axon.js";
-import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
-import createEllipsoid from "./ellipsoid.js";
-import createMapping from "./mapping.js";
-import THREE from "./three.js";
-import plyParser from "./plyParser.js";
-
-const {
+import {
     Vector3,
     Matrix3,
     LineSegments,
@@ -22,7 +13,14 @@ const {
     VertexColors,
     Color,
     DoubleSide
-} = THREE;
+} from "three";
+import { addMatrix3, randomPosition, shuffle } from "./helperFunctions";
+import random from "./random";
+import createAxon from "./axon";
+import { BufferGeometryUtils } from "./BufferGeometryUtils";
+import createEllipsoid from "./ellipsoid";
+import createMapping from "./mapping";
+import plyParser from "./plyParser";
 
 const wireframeCube = size =>
     new LineSegments(

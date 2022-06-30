@@ -22,8 +22,8 @@ import {
     randomDirection,
     randomHexColor,
     valueToColor
-} from "./helperFunctions.js";
-import plyParser from "./plyParser.js";
+} from "./helperFunctions";
+import plyParser from "./plyParser";
 import { Mapping } from "./mapping";
 
 export type EllipsoidJSON = {
