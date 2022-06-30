@@ -3,7 +3,7 @@ import random from "./random.js";
 import Axon from "./axon.js";
 import { BufferGeometryUtils } from "./BufferGeometryUtils.js";
 import Ellipsoid from "./ellipsoid.js";
-import Mapping from "./mapping.js";
+import createMapping from "./mapping.js";
 import THREE from "./three.js";
 import plyParser from "./plyParser.js";
 
@@ -37,8 +37,8 @@ export default class {
                 ? new Vector3(config.voxelSize, config.voxelSize, config.voxelSize)
                 : new Vector3().fromArray(config.voxelSize);
         this.ellipsoidDensity = Number(config.ellipsoidDensity);
-        this.deformation = new Mapping(config.mapFromDiameterToDeformationFactor);
-        this.minDiameter = new Mapping(config.mapFromMaxDiameterToMinDiameter);
+        this.deformation = createMapping(config.mapFromDiameterToDeformationFactor);
+        this.minDiameter = createMapping(config.mapFromMaxDiameterToMinDiameter);
         this.axons = [];
         this.cells = [];
         this.updateState = { name: "ready" };
@@ -81,8 +81,8 @@ export default class {
             const cell = new Ellipsoid(
                 new Vector3(...c.position),
                 Math.cbrt(shape.determinant()),
-                new Mapping({ from: [0], to: [0] }),
-                new Mapping({ from: [0], to: [0] }),
+                createMapping({ from: [0], to: [0] }),
+                createMapping({ from: [0], to: [0] }),
                 0,
                 c.color,
                 true
@@ -179,8 +179,8 @@ export default class {
                 new Ellipsoid(
                     p,
                     r,
-                    new Mapping({ from: [0, 1], to: [0, 0] }),
-                    new Mapping({ from: [0, 1], to: [0, 0.01] }),
+                    createMapping({ from: [0, 1], to: [0, 0] }),
+                    createMapping({ from: [0, 1], to: [0, 0.01] }),
                     1,
                     null,
                     true
@@ -207,7 +207,7 @@ export default class {
             this.cells.forEach(a => a.grow(-0.05));
         }
         this.cells.forEach(a => {
-            a.deformation = new Mapping({ from: [0], to: [0] });
+            a.deformation = createMapping({ from: [0], to: [0] });
             a.movement = 0;
         });
         this.computeMinAndMaxDiameter();
