@@ -64,7 +64,37 @@ interface SynthesizerState {
     minAndMaxDiameterCells: { min: number; max: number };
 }
 
-const createSynthesizer = (config: SynthesizerJSON) => {
+export interface Synthesizer extends SynthesizerState {
+    dispose: () => void;
+    toJSON: () => SynthesizerJSON;
+    toPLY: (binary: boolean, simple: boolean) => string | ArrayBuffer;
+    keepInVoxel: (minDist: number) => void;
+    collision: (minDist: number, maxOverlap: number) => void;
+    getOverlap: (minDist: number, maxOverlap: number) => number;
+    addAxonsRandomly: (axonCount: number, gFactor: number) => void;
+    addCellsRandomly: (cellCount: number, minDist: number) => void;
+    volumeFraction: (n: number, border: number) => [number, number];
+    update: (growSpeed: number, contractSpeed: number, minDist: number, maxOverlap: number, border: number) => void;
+    generatePipes: (scene: Scene, resolution: number, extended: boolean, viewSizes: boolean) => Scene;
+    drawLight: (scene: Scene) => void;
+    drawVoxels: (scene: Scene, mode: string, border: number) => void;
+    drawAxons: (scene: Scene, mode: string, viewSizes: boolean, resolution: number, extended: boolean) => void;
+    drawCells: (scene: Scene, mode: string) => void;
+    computeMinAndMaxDiameter: () => void;
+    draw: (
+        voxelMode: string,
+        axonMode: string,
+        cellMode: string,
+        resolution: number,
+        extended: boolean,
+        border: number,
+        viewSizes: boolean
+    ) => Scene;
+    point: (camPos: Vector3, cursorDir: Vector3) => Focus;
+    deselectAll: () => void;
+}
+
+const createSynthesizer = (config: SynthesizerJSON): Synthesizer => {
     const synthesizer: SynthesizerState = {
         voxelSize:
             typeof config.voxelSize === "number"
@@ -273,7 +303,7 @@ const createSynthesizer = (config: SynthesizerJSON) => {
         });
         computeMinAndMaxDiameter();
     };
-    const volumeFraction = (n: number, border: number) => {
+    const volumeFraction = (n: number, border: number): [number, number] => {
         synthesizer.axons.forEach(axon => axon.computeCollisionTree(0));
         let axonCount = 0;
         let cellCount = 0;

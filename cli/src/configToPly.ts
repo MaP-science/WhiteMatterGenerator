@@ -9,15 +9,21 @@ interface Options {
     multiple: boolean;
 }
 
-const configToSinglePly = (config: SynthesizerJSON, options: Options) => {
+const configToSinglePly = (
+    config: SynthesizerJSON,
+    options: Options
+): { name: string; data: string | ArrayBuffer }[] => {
     const synthesizer = createSynthesizer(config);
     synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
     const result = synthesizer.toPLY(options.exportBinary, options.exportSimple);
-    if (options.exportBinary) return arrayBufferToBuffer(result);
-    return result;
+    if (options.exportBinary) return [{ name: "axons.ply", data: arrayBufferToBuffer(result) }];
+    return [{ name: "axons.ply", data: result }];
 };
 
-const configToMultiplePly = (config: SynthesizerJSON, options: Options) => {
+const configToMultiplePly = (
+    config: SynthesizerJSON,
+    options: Options
+): { name: string; data: string | ArrayBuffer }[] => {
     const synthesizer = createSynthesizer(config);
     synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
 

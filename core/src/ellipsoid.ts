@@ -29,8 +29,6 @@ import { Mapping } from "./mapping";
 export interface EllipsoidJSON {
     position: number[];
     shape: number[];
-    axonDiameter: number;
-    myelinDiameter: number;
 }
 
 export interface CellJSON extends EllipsoidJSON {
