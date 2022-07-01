@@ -328,7 +328,7 @@ const createAxon = (
     };
     const redistribute = () => {
         const length = getLength();
-        const ellipsoidCount = 1 + Math.max(Math.ceil(length * (axon.ellipsoidDensity / (2 * axon.radius))), 1);
+        const ellipsoidCount = 1 + Math.max(Math.ceil(length * axon.ellipsoidDensity), 1);
         const dLength = length / (ellipsoidCount - 1);
         let d = 0;
         let index = 0;
