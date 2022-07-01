@@ -29,7 +29,7 @@ const wireframeCube = (size: Vector3) =>
         new LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
     );
 
-type SynthesizerJSON = {
+export type SynthesizerJSON = {
     voxelSize: number[];
     ellipsoidDensity: number;
     mapFromDiameterToDeformationFactor: MappingJSON;

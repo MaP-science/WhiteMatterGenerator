@@ -1,7 +1,15 @@
-import { createSynthesizer } from "../../core/src/index";
+import { createSynthesizer, SynthesizerJSON } from "../../core/src/index";
 import arrayBufferToBuffer from "arraybuffer-to-buffer";
 
-const configToSinglePly = (config, options) => {
+interface Options {
+    resolution: number;
+    extended: boolean;
+    exportBinary: boolean;
+    exportSimple: boolean;
+    multiple: boolean;
+}
+
+const configToSinglePly = (config: SynthesizerJSON, options: Options) => {
     const synthesizer = createSynthesizer(config);
     synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
     const result = synthesizer.toPLY(options.exportBinary, options.exportSimple);
@@ -9,7 +17,7 @@ const configToSinglePly = (config, options) => {
     return result;
 };
 
-const configToMultiplePly = (config, options) => {
+const configToMultiplePly = (config: SynthesizerJSON, options: Options) => {
     const synthesizer = createSynthesizer(config);
     synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
 
@@ -23,7 +31,7 @@ const configToMultiplePly = (config, options) => {
             data: axon.toPLY(options.exportBinary, options.exportSimple, 0),
             name: name
                 .replace(/@type/g, "myelin")
-                .replace(/@index/g, i)
+                .replace(/@index/g, String(i))
                 .replace(/@color/g, axon.color)
         });
         if (Number(axon.gFactor) !== 1)
@@ -31,7 +39,7 @@ const configToMultiplePly = (config, options) => {
                 data: axon.toPLY(options.exportBinary, options.exportSimple, 1),
                 name: name
                     .replace(/@type/g, "axon")
-                    .replace(/@index/g, i)
+                    .replace(/@index/g, String(i))
                     .replace(/@color/g, axon.color)
             });
     }
@@ -41,7 +49,7 @@ const configToMultiplePly = (config, options) => {
             data: cell.toPLY(options.exportBinary, options.exportSimple),
             name: name
                 .replace(/@type/g, "cell")
-                .replace(/@index/g, i)
+                .replace(/@index/g, String(i))
                 .replace(/@color/g, cell.color)
         });
     }
@@ -50,4 +58,5 @@ const configToMultiplePly = (config, options) => {
     return result;
 };
 
-export default (config, options) => (options.multiple ? configToMultiplePly : configToSinglePly)(config, options);
+export default (config: SynthesizerJSON, options: Options) =>
+    (options.multiple ? configToMultiplePly : configToSinglePly)(config, options);
