@@ -39,7 +39,7 @@ export default () => (
             </li>
             <li>
                 <b>contractSpeed</b> (number) - How much the axons contract per step, i.e. how stiff the axons are. This
-                number should be between 0 and 1.
+                number should be non-negative.
             </li>
             <li>
                 <b>mapFromDiameterToDeformationFactor</b>* (object) - This map determines how much the axons' ellipsoids
