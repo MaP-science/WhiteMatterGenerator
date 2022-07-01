@@ -63,7 +63,7 @@ export interface Ellipsoid extends EllipsoidState {
     getMatrix4: () => Matrix4;
     diameter: () => number;
     crossSectionDiameter: (axis: Vector3) => number;
-    toPLY: (binary: boolean, simple: boolean) => string | ArrayBuffer;
+    toPLY: (binary: boolean, simple: boolean) => string | DataView;
 }
 
 const createEllipsoid = (

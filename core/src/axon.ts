@@ -244,7 +244,7 @@ export interface Axon extends AxonState {
     generateSkeleton: (scene: Scene, viewSizes: boolean, minAndMaxDiameter: { min: number; max: number }) => void;
     draw: (scene: Scene, viewSizes: boolean, minAndMaxDiameter: { min: number; max: number }) => void;
     toJSON: () => AxonJSON;
-    toPLY: (binary: boolean, simple: boolean, i: number) => string | ArrayBuffer;
+    toPLY: (binary: boolean, simple: boolean, i: number) => string | DataView;
 }
 
 const createAxon = (

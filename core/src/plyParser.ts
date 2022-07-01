@@ -87,7 +87,7 @@ export default (geoms: BufferGeometry[], options: Options) => {
             indexOffset += g.vertices.length;
             g.dispose();
         });
-        return output.buffer;
+        return output;
     } else {
         let indexOffset = 0;
         const vertexList: string[][] = [];
