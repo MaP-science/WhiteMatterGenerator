@@ -87,14 +87,14 @@ export default () => (
                     </li>
                     <li>
                         <b>maxDiameter</b> (number) - The maximum attainable diameter of the axon. This number is
-                        automatically divided by the <b>gFactor</b> to represent the maximum attainable diameter of the
+                        automatically divided by the <b>gRatio</b> to represent the maximum attainable diameter of the
                         axon + myelin.
                     </li>
                     <li>
                         <b>color</b> (string) - Color code of the axon. E.g. "#ffffff" to make it white.
                     </li>
                     <li>
-                        <b>gFactor</b> (number) - This number describes the size of the axon relative to the size of the
+                        <b>gRatio</b> (number) - This number describes the size of the axon relative to the size of the
                         axon + myelin. It should be between 0 and 1.
                     </li>
                 </ul>

@@ -59,7 +59,7 @@ export default () => {
     const [seed, setSeed] = useState(0);
     const [voxelSize, setVoxelSize] = useState([100, 100, 100]);
     const [axonCount, setAxonCount] = useState(50);
-    const [ellipsoidDensity, setEllipsoidDensity] = useState(5);
+    const [ellipsoidDensity, setEllipsoidDensity] = useState(1);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
     const [contractSpeed, setContractSpeed] = useState(1);
@@ -83,7 +83,7 @@ export default () => {
     const [exportBinary, setExportBinary] = useState(true);
     const [exportSimple, setExportSimple] = useState(false);
     const [border, setBorder] = useState(0);
-    const [gFactor, setGFactor] = useState(0.7);
+    const [gRatio, setGRatio] = useState(0.7);
     useEffect(() => {
         const mc = mount.current;
         if (!mc) return;
@@ -101,7 +101,7 @@ export default () => {
         // Controls
         const ctrls = new OrbitControls(cam, ren.domElement);
         ctrls.enableDamping = true;
-        ctrls.dampingFactor = 0.5;
+        ctrls.dampingRatio = 0.5;
         setControls(ctrls);
         // Animate
         const t = window.setInterval(() => setFrame(frame => frame + 1), 1000 / 30);
@@ -134,7 +134,7 @@ export default () => {
             const geoms =
                 selectedItem.type === "axon"
                     ? selectedItem.object.meshes
-                          .filter((_, i) => i !== 1 || Number(selectedItem.object.gFactor) !== 1)
+                          .filter((_, i) => i !== 1 || Number(selectedItem.object.gRatio) !== 1)
                           .map(mesh => mesh.geometry)
                     : [selectedItem.object.mesh.geometry];
             synthesizer.focus = null;
@@ -335,9 +335,9 @@ export default () => {
                                         />
                                         <TextField
                                             type="number"
-                                            label="g-factor"
-                                            value={gFactor}
-                                            onChange={e => setGFactor(e.target.value)}
+                                            label="g-ratio"
+                                            value={gRatio}
+                                            onChange={e => setGRatio(e.target.value)}
                                         />
                                     </ListItem>
                                     <ListItem>
@@ -351,7 +351,7 @@ export default () => {
                                                     mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
                                                     mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter
                                                 });
-                                                s.addAxonsRandomly(Number(axonCount), gFactor);
+                                                s.addAxonsRandomly(Number(axonCount), gRatio);
                                                 s.addCellsRandomly(Number(cellCount), minDist);
                                                 setSynthesizer(s);
                                                 setScene(
@@ -756,7 +756,7 @@ export default () => {
                                                                         .replace(/@index/g, i)
                                                                         .replace(/@color/g, axon.color)
                                                                 );
-                                                                if (Number(axon.gFactor) !== 1)
+                                                                if (Number(axon.gRatio) !== 1)
                                                                     await download(
                                                                         axon.toPLY(exportBinary, exportSimple, 1),
                                                                         name

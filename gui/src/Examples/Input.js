@@ -21,14 +21,14 @@ const inputExample = {
             direction: [1, 0, 0],
             maxDiameter: 1,
             color: "#ff0000",
-            gFactor: 0.7
+            gRatio: 0.7
         },
         {
             position: [1, 0.1, 0],
             direction: [1, 1, 1],
             maxDiameter: 0.5,
             color: "#00ff00",
-            gFactor: 0.5
+            gRatio: 0.5
         }
     ],
     cells: [

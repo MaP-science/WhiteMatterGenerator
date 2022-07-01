@@ -71,7 +71,7 @@ export interface Synthesizer extends SynthesizerState {
     keepInVoxel: (minDist: number) => void;
     collision: (minDist: number, maxOverlap: number) => void;
     getOverlap: (minDist: number, maxOverlap: number) => number;
-    addAxonsRandomly: (axonCount: number, gFactor: number) => void;
+    addAxonsRandomly: (axonCount: number, gRatio: number) => void;
     addCellsRandomly: (cellCount: number, minDist: number) => void;
     volumeFraction: (n: number, border: number) => [number, number];
     update: (growSpeed: number, contractSpeed: number, minDist: number, maxOverlap: number, border: number) => void;
@@ -123,7 +123,7 @@ const createSynthesizer = (config: SynthesizerJSON): Synthesizer => {
                 new Vector3(...axon.direction),
                 axon.maxDiameter / 2,
                 axon.color,
-                axon.gFactor,
+                axon.gRatio,
                 synthesizer
             )
         );
@@ -201,7 +201,7 @@ const createSynthesizer = (config: SynthesizerJSON): Synthesizer => {
         return plyParser(
             [
                 synthesizer.axons.map(a =>
-                    a.meshes.filter((_, i) => i !== 1 || Number(a.gFactor) !== 1).map(mesh => mesh.geometry)
+                    a.meshes.filter((_, i) => i !== 1 || Number(a.gRatio) !== 1).map(mesh => mesh.geometry)
                 ),
                 synthesizer.cells.map(c => c.mesh?.geometry || new BufferGeometry())
             ]
@@ -247,7 +247,7 @@ const createSynthesizer = (config: SynthesizerJSON): Synthesizer => {
         });
         return result;
     };
-    const addAxonsRandomly = (axonCount: number, gFactor: number) => {
+    const addAxonsRandomly = (axonCount: number, gRatio: number) => {
         for (let i = 0; i < axonCount; ++i)
             synthesizer.axons.push(
                 createAxon(
@@ -255,7 +255,7 @@ const createSynthesizer = (config: SynthesizerJSON): Synthesizer => {
                     randomPosition(),
                     0.1 + random() * 10,
                     undefined,
-                    gFactor,
+                    gRatio,
                     synthesizer
                 )
             );

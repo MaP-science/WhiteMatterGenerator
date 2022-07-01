@@ -40,7 +40,7 @@ const configToMultiplePly = (
                 .replace(/@index/g, String(i))
                 .replace(/@color/g, axon.color)
         });
-        if (Number(axon.gFactor) !== 1)
+        if (Number(axon.gRatio) !== 1)
             result.push({
                 data: axon.toPLY(options.exportBinary, options.exportSimple, 1),
                 name: name

@@ -92,7 +92,7 @@ const getOverlap = (a: CollisionTree, b: CollisionTree, minDist: number, maxOver
 const generatePipeUtil = (
     ellipsoids: Ellipsoid[],
     color: string,
-    gFactor: number,
+    gRatio: number,
     resolution: number,
     viewSizes: boolean,
     minAndMaxDiameter: { min: number; max: number }
@@ -120,10 +120,10 @@ const generatePipeUtil = (
                 .clone()
                 .multiplyScalar(Math.cos(angle))
                 .add(b.clone().multiplyScalar(Math.sin(angle)));
-            let sp = getSP(ellipsoid.pos, dir, i, gFactor);
+            let sp = getSP(ellipsoid.pos, dir, i, gRatio);
             let dist = sp.clone().sub(ellipsoid.pos).dot(dir);
             for (let i2 = i + 1; i2 < ellipsoids.length; ++i2) {
-                const sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
+                const sp2 = getSP(ellipsoid.pos, dir, i2, gRatio);
                 if (!sp2) break;
                 const dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
                 if (dist2 < dist) continue;
@@ -131,7 +131,7 @@ const generatePipeUtil = (
                 dist = dist2;
             }
             for (let i2 = i - 1; i2 >= 0; --i2) {
-                const sp2 = getSP(ellipsoid.pos, dir, i2, gFactor);
+                const sp2 = getSP(ellipsoid.pos, dir, i2, gRatio);
                 if (!sp2) break;
                 const dist2 = sp2.clone().sub(ellipsoid.pos).dot(dir);
                 if (dist2 < dist) continue;
@@ -196,14 +196,14 @@ export type AxonJSON = {
     direction: number[];
     maxDiameter: number;
     color: string;
-    gFactor: number;
+    gRatio: number;
     ellipsoids: EllipsoidJSON[];
 };
 
 interface AxonState {
     start: Vector3;
     end: Vector3;
-    gFactor: number;
+    gRatio: number;
     ellipsoidDensity: number;
     voxelSize: Vector3;
     deformation: Mapping;
@@ -228,7 +228,7 @@ export interface Axon extends AxonState {
     getLength: () => number;
     getSurfacePoint: (pos: Vector3, dir: Vector3) => Vector3 | undefined;
     generatePipe: (
-        gFactor: number,
+        gRatio: number,
         resolution: number,
         extended: boolean,
         viewSizes: boolean,
@@ -252,7 +252,7 @@ const createAxon = (
     dir: Vector3,
     radius: number,
     color: string | undefined,
-    gFactor: number,
+    gRatio: number,
     {
         deformation,
         minDiameter,
@@ -263,7 +263,7 @@ const createAxon = (
     const axon: AxonState = {
         start: projectOntoCube(pos, dir, voxelSize),
         end: projectOntoCube(pos, dir.clone().negate(), voxelSize),
-        gFactor: gFactor || 1,
+        gRatio: gRatio || 1,
         ellipsoidDensity,
         voxelSize,
         deformation,
@@ -277,7 +277,7 @@ const createAxon = (
             containsPoint: () => false
         }
     };
-    axon.radius /= axon.gFactor;
+    axon.radius /= axon.gRatio;
     axon.ellipsoids = [
         createEllipsoid(axon.start, axon.radius, deformation, minDiameter, 1, axon.color, false),
         createEllipsoid(axon.end, axon.radius, deformation, minDiameter, 1, axon.color, false)
@@ -403,14 +403,14 @@ const createAxon = (
         }, undefined);
     };
     const generatePipe = (
-        gFactor: number,
+        gRatio: number,
         resolution: number,
         extended: boolean,
         viewSizes: boolean,
         minAndMaxDiameter: { min: number; max: number }
     ) => {
         if (!extended)
-            return generatePipeUtil(axon.ellipsoids, axon.color, gFactor, resolution, viewSizes, minAndMaxDiameter);
+            return generatePipeUtil(axon.ellipsoids, axon.color, gRatio, resolution, viewSizes, minAndMaxDiameter);
         const firstPos = axon.ellipsoids[0].pos;
         const lastPos = axon.ellipsoids[axon.ellipsoids.length - 1].pos;
         const d = lastPos.clone().sub(firstPos).normalize();
@@ -430,7 +430,7 @@ const createAxon = (
             e.pos.sub(lastPos).applyAxisAngle(n, Math.PI).add(lastPos);
             ellipsoids.push(e);
         }
-        return generatePipeUtil(ellipsoids, axon.color, gFactor, resolution, viewSizes, minAndMaxDiameter);
+        return generatePipeUtil(ellipsoids, axon.color, gRatio, resolution, viewSizes, minAndMaxDiameter);
     };
     const generatePipes = (
         scene: Scene,
@@ -440,7 +440,7 @@ const createAxon = (
         minAndMaxDiameter: { min: number; max: number }
     ) => {
         const outer = generatePipe(1, resolution, extended, viewSizes, minAndMaxDiameter);
-        const inner = generatePipe(axon.gFactor, resolution, extended, viewSizes, minAndMaxDiameter);
+        const inner = generatePipe(axon.gRatio, resolution, extended, viewSizes, minAndMaxDiameter);
         scene.add(outer);
         scene.add(inner);
         axon.meshes.forEach(mesh => {
@@ -459,7 +459,7 @@ const createAxon = (
                             axon.ellipsoids[Math.min(i + 1, axon.ellipsoids.length - 1)].pos
                                 .clone()
                                 .sub(axon.ellipsoids[Math.max(i - 1, 0)].pos)
-                        ) * axon.gFactor,
+                        ) * axon.gRatio,
                         minAndMaxDiameter
                     ).toArray()
                 )
@@ -489,9 +489,9 @@ const createAxon = (
         return {
             position: [axon.start.x, axon.start.y, axon.start.z],
             direction: [axon.end.x - axon.start.x, axon.end.y - axon.start.y, axon.end.z - axon.start.z],
-            maxDiameter: axon.radius * axon.gFactor * 2,
+            maxDiameter: axon.radius * axon.gRatio * 2,
             color: axon.color,
-            gFactor: axon.gFactor,
+            gRatio: axon.gRatio,
             ellipsoids: axon.ellipsoids.map((ellipsoid, i) => {
                 const myelinDiameter = ellipsoid.crossSectionDiameter(
                     axon.ellipsoids[Math.min(i + 1, axon.ellipsoids.length - 1)].pos
@@ -501,7 +501,7 @@ const createAxon = (
                 return {
                     position: [ellipsoid.pos.x, ellipsoid.pos.y, ellipsoid.pos.z],
                     shape: ellipsoid.shape.elements,
-                    axonDiameter: myelinDiameter * axon.gFactor,
+                    axonDiameter: myelinDiameter * axon.gRatio,
                     myelinDiameter: myelinDiameter
                 };
             })
