@@ -120,7 +120,7 @@ const generatePipeUtil = (
                 .clone()
                 .multiplyScalar(Math.cos(angle))
                 .add(b.clone().multiplyScalar(Math.sin(angle)));
-            let sp = getSP(ellipsoid.pos, dir, i, gRatio);
+            let sp = getSP(ellipsoid.pos, dir, i, gRatio) || new Vector3(0, 0, 0);
             let dist = sp.clone().sub(ellipsoid.pos).dot(dir);
             for (let i2 = i + 1; i2 < ellipsoids.length; ++i2) {
                 const sp2 = getSP(ellipsoid.pos, dir, i2, gRatio);
