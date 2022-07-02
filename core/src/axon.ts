@@ -104,19 +104,45 @@ const generatePipeUtil = (
         ellipsoids[i].shape = shape;
         return sp;
     };
-    const d = ellipsoids[ellipsoids.length - 1].pos.clone().sub(ellipsoids[0].pos);
-    d.normalize();
+    const d = ellipsoids
+        .map((_, i) =>
+            ellipsoids[Math.min(i + 1, ellipsoids.length - 1)].pos.clone().sub(ellipsoids[Math.max(i - 1, 0)].pos)
+        )
+        .map(d => d.normalize());
+    const sd = 0.05;
+    const dSmooth = d.map((_, i) => {
+        const sum = new Vector3(0, 0, 0);
+        let weight = 0;
+        d.forEach((dj, j) => {
+            const dist = Math.abs((i - j) / d.length);
+            const w = Math.exp(-0.5 * (dist / sd) ** 2);
+            sum.add(d[j].clone().multiplyScalar(w));
+            weight += w;
+        });
+        return sum.multiplyScalar(1 / weight);
+    });
+
     const x = new Vector3(1, 0, 0);
     const y = new Vector3(0, 1, 0);
-    const cx = d.clone().cross(x);
-    const cy = d.clone().cross(y);
-    const a = cx.length() > cy.length() ? cx : cy;
-    a.normalize();
-    const b = d.clone().cross(a).normalize();
+    const cx = dSmooth[0].clone().cross(x);
+    const cy = dSmooth[0].clone().cross(y);
+    const a = [...Array(dSmooth.length)].map(() => new Vector3(0, 0, 0));
+    dSmooth.forEach((_, i) => {
+        if (i === 0) {
+            a[i] = cx.length() > cy.length() ? cx : cy;
+            return;
+        }
+        a[i] = dSmooth[i - 1]
+            .clone()
+            .cross(a[i - 1])
+            .cross(dSmooth[i])
+            .normalize();
+    });
     const verts = ellipsoids.map((ellipsoid, i) => {
+        const b = dSmooth[i].clone().cross(a[i]).normalize();
         return [...Array(resolution)].map((r, j) => {
             const angle = (2 * Math.PI * j) / resolution;
-            const dir = a
+            const dir = a[i]
                 .clone()
                 .multiplyScalar(Math.cos(angle))
                 .add(b.clone().multiplyScalar(Math.sin(angle)));
