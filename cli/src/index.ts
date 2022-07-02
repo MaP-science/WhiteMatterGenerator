@@ -139,7 +139,7 @@ import configToPly from "./configToPly";
         });
         plys.forEach(file => {
             if (typeof file.data === "string") fs.writeFileSync(`${outputDirPly}/${file.name}`, file.data);
-            else fs.writeFileSync(`${outputDirPly}/${file.name}`, file.data);
+            else fs.writeFileSync(`${outputDirPly}/${file.name}`, new DataView(file.data));
         });
     };
 

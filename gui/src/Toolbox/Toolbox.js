@@ -746,17 +746,15 @@ export default () => {
                                                                     new Promise(resolve =>
                                                                         window.setTimeout(resolve, milliseconds)
                                                                     ))(100);
-
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
                                                                 const axon = synthesizer.axons[i];
                                                                 const downloadPLY = async isAxon => {
-                                                                    const data = axon.toPLY(
-                                                                        exportBinary,
-                                                                        exportSimple,
-                                                                        isAxon ? 1 : 0
-                                                                    );
                                                                     await download(
-                                                                        exportBinary ? data.buffer : data,
+                                                                        axon.toPLY(
+                                                                            exportBinary,
+                                                                            exportSimple,
+                                                                            isAxon ? 1 : 0
+                                                                        ),
                                                                         name
                                                                             .replace(
                                                                                 /@type/g,

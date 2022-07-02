@@ -67,7 +67,7 @@ interface SynthesizerState {
 export interface Synthesizer extends SynthesizerState {
     dispose: () => void;
     toJSON: () => SynthesizerJSON;
-    toPLY: (binary: boolean, simple: boolean) => string | DataView;
+    toPLY: (binary: boolean, simple: boolean) => string | ArrayBuffer;
     keepInVoxel: (minDist: number) => void;
     collision: (minDist: number, maxOverlap: number) => void;
     getOverlap: (minDist: number, maxOverlap: number) => number;

@@ -114,7 +114,7 @@ const generatePipeUtil = (
     a.normalize();
     const b = d.clone().cross(a).normalize();
     const verts = ellipsoids.map((ellipsoid, i) => {
-        return new Array(resolution).fill(true).map((r, j) => {
+        return [...Array(resolution)].map((r, j) => {
             const angle = (2 * Math.PI * j) / resolution;
             const dir = a
                 .clone()
@@ -244,7 +244,7 @@ export interface Axon extends AxonState {
     generateSkeleton: (scene: Scene, viewSizes: boolean, minAndMaxDiameter: { min: number; max: number }) => void;
     draw: (scene: Scene, viewSizes: boolean, minAndMaxDiameter: { min: number; max: number }) => void;
     toJSON: () => AxonJSON;
-    toPLY: (binary: boolean, simple: boolean, i: number) => string | DataView;
+    toPLY: (binary: boolean, simple: boolean, i: number) => string | ArrayBuffer;
 }
 
 const createAxon = (

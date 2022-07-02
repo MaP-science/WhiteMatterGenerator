@@ -9,7 +9,10 @@ interface Options {
     multiple: boolean;
 }
 
-const configToSinglePly = (config: SynthesizerJSON, options: Options): { name: string; data: string | DataView }[] => {
+const configToSinglePly = (
+    config: SynthesizerJSON,
+    options: Options
+): { name: string; data: string | ArrayBuffer }[] => {
     const synthesizer = createSynthesizer(config);
     synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
     const result = synthesizer.toPLY(options.exportBinary, options.exportSimple);
@@ -20,7 +23,7 @@ const configToSinglePly = (config: SynthesizerJSON, options: Options): { name: s
 const configToMultiplePly = (
     config: SynthesizerJSON,
     options: Options
-): { name: string; data: string | DataView }[] => {
+): { name: string; data: string | ArrayBuffer }[] => {
     const synthesizer = createSynthesizer(config);
     synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
 
