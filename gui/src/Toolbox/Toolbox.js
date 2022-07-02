@@ -749,21 +749,25 @@ export default () => {
 
                                                             for (let i = 0; i < synthesizer.axons.length; ++i) {
                                                                 const axon = synthesizer.axons[i];
-                                                                await download(
-                                                                    axon.toPLY(exportBinary, exportSimple, 0),
-                                                                    name
-                                                                        .replace(/@type/g, "myelin")
-                                                                        .replace(/@index/g, i)
-                                                                        .replace(/@color/g, axon.color)
-                                                                );
-                                                                if (Number(axon.gRatio) !== 1)
+                                                                const downloadPLY = async isAxon => {
+                                                                    const data = axon.toPLY(
+                                                                        exportBinary,
+                                                                        exportSimple,
+                                                                        isAxon ? 1 : 0
+                                                                    );
                                                                     await download(
-                                                                        axon.toPLY(exportBinary, exportSimple, 1),
+                                                                        exportBinary ? data.buffer : data,
                                                                         name
-                                                                            .replace(/@type/g, "axon")
+                                                                            .replace(
+                                                                                /@type/g,
+                                                                                isAxon ? "axon" : "myelin"
+                                                                            )
                                                                             .replace(/@index/g, i)
                                                                             .replace(/@color/g, axon.color)
                                                                     );
+                                                                };
+                                                                await downloadPLY(false);
+                                                                if (Number(axon.gRatio) !== 1) await downloadPLY(true);
                                                                 await wait();
                                                             }
                                                             if (viewModeCell === "hide") return;
