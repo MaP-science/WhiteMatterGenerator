@@ -101,7 +101,7 @@ export default () => {
         // Controls
         const ctrls = new OrbitControls(cam, ren.domElement);
         ctrls.enableDamping = true;
-        ctrls.dampingRatio = 0.5;
+        ctrls.dampingFactor = 0.5;
         setControls(ctrls);
         // Animate
         const t = window.setInterval(() => setFrame(frame => frame + 1), 1000 / 30);
