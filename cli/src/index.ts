@@ -112,7 +112,7 @@ import configToPly from "./configToPly";
     const colWidth = 22;
 
     log(
-        ["Iterations", "Axon volume fraction", "Cell volume fraction", "Total volume fraction"]
+        ["Iterations", "Axon volume fraction", "Cell volume fraction", "Total volume fraction", "Time"]
             .map(s => s.padEnd(colWidth, " "))
             .join("")
     );
@@ -152,7 +152,13 @@ import configToPly from "./configToPly";
         const vf = vfa + vfc;
         ++i;
         log(
-            [`${i} / ${argv.iterations}`, vfa.toFixed(2), vfc.toFixed(2), `${vf.toFixed(2)} / ${argv.volumeFraction}`]
+            [
+                `${i} / ${argv.iterations}`,
+                vfa.toFixed(2),
+                vfc.toFixed(2),
+                `${vf.toFixed(2)} / ${argv.volumeFraction}`,
+                new Date().toUTCString()
+            ]
                 .map(s => s.padEnd(colWidth, " "))
                 .join("")
         );
