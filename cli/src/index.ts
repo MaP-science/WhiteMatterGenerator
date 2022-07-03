@@ -50,6 +50,13 @@ import configToPly from "./configToPly";
             type: "string",
             nargs: 1
         })
+        .option("p", {
+            alias: "ply",
+            default: true,
+            describe: "Save PLY files too",
+            type: "boolean",
+            nargs: 1
+        })
         .option("r", {
             alias: "resolution",
             default: 32,
@@ -143,7 +150,7 @@ import configToPly from "./configToPly";
         });
     };
 
-    if (argv.iterations === 0) exportPly(0);
+    if (argv.iterations === 0 && argv.ply) exportPly(0);
 
     for (let i = 0; i < (argv.iterations as number); ) {
         do synthesizer.update(growSpeed, contractSpeed, minimumDistance, 0.0001, border);
@@ -173,7 +180,7 @@ import configToPly from "./configToPly";
         }
         if (i % (argv.outputInterval as number) === 0 || done) {
             fs.writeFileSync(`${outputDir}/config_output_${i}.json`, JSON.stringify(getConfig(), null, 4));
-            exportPly(i);
+            if (argv.ply) exportPly(i);
         }
         if (done) break;
     }
