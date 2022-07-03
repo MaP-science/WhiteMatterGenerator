@@ -1,5 +1,4 @@
 import { createSynthesizer, SynthesizerJSON } from "../../core/src/index";
-import arrayBufferToBuffer from "arraybuffer-to-buffer";
 
 interface Options {
     resolution: number;
@@ -16,7 +15,7 @@ const configToSinglePly = (
     const synthesizer = createSynthesizer(config);
     synthesizer.draw("none", "pipes", "all", options.resolution, options.extended, 0, false);
     const result = synthesizer.toPLY(options.exportBinary, options.exportSimple);
-    if (options.exportBinary) return [{ name: "axons.ply", data: arrayBufferToBuffer(result) }];
+    if (options.exportBinary) return [{ name: "axons.ply", data: result }];
     return [{ name: "axons.ply", data: result }];
 };
 
@@ -51,7 +50,7 @@ const configToMultiplePly = (
         });
     }
 
-    if (options.exportBinary) result.forEach(r => (r.data = arrayBufferToBuffer(r.data)));
+    if (options.exportBinary) result.forEach(r => (r.data = r.data));
     return result;
 };
 

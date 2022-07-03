@@ -109,7 +109,7 @@ import configToPly from "./configToPly";
         fs.writeFileSync(`${outputDir}/${argv.logFile}`, logs);
     };
 
-    const colWidth = 20;
+    const colWidth = 22;
 
     log(
         ["Iterations", "Axon volume fraction", "Cell volume fraction", "Total volume fraction"]
