@@ -287,16 +287,8 @@ const createAxon = (
     }: { deformation: Mapping; minDiameter: Mapping; ellipsoidDensity: number; voxelSize: Vector3 }
 ): Axon => {
     const axon: AxonState = {
-        start: projectOntoCube(
-            pos,
-            dir,
-            new Vector3().fromArray(voxelSize.toArray().map(v => v - (2 * minDiameter.map(radius * 2)) / 2))
-        ),
-        end: projectOntoCube(
-            pos,
-            dir.clone().negate(),
-            new Vector3().fromArray(voxelSize.toArray().map(v => v - (2 * minDiameter.map(radius * 2)) / 2))
-        ),
+        start: projectOntoCube(pos, dir, voxelSize),
+        end: projectOntoCube(pos, dir.clone().negate(), voxelSize),
         gRatio: gRatio || 1,
         ellipsoidDensity,
         voxelSize,
@@ -326,11 +318,22 @@ const createAxon = (
     const keepInVoxel = (minDist: number) => {
         const a = axon.ellipsoids[0];
         const b = axon.ellipsoids[axon.ellipsoids.length - 1];
-        axon.ellipsoids.forEach(ellipsoid => {
+        axon.ellipsoids.slice(1, axon.ellipsoids.length - 1).forEach(ellipsoid => {
             ellipsoid.keepInVoxel(axon.voxelSize, minDist);
         });
         [a, b].forEach(ellipsoid => {
-            ellipsoid.moveToNearestSide(axon.voxelSize, minDist);
+            const min = Math.min(
+                ...ellipsoid.pos.toArray().map((v, i) => axon.voxelSize.getComponent(i) / 2 - Math.abs(v))
+            );
+            ellipsoid.pos.fromArray(
+                ellipsoid.pos
+                    .toArray()
+                    .map((v, i) =>
+                        axon.voxelSize.getComponent(i) / 2 - Math.abs(v) === min
+                            ? (v = Math.sign(v) * (axon.voxelSize.getComponent(i) / 2))
+                            : v
+                    )
+            );
         });
     };
     const getMinAndMaxDiameter = () => {
