@@ -53,7 +53,8 @@ export interface Ellipsoid extends EllipsoidState {
     clone: () => Ellipsoid;
     boundingBox: (minDist: number) => Box3;
     containsPoint: (p: Vector3) => boolean;
-    keepInVoxel: (voxelSize: Vector3, minDist: number, entireCell: boolean) => void;
+    keepInVoxel: (voxelSize: Vector3, minDist: number) => void;
+    moveToNearestSide: (voxelSize: Vector3, minDist: number) => void;
     collision: (ell: Ellipsoid, minDist: number, maxOverlap: number) => void;
     getOverlap: (ell: Ellipsoid, minDist: number, maxOverlap: number) => number;
     getSurfacePoint: (pos: Vector3, dir: Vector3) => Vector3 | undefined;
@@ -117,26 +118,37 @@ const createEllipsoid = (
     const containsPoint = (p: Vector3) => {
         return p.clone().sub(ellipsoid.pos).applyMatrix3(new Matrix3().getInverse(ellipsoid.shape)).length() < 1;
     };
-    const keepInVoxel = (voxelSize: Vector3, minDist: number, entireCell: boolean) => {
-        if (entireCell) {
-            const bb = new Vector3().fromArray(
-                boundingBoxD(minDist)
-                    .toArray()
-                    .map(v => v + minDist)
-            );
-            ellipsoid.pos.fromArray(
-                ellipsoid.pos.toArray().map((v, i) => {
-                    const s = voxelSize.getComponent(i) / 2 - bb.getComponent(i);
-                    return Math.min(Math.max(v, -s), s);
-                })
-            );
-        } else {
-            ellipsoid.pos.fromArray(
-                ellipsoid.pos
-                    .toArray()
-                    .map((v, i) => Math.min(Math.max(v, -voxelSize.getComponent(i) / 2), voxelSize.getComponent(i) / 2))
-            );
-        }
+    const keepInVoxel = (voxelSize: Vector3, minDist: number) => {
+        const bb = new Vector3().fromArray(
+            boundingBoxD(minDist)
+                .toArray()
+                .map(v => v + minDist)
+        );
+        ellipsoid.pos.fromArray(
+            ellipsoid.pos.toArray().map((v, i) => {
+                const s = voxelSize.getComponent(i) / 2 - bb.getComponent(i);
+                return Math.min(Math.max(v, -s), s);
+            })
+        );
+    };
+    const moveToNearestSide = (voxelSize: Vector3, minDist: number) => {
+        const bb = new Vector3().fromArray(
+            boundingBoxD(minDist)
+                .toArray()
+                .map(v => v + minDist)
+        );
+        let minDim = 0;
+        let minComp = 0;
+        let minDiff = Infinity;
+        ellipsoid.pos.toArray().forEach((v, i) => {
+            const s = voxelSize.getComponent(i) / 2 - bb.getComponent(i);
+            const dist = s - Math.abs(v);
+            if (dist > minDiff) return;
+            minDiff = dist;
+            minDim = i;
+            minComp = v > 0 ? s : -s;
+        });
+        ellipsoid.pos.setComponent(minDim, minComp);
     };
     const collision = (ell: Ellipsoid, minDist: number, maxOverlap: number) => {
         const d = ell.pos.clone().sub(ellipsoid.pos);
@@ -268,6 +280,7 @@ const createEllipsoid = (
         boundingBox,
         containsPoint,
         keepInVoxel,
+        moveToNearestSide,
         collision,
         getOverlap,
         getSurfacePoint,

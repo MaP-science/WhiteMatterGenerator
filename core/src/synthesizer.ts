@@ -288,7 +288,7 @@ const createSynthesizer = (config: SynthesizerJSON): Synthesizer => {
                 });
             });
             mo = 0;
-            synthesizer.cells.forEach(c => c.keepInVoxel(synthesizer.voxelSize, minDist, true));
+            synthesizer.cells.forEach(c => c.keepInVoxel(synthesizer.voxelSize, minDist));
             synthesizer.cells.forEach((a, i) => {
                 synthesizer.cells.forEach((b, j) => {
                     if (i >= j) return;

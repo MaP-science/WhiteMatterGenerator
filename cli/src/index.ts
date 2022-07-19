@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import yargs from "yargs";
 import fs from "fs";
 import { createSynthesizer, setRandomSeed } from "../../core/src/index";

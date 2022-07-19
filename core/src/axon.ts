@@ -287,8 +287,16 @@ const createAxon = (
     }: { deformation: Mapping; minDiameter: Mapping; ellipsoidDensity: number; voxelSize: Vector3 }
 ): Axon => {
     const axon: AxonState = {
-        start: projectOntoCube(pos, dir, voxelSize),
-        end: projectOntoCube(pos, dir.clone().negate(), voxelSize),
+        start: projectOntoCube(
+            pos,
+            dir,
+            new Vector3().fromArray(voxelSize.toArray().map(v => v - (2 * minDiameter.map(radius * 2)) / 2))
+        ),
+        end: projectOntoCube(
+            pos,
+            dir.clone().negate(),
+            new Vector3().fromArray(voxelSize.toArray().map(v => v - (2 * minDiameter.map(radius * 2)) / 2))
+        ),
         gRatio: gRatio || 1,
         ellipsoidDensity,
         voxelSize,
@@ -318,25 +326,11 @@ const createAxon = (
     const keepInVoxel = (minDist: number) => {
         const a = axon.ellipsoids[0];
         const b = axon.ellipsoids[axon.ellipsoids.length - 1];
-        axon.ellipsoids.slice(1, axon.ellipsoids.length - 1).forEach(ellipsoid => {
-            const axisLengthA = ellipsoid.getOverlap(a, minDist, 0);
-            const axisLengthB = ellipsoid.getOverlap(b, minDist, 0);
-            const entireCell = axisLengthA <= 0 && axisLengthB <= 0;
-            ellipsoid.keepInVoxel(axon.voxelSize, minDist, entireCell);
+        axon.ellipsoids.forEach(ellipsoid => {
+            ellipsoid.keepInVoxel(axon.voxelSize, minDist);
         });
         [a, b].forEach(ellipsoid => {
-            const min = Math.min(
-                ...ellipsoid.pos.toArray().map((v, i) => axon.voxelSize.getComponent(i) / 2 - Math.abs(v))
-            );
-            ellipsoid.pos.fromArray(
-                ellipsoid.pos
-                    .toArray()
-                    .map((v, i) =>
-                        axon.voxelSize.getComponent(i) / 2 - Math.abs(v) === min
-                            ? (v = Math.sign(v) * (axon.voxelSize.getComponent(i) / 2))
-                            : v
-                    )
-            );
+            ellipsoid.moveToNearestSide(axon.voxelSize, minDist);
         });
     };
     const getMinAndMaxDiameter = () => {
