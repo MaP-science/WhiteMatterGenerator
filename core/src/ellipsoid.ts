@@ -199,9 +199,6 @@ const createEllipsoid = (
                 ellipsoid.shape.multiplyScalar(1 + amount),
                 new Matrix3().multiplyScalar((-amount * ellipsoid.minDiameter.map(ellipsoid.radius * 2)) / 2)
             );
-        const w = 0.2;
-        const avg = Math.cbrt(ellipsoid.shape.determinant());
-        ellipsoid.shape = addMatrix3(ellipsoid.shape.multiplyScalar(1 - w), new Matrix3().multiplyScalar(w * avg));
     };
     const diameter = () => {
         return 2 * Math.cbrt(ellipsoid.shape.determinant());
