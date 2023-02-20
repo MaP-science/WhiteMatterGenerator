@@ -45,6 +45,13 @@ import configToPly from "./configToPly";
             type: "number",
             nargs: 1
         })
+        .option("w", {
+            alias: "maxIterationsWithoutImprovement",
+            default: 10,
+            describe: "Stop simulation if the volume fraction is not greater than it was this many iterations ago",
+            type: "number",
+            nargs: 1
+        })
         .option("l", {
             alias: "logFile",
             default: "log.txt",
@@ -154,6 +161,8 @@ import configToPly from "./configToPly";
 
     if (argv.iterations === 0 && argv.ply) exportPly(0);
 
+    const volumeFractions = [0];
+
     for (let i = 0; i < (argv.iterations as number); ) {
         do synthesizer.update(growSpeed, contractSpeed, minimumDistance, 0.0001, border);
         while (synthesizer.updateState?.name !== "ready");
@@ -174,6 +183,12 @@ import configToPly from "./configToPly";
         let done = false;
         if (vf >= (argv.volumeFraction as number)) {
             log("Target volume fraction reached");
+            done = true;
+        }
+        volumeFractions.push(vf);
+        const earlierVolumeFraction = volumeFractions[Math.max(i - Number(argv.maxIterationsWithoutImprovement), 0)];
+        if (vf <= earlierVolumeFraction) {
+            log("Number of max iterations without improvement reached");
             done = true;
         }
         if (i === argv.iterations) {
