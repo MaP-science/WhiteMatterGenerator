@@ -22,7 +22,7 @@ export default () => (
                         <b>Hide</b> - Hide the axons.
                     </li>
                     <li>
-                        <b>Ellipsoids</b> - Display the aoxns as chains of ellipsoids (this is what is used by the
+                        <b>Ellipsoids</b> - Display the axons as chains of ellipsoids (this is what is used by the
                         algorithm).
                     </li>
                     <li>
