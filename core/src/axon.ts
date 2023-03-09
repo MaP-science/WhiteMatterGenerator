@@ -12,6 +12,7 @@ import {
     Face3,
     InstancedMesh,
     BufferAttribute,
+    Float32BufferAttribute,
     Scene
 } from "three";
 import {
@@ -25,7 +26,6 @@ import {
 import random from "./random";
 import createEllipsoid from "./ellipsoid";
 import plyParser from "./plyParser";
-import { BufferGeometryUtils } from "./BufferGeometryUtils";
 import { Ellipsoid, EllipsoidJSON } from "./ellipsoid";
 import { Mapping } from "./mapping";
 
@@ -167,51 +167,63 @@ const generatePipeUtil = (
             return sp;
         });
     });
-    const geom = new Geometry();
-    geom.vertices = verts.flat();
-    geom.faces = verts
-        .slice(0, verts.length - 1)
-        .map((verti, i) => {
-            const c0 = viewSizes
-                ? valueToColor(
-                      ellipsoids[i].crossSectionDiameter(
-                          ellipsoids[Math.min(i + 1, ellipsoids.length - 1)].pos
-                              .clone()
-                              .sub(ellipsoids[Math.max(i - 1, 0)].pos)
-                      ),
-                      minAndMaxDiameter
-                  )
-                : hexColorToVector(color);
-            const c1 = viewSizes
-                ? valueToColor(
-                      ellipsoids[i + 1].crossSectionDiameter(
-                          ellipsoids[Math.min(i + 2, ellipsoids.length - 1)].pos
-                              .clone()
-                              .sub(ellipsoids[Math.max(i, 0)].pos)
-                      ),
-                      minAndMaxDiameter
-                  )
-                : hexColorToVector(color);
-            return verti.map((vertij, j) => {
-                const i00 = i * resolution + j;
-                const i01 = i * resolution + ((j + 1) % resolution);
-                const i10 = (i + 1) * resolution + j;
-                const i11 = (i + 1) * resolution + ((j + 1) % resolution);
-                const a = new Face3(i00, i01, i10);
-                const b = new Face3(i10, i01, i11);
-                a.vertexColors = [c0, c0, c1];
-                b.vertexColors = [c1, c0, c1];
-                return [a, b];
-            });
-        })
-        .flat()
-        .flat();
-    geom.computeVertexNormals();
-    const bg = new BufferGeometry().fromGeometry(geom);
-    const result = new Mesh(
-        BufferGeometryUtils.mergeVertices(bg),
-        new MeshPhongMaterial({ vertexColors: true, side: DoubleSide })
+    const geom = new BufferGeometry();
+    geom.setAttribute(
+        "position",
+        new Float32BufferAttribute(
+            verts
+                .flat()
+                .map(v => v.toArray())
+                .flat(),
+            3
+        )
     );
+    geom.setAttribute(
+        "color",
+        new Float32BufferAttribute(
+            verts
+                .map((verti, i) =>
+                    verti.map(() =>
+                        (viewSizes
+                            ? valueToColor(
+                                  ellipsoids[i].crossSectionDiameter(
+                                      ellipsoids[Math.min(i + 1, ellipsoids.length - 1)].pos
+                                          .clone()
+                                          .sub(ellipsoids[Math.max(i - 1, 0)].pos)
+                                  ),
+                                  minAndMaxDiameter
+                              )
+                            : hexColorToVector(color)
+                        ).toArray()
+                    )
+                )
+                .flat()
+                .flat(),
+            3
+        )
+    );
+    geom.setIndex(
+        verts
+            .slice(0, verts.length - 1)
+            .map((verti, i) => {
+                return verti.map((_, j) => {
+                    const i00 = i * resolution + j;
+                    const i01 = i * resolution + ((j + 1) % resolution);
+                    const i10 = (i + 1) * resolution + j;
+                    const i11 = (i + 1) * resolution + ((j + 1) % resolution);
+                    const a = new Face3(i00, i01, i10);
+                    const b = new Face3(i10, i01, i11);
+                    return [a, b];
+                });
+            })
+            .flat()
+            .flat()
+            .map(v => [v.a, v.b, v.c])
+            .flat()
+    );
+    geom.computeVertexNormals();
+    const bg = geom;
+    const result = new Mesh(bg, new MeshPhongMaterial({ vertexColors: true, side: DoubleSide }));
     geom.dispose();
     bg.dispose();
     return result;
