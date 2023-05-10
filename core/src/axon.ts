@@ -294,15 +294,20 @@ const createAxon = (
     {
         deformation,
         minDiameter,
-        ellipsoidDensity,
+        ellipsoidSeparation,
         voxelSize
-    }: { deformation: Mapping; minDiameter: Mapping; ellipsoidDensity: number; voxelSize: Vector3 }
+    }: {
+        deformation: Mapping;
+        minDiameter: Mapping;
+        ellipsoidSeparation: Mapping;
+        voxelSize: Vector3;
+    }
 ): Axon => {
     const axon: AxonState = {
         start: projectOntoCube(pos, dir, voxelSize),
         end: projectOntoCube(pos, dir.clone().negate(), voxelSize),
         gRatio: gRatio || 1,
-        ellipsoidDensity,
+        ellipsoidDensity: 1 / ellipsoidSeparation.map(radius * 2),
         voxelSize,
         deformation,
         minDiameter,

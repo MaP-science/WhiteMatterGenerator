@@ -31,9 +31,9 @@ const wireframeCube = (size: Vector3) =>
 
 export type SynthesizerJSON = {
     voxelSize: number[];
-    ellipsoidDensity: number;
     mapFromDiameterToDeformationFactor: MappingJSON;
     mapFromMaxDiameterToMinDiameter: MappingJSON;
+    mapFromMaxDiameterToEllipsoidSeparation: MappingJSON;
     axons: AxonJSON[];
     cells: CellJSON[];
 };
@@ -53,9 +53,9 @@ const isAxon = (type: string, object: Axon | Ellipsoid | null): object is Axon =
 
 interface SynthesizerState {
     voxelSize: Vector3;
-    ellipsoidDensity: number;
     deformation: Mapping;
     minDiameter: Mapping;
+    ellipsoidSeparation: Mapping;
     axons: Axon[];
     cells: Ellipsoid[];
     updateState: UpdateState;
@@ -100,9 +100,9 @@ const createSynthesizer = (config: SynthesizerJSON): Synthesizer => {
             typeof config.voxelSize === "number"
                 ? new Vector3(config.voxelSize, config.voxelSize, config.voxelSize)
                 : new Vector3().fromArray(config.voxelSize),
-        ellipsoidDensity: Number(config.ellipsoidDensity),
         deformation: createMapping(config.mapFromDiameterToDeformationFactor),
         minDiameter: createMapping(config.mapFromMaxDiameterToMinDiameter),
+        ellipsoidSeparation: createMapping(config.mapFromMaxDiameterToEllipsoidSeparation),
         axons: [],
         cells: [],
         updateState: {
@@ -186,9 +186,9 @@ const createSynthesizer = (config: SynthesizerJSON): Synthesizer => {
     const toJSON = () => {
         return {
             voxelSize: synthesizer.voxelSize.toArray(),
-            ellipsoidDensity: synthesizer.ellipsoidDensity,
             mapFromDiameterToDeformationFactor: synthesizer.deformation.toJSON(),
             mapFromMaxDiameterToMinDiameter: synthesizer.minDiameter.toJSON(),
+            mapFromMaxDiameterToEllipsoidSeparation: synthesizer.ellipsoidSeparation.toJSON(),
             axons: synthesizer.axons.map(axon => axon.toJSON()),
             cells: synthesizer.cells.map(cell => ({
                 position: cell.pos.toArray(),

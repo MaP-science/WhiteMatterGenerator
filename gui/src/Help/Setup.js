@@ -31,9 +31,6 @@ export default () => (
                 <b>voxelSize</b> (number) - This is the side length of the voxel.
             </li>
             <li>
-                <b>ellipsoidDensity</b> (number) - This is the number of ellipsoids per µm along axons.
-            </li>
-            <li>
                 <b>growSpeed</b> (number) - How much the axons grow per step. 0 means no growth, 1 means that the axon
                 will grow to 100% of its target size in 1 step.
             </li>
@@ -69,6 +66,20 @@ export default () => (
                     </li>
                     <li>
                         <b>to</b> (array of numbers) - The output values of the map, i.e. minimum diameters.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <b>mapFromMaxDiameterToEllipsoidSeparation</b>* (object) - This map determines the separation of
+                ellipsoids in µm on an axon given its maximum diameter (axon + myelin). The values defining the map will
+                be linearly interpolated.
+                <ul>
+                    <li>
+                        <b>from</b> (array of numbers) - The input values of the map, i.e. maximum diameters. This array
+                        should be given in increasing order.
+                    </li>
+                    <li>
+                        <b>to</b> (array of numbers) - The output values of the map, i.e. separation of ellipsoids.
                     </li>
                 </ul>
             </li>

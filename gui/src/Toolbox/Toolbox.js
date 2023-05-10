@@ -59,7 +59,6 @@ export default () => {
     const [seed, setSeed] = useState(0);
     const [voxelSize, setVoxelSize] = useState([100, 100, 100]);
     const [axonCount, setAxonCount] = useState(50);
-    const [ellipsoidDensity, setEllipsoidDensity] = useState(1);
     const [cellCount, setCellCount] = useState(0);
     const [growSpeed, setGrowSpeed] = useState(0.02);
     const [contractSpeed, setContractSpeed] = useState(1);
@@ -77,6 +76,10 @@ export default () => {
     const [mapFromMaxDiameterToMinDiameter, setMapFromMaxDiameterToMinDiameter] = useState({
         from: [0, 2],
         to: [0, 0.2]
+    });
+    const [mapFromMaxDiameterToEllipsoidSeparation, setMapFromMaxDiameterToEllipsoidSeparation] = useState({
+        from: [0, 1],
+        to: [0.1, 1]
     });
     const [selectItem, setSelectItem] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -134,8 +137,8 @@ export default () => {
             const geoms =
                 selectedItem.type === "axon"
                     ? selectedItem.object.meshes
-                          .filter((_, i) => i !== 1 || Number(selectedItem.object.gRatio) !== 1)
-                          .map(mesh => mesh.geometry)
+                        .filter((_, i) => i !== 1 || Number(selectedItem.object.gRatio) !== 1)
+                        .map(mesh => mesh.geometry)
                     : [selectedItem.object.mesh.geometry];
             synthesizer.focus = null;
             synthesizer.deselectAll(viewSizes);
@@ -248,12 +251,12 @@ export default () => {
             setRandomSeed(data.randomSeed || 0);
             setVoxelSize(data.voxelSize);
             setBorder(data.border || 0);
-            setEllipsoidDensity(data.ellipsoidDensity);
             setGrowSpeed(data.growSpeed);
             setContractSpeed(data.contractSpeed);
             setMinDist(data.minimumDistance || 0.07);
             setMapFromDiameterToDeformationFactor(data.mapFromDiameterToDeformationFactor);
             setMapFromMaxDiameterToMinDiameter(data.mapFromMaxDiameterToMinDiameter);
+            setMapFromMaxDiameterToEllipsoidSeparation(data.mapFromMaxDiameterToEllipsoidSeparation);
             setAxonCount(data.axons.length);
             setCellCount(data.cells.length);
             setSynthesizer(s);
@@ -326,15 +329,6 @@ export default () => {
                                     <ListItem>
                                         <TextField
                                             type="number"
-                                            label="Ellipsoid density of axons"
-                                            InputProps={{
-                                                endAdornment: <InputAdornment position="start">µm⁻¹</InputAdornment>
-                                            }}
-                                            value={ellipsoidDensity}
-                                            onChange={e => setEllipsoidDensity(e.target.value)}
-                                        />
-                                        <TextField
-                                            type="number"
                                             label="g-ratio"
                                             value={gRatio}
                                             onChange={e => setGRatio(e.target.value)}
@@ -347,9 +341,9 @@ export default () => {
                                                 if (synthesizer) synthesizer.dispose();
                                                 const s = createSynthesizer({
                                                     voxelSize: voxelSize,
-                                                    ellipsoidDensity: ellipsoidDensity,
                                                     mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
-                                                    mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter
+                                                    mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter,
+                                                    mapFromMaxDiameterToEllipsoidSeparation: mapFromMaxDiameterToEllipsoidSeparation
                                                 });
                                                 s.addAxonsRandomly(Number(axonCount), gRatio);
                                                 s.addCellsRandomly(Number(cellCount), minDist);
@@ -411,35 +405,6 @@ export default () => {
                                         <List>
                                             <ListItem>
                                                 <b>After setup</b>
-                                            </ListItem>
-                                            <ListItem>
-                                                Ellipsoid density of axons: {ellipsoidDensity}
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={() => {
-                                                        const value = Number(window.prompt("New ellipsoid density"));
-                                                        if (!value) return;
-                                                        const data = synthesizer.toJSON();
-                                                        data.ellipsoidDensity = value;
-                                                        if (synthesizer) synthesizer.dispose();
-                                                        const s = createSynthesizer(data);
-                                                        setSynthesizer(s);
-                                                        setScene(
-                                                            s.draw(
-                                                                viewModeVoxel,
-                                                                viewModeAxon,
-                                                                viewModeCell,
-                                                                Number(resolution),
-                                                                false,
-                                                                Number(border),
-                                                                viewSizes
-                                                            )
-                                                        );
-                                                        setEllipsoidDensity(value);
-                                                        setUpdateState(s.updateState);
-                                                    }}>
-                                                    Change
-                                                </Button>
                                             </ListItem>
                                             <ListItem>
                                                 <TextField
@@ -633,9 +598,9 @@ export default () => {
                                                             const extended =
                                                                 vm === "pipes"
                                                                     ? window.prompt(
-                                                                          'Extended axons - "yes"/"no"',
-                                                                          "no"
-                                                                      ) === "yes"
+                                                                        'Extended axons - "yes"/"no"',
+                                                                        "no"
+                                                                    ) === "yes"
                                                                     : false;
                                                             if (!res) return;
                                                             setViewModeAxon(vm);

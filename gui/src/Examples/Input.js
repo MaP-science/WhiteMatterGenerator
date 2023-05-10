@@ -4,7 +4,6 @@ import download from "in-browser-download";
 
 const inputExample = {
     voxelSize: 10,
-    ellipsoidDensity: 100,
     growSpeed: 0.05,
     contractSpeed: 0.05,
     mapFromDiameterToDeformationFactor: {
@@ -14,6 +13,10 @@ const inputExample = {
     mapFromMaxDiameterToMinDiameter: {
         from: [0, 1],
         to: [0, 0.2]
+    },
+    mapFromMaxDiameterToEllipsoidSeparation: {
+        from: [0, 1],
+        to: [0.1, 1]
     },
     axons: [
         {
