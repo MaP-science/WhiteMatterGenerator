@@ -79,7 +79,7 @@ export default () => {
     });
     const [mapFromMaxDiameterToEllipsoidSeparation, setMapFromMaxDiameterToEllipsoidSeparation] = useState({
         from: [0, 1],
-        to: [0.1, 1]
+        to: [0, 0.25]
     });
     const [selectItem, setSelectItem] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
