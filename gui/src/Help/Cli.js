@@ -24,11 +24,8 @@ export default () => (
         <Code>bash install_nvm.sh</Code>
         <Code>nvm install --lts</Code>
         <p>Then you should be able to install the CLI by running the command:</p>
-        <Code>
-            npm i -g
-            https://axon-generator-toolbox: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@github.com/Peulicke/axon-generator-toolbox-cli.git
-        </Code>
+        <Code>npm i -g white-matter-generator</Code>
         <p>Now, you can run the CLI using the command:</p>
-        <Code>axon-generator-toolbox</Code>
+        <Code>white-matter-generator</Code>
     </>
 );
