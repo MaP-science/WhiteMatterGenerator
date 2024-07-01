@@ -1,0 +1,6 @@
+ipykernel
+numpy
+matplotlib
+tqdm
+scipy
+json5

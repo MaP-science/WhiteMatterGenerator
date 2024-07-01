@@ -1,0 +1,4 @@
+.venv
+*.png
+*stage*
+__pycache__
