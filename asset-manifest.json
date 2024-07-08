@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.js": "/static/js/main.b42798a3.chunk.js",
+    "main.js.map": "/static/js/main.b42798a3.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.7f68a60e.js",
+    "runtime-main.js.map": "/static/js/runtime-main.7f68a60e.js.map",
+    "static/css/2.62e7949a.chunk.css": "/static/css/2.62e7949a.chunk.css",
+    "static/js/2.eaab5c3a.chunk.js": "/static/js/2.eaab5c3a.chunk.js",
+    "static/js/2.eaab5c3a.chunk.js.map": "/static/js/2.eaab5c3a.chunk.js.map",
+    "index.html": "/index.html",
+    "service-worker.js": "/service-worker.js",
+    "service-worker.js.map": "/service-worker.js.map",
+    "static/css/2.62e7949a.chunk.css.map": "/static/css/2.62e7949a.chunk.css.map",
+    "static/js/2.eaab5c3a.chunk.js.LICENSE.txt": "/static/js/2.eaab5c3a.chunk.js.LICENSE.txt",
+    "static/media/ellipsoids.0c65173b.png": "/static/media/ellipsoids.0c65173b.png",
+    "static/media/ellipsoids.d9dcf4b5.png": "/static/media/ellipsoids.d9dcf4b5.png",
+    "static/media/pipesFront.4c31b931.png": "/static/media/pipesFront.4c31b931.png",
+    "static/media/pipesFront.811a2191.png": "/static/media/pipesFront.811a2191.png",
+    "static/media/pipesSide.dce5d3c2.png": "/static/media/pipesSide.dce5d3c2.png",
+    "static/media/pipesSide.ea865c63.png": "/static/media/pipesSide.ea865c63.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.7f68a60e.js",
+    "static/css/2.62e7949a.chunk.css",
+    "static/js/2.eaab5c3a.chunk.js",
+    "static/js/main.b42798a3.chunk.js"
+  ]
+}
