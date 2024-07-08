@@ -8,7 +8,7 @@ import config from "./config";
 export default () => (
     <>
         <CssBaseline />
-        <BrowserRouter basename="WhiteMatterGenerator">
+        <BrowserRouter>
             <Route
                 path="*"
                 component={props => (
