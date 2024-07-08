@@ -19,16 +19,16 @@ jobs:
           node-version: "16"
 
       - name: Install core dependencies
-        run: cd core && npm i
+        run: cd axon-generator-toolbox/core && npm i
 
       - name: Install gui dependencies
-        run: cd gui && npm i
+        run: cd axon-generator-toolbox/gui && npm i
 
       - name: Build the project
-        run: cd gui && npm run build
+        run: cd axon-generator-toolbox/gui && npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gui/build
+          publish_dir: ./axon-generator-toolbox/gui/build
