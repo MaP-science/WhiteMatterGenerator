@@ -1,7 +1,0 @@
-ipykernel
-numpy
-matplotlib
-tqdm
-scipy
-json5
-pygel3d
