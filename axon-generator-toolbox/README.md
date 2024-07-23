@@ -1,3 +1,3 @@
 # White Matter Generator
 
-Try the [demo](https://axon-generator-toolbox.web.app).
+Try the [demo](https://map-science.github.io/WhiteMatterGenerator).
