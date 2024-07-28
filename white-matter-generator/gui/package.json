@@ -1,10 +1,10 @@
 {
-    "name": "axon-generator-toolbox",
+    "name": "white-matter-generator",
     "version": "0.1.0",
     "private": true,
     "homepage": "/WhiteMatterGenerator",
     "dependencies": {
-        "@axon-generator-toolbox/core": "file:../core",
+        "@white-matter-generator/core": "file:../core",
         "@material-ui/core": "^4.11.1",
         "@material-ui/icons": "^4.9.1",
         "@react-hook/window-size": "^3.0.7",

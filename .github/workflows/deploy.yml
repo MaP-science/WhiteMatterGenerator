@@ -24,13 +24,13 @@ jobs:
           node-version: "16"
 
       - name: Install core dependencies
-        run: cd axon-generator-toolbox/core && npm i
+        run: cd white-matter-generator/core && npm i
 
       - name: Install gui dependencies
-        run: cd axon-generator-toolbox/gui && npm i
+        run: cd white-matter-generator/gui && npm i
 
       - name: Build the project
-        run: cd axon-generator-toolbox/gui && npm run build
+        run: cd white-matter-generator/gui && npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -38,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./axon-generator-toolbox/gui/build"
+          path: "./white-matter-generator/gui/build"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

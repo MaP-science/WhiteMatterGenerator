@@ -1,5 +1,5 @@
 import React from "react";
-const source = "https://github.com/Peulicke/axon-generator-toolbox";
+const source = "https://github.com/MaP-science/WhiteMatterGenerator";
 
 export default () => (
     <>

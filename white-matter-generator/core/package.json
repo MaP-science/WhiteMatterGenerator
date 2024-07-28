@@ -1,5 +1,5 @@
 {
-    "name": "@axon-generator-toolbox/core",
+    "name": "@white-matter-generator/core",
     "version": "1.0.0",
     "private": true,
     "main": "src/index.ts",

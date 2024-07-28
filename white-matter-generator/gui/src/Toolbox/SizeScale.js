@@ -1,7 +1,7 @@
 import React from "react";
 import Legend from "./Legend";
 import "../../node_modules/react-vis/dist/style.css";
-import { helperFunctions } from "@axon-generator-toolbox/core";
+import { helperFunctions } from "@white-matter-generator/core";
 
 export default props => {
     const n = 100;

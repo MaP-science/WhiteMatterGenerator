@@ -24,7 +24,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import SizeScale from "./SizeScale";
-import { createSynthesizer, setRandomSeed } from "@axon-generator-toolbox/core";
+import { createSynthesizer, setRandomSeed } from "@white-matter-generator/core";
 import download from "in-browser-download";
 import { useWindowSize } from "@react-hook/window-size";
 
@@ -137,8 +137,8 @@ export default () => {
             const geoms =
                 selectedItem.type === "axon"
                     ? selectedItem.object.meshes
-                        .filter((_, i) => i !== 1 || Number(selectedItem.object.gRatio) !== 1)
-                        .map(mesh => mesh.geometry)
+                          .filter((_, i) => i !== 1 || Number(selectedItem.object.gRatio) !== 1)
+                          .map(mesh => mesh.geometry)
                     : [selectedItem.object.mesh.geometry];
             synthesizer.focus = null;
             synthesizer.deselectAll(viewSizes);
@@ -341,9 +341,11 @@ export default () => {
                                                 if (synthesizer) synthesizer.dispose();
                                                 const s = createSynthesizer({
                                                     voxelSize: voxelSize,
-                                                    mapFromDiameterToDeformationFactor: mapFromDiameterToDeformationFactor,
+                                                    mapFromDiameterToDeformationFactor:
+                                                        mapFromDiameterToDeformationFactor,
                                                     mapFromMaxDiameterToMinDiameter: mapFromMaxDiameterToMinDiameter,
-                                                    mapFromMaxDiameterToEllipsoidSeparation: mapFromMaxDiameterToEllipsoidSeparation
+                                                    mapFromMaxDiameterToEllipsoidSeparation:
+                                                        mapFromMaxDiameterToEllipsoidSeparation
                                                 });
                                                 s.addAxonsRandomly(Number(axonCount), gRatio);
                                                 s.addCellsRandomly(Number(cellCount), minDist);
@@ -598,9 +600,9 @@ export default () => {
                                                             const extended =
                                                                 vm === "pipes"
                                                                     ? window.prompt(
-                                                                        'Extended axons - "yes"/"no"',
-                                                                        "no"
-                                                                    ) === "yes"
+                                                                          'Extended axons - "yes"/"no"',
+                                                                          "no"
+                                                                      ) === "yes"
                                                                     : false;
                                                             if (!res) return;
                                                             setViewModeAxon(vm);

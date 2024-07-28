@@ -7,7 +7,7 @@ import configToPly from "./configToPly";
 
 (async () => {
     const args = yargs
-        .scriptName("axon-generator-toolbox")
+        .scriptName("white-matter-generator")
         .usage("Usage: $0 -f file [-i iterations] [-v volumeFraction]")
         .example([["$0 -f ./config.json -i 10 -o 5 -v 70 -l log.txt"]])
         .option("f", {
