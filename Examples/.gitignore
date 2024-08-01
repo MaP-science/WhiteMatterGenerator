@@ -2,3 +2,4 @@
 *.png
 *stage*
 __pycache__
+morphology_analysis.ipynb
