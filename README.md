@@ -10,7 +10,10 @@ Try the online demo [here](https://map-science.github.io/WhiteMatterGenerator).
 
 This repository represents the paper ["Exploring white matter dynamics and morphology through interactive numerical phantoms: the White Matter Generator"](https://www.frontiersin.org/journals/neuroinformatics/articles/10.3389/fninf.2024.1354708/full).
 
-When using any content from the repository, please cite the paper: <em>"Winther S, Peulicke O, Andersson M, Kjer HM, Bærentzen JA, Dyrby TB. Exploring white matter dynamics and morphology through interactive numerical phantoms: the White Matter Generator. Front Neuroinform. 2024 Jul 31;18:1354708. doi: 10.3389/fninf.2024.1354708. PMID: 39144684; PMCID: PMC11322502."</em>
+If using any content from the repository, please cite: <em>"Winther S, Peulicke O, Andersson M, Kjer HM, Bærentzen JA, Dyrby TB. Exploring white matter dynamics and morphology through interactive numerical phantoms: the White Matter Generator. Front Neuroinform. 2024 Jul 31;18:1354708. doi: 10.3389/fninf.2024.1354708. PMID: 39144684; PMCID: PMC11322502."</em>
+
+If using any content from the "XNH_data"-folder, please cite: <em>"Andersson M, Kjer HM, Rafael-Patino J, Pacureanu A, Pakkenberg B, Thiran JP, Ptito M, Bech M, Bjorholm Dahl A, Andersen Dahl V, Dyrby TB. Axon morphology is modulated by the local environment and impacts the noninvasive investigation of its structure-function relationship. Proc Natl Acad Sci U S A. 2020 Dec 29;117(52):33649-33659. doi: 10.1073/pnas.2012533117. Epub 2020 Dec 21. PMID: 33376224; PMCID: PMC7777205."</em> and <em>"Andersson M, Pizzolato M, Kjer HM, Skodborg KF, Lundell H, Dyrby TB. Does powder averaging remove dispersion bias in diffusion MRI diameter estimates within real 3D axonal architectures? Neuroimage. 2022 Mar;248:118718. doi: 10.1016/j.neuroimage.2021.118718. Epub 2021 Nov 10. PMID: 34767939."</em>
+
 
 ### Content
 
