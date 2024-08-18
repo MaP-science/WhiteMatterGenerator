@@ -15,7 +15,7 @@ When using any content from the repository, please cite the paper: <em>"Winther 
 ### Content
 
 - [white-matter-generator](https://github.com/MaP-science/WhiteMatterGenerator/tree/main/white-matter-generator): The command line interface
-- [Examples](https://github.com/MaP-science/WhiteMatterGenerator/tree/main/Examples): Getting started
+- [Examples](https://github.com/MaP-science/WhiteMatterGenerator/tree/main/Examples): Python-wrapped examples for getting started
   - [Setting up biologically informed configurations](https://github.com/MaP-science/WhiteMatterGenerator/blob/main/Examples/notebooks/configuration.ipynb)
   - [Inspecting and simplifying axon and myelin meshes before computationally demanding applications](https://github.com/MaP-science/WhiteMatterGenerator/blob/main/Examples/notebooks/show_and_simplify_meshes.ipynb)
   - [Analysing and comparing the morphology of WMG-generated axons with that of real axons](https://github.com/MaP-science/WhiteMatterGenerator/blob/main/Examples/notebooks/morphology_analysis.ipynb)
