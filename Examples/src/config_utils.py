@@ -34,7 +34,8 @@ def generate_cylinder_list(
     #### paths
 
     # input paths
-    path_MCDC_config = os.path.join(path_output, 'MCDC.conf') 
+    path_MCDC_config = os.path.join(path_output, 'MCDC.conf')
+    path_MCDC_config = path_MCDC_config.replace('\\', '/')
     path_MCDC_scheme = f'../resources/dummy.scheme'
 
     #### initialize
@@ -299,6 +300,7 @@ def generate_config_files(
                         print(f'[LOG] Generating {N_reps} substrate(s) under the name: {name_substrate}\n')
 
                         path_output = os.path.join(path_substrates, name_substrate)
+                        path_output = path_output.replace('\\', '/')
 
                         #### generate cylinder_lists with MCDC
                         generate_cylinder_list(
@@ -365,10 +367,10 @@ def generate_config_files(
                                 rep_tag = '00'
                             name_file = f'rep_{rep_tag}-stage=0.json'
                             path_config_file = os.path.join(path_output, name_file)
+                            path_config_file = path_config_file.replace('\\','/')
                             paths_config_files.append(path_config_file)
                             json.dump(input_dict, open(path_config_file, 'w'), indent=4)
 
-                        
                         # clean up
                         clean_up(path_output)
 

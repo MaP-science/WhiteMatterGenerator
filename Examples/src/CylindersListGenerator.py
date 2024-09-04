@@ -1,5 +1,5 @@
 import sys
-import os
+import os, platform
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
@@ -98,8 +98,13 @@ class CylindersListGenerator():
 
     def generate_cylinders_lists(self, n):
 
+        print("Generating CylindersLists...")
         for _ in tqdm(range(n)):
-            os.system(f'MC-DC_Simulator {self.path_config_file}')
+            if platform.system() == 'Windows':
+                os.system(f'wsl MC-DC_Simulator {self.path_config_file}')
+            else:
+                os.system(f'MC-DC_Simulator {self.path_config_file}')
+        print(n, " cylinder_list generated")
 
     #### Loading
 
